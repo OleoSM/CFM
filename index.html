@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEFIMAT Asesorías - Cinemática</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Estilos personalizados para scrollbar y animaciones */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        body { font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+
+    <div id="app" class="min-h-screen py-6 sm:py-10 px-4 md:px-8 flex flex-col items-center">
+        <div class="animate-pulse flex flex-col items-center justify-center h-64">
+            <div class="text-emerald-600 font-bold text-xl">Cargando Sistema CEFIMAT...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- CONFIGURACIÓN FIREBASE (¡IMPORTANTE: RELLENA ESTO!) ---
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY_FIREBASE",
+            authDomain: "TU_PROJECT.firebaseapp.com",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_BUCKET",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // Inicialización segura de Firebase (si no hay config, la app funciona pero sin base de datos)
+        let app, auth, db;
+        const appId = 'cefimat-fisica-u1-tutor-v1';
+        let isFirebaseActive = false;
+
+        try {
+            if (firebaseConfig.apiKey !== "TU_API_KEY_FIREBASE") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseActive = true;
+            } else {
+                console.warn("Firebase no configurado. El modo 'demo' está activo (no se guardarán datos).");
+            }
+        } catch (e) {
+            console.error("Error iniciando Firebase:", e);
+        }
+
+        // --- CONFIGURACIÓN API IA (GROQ) ---
+        // La llave empieza con gsk_, por lo que es de Groq, no de Google Gemini.
+        // He adaptado la llamada para usar la API de Groq compatible con OpenAI.
+        const apiKey = "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";
+        const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        const state = {
+            user: null,
+            view: 'welcome', // welcome, tutor, quiz, finished, stats
+            userName: '',
+            userGroup: '',
+            quizId: null,
+            currentQuestion: 0,
+            score: 0,
+            showHint: false,
+            selectedOption: null,
+            isAnswered: false,
+            answersLog: [],
+            globalHistory: [],
+            aiLoading: false,
+            tutorChat: [], // { role: 'user'|'ai', text: string }
+            tutorQuery: '',
+            aiResponse: '', // Para la explicación de preguntas
+            activeReportId: 'facil'
+        };
+
+        // --- DATOS (BANCO DE PREGUNTAS) ---
+        const QUIZZES_DATA = {
+            facil: {
+                id: "facil", title: "MRU y MUA", subtitle: "NIVEL FÁCIL", description: "Principios de movimiento rectilíneo.", icon: "move", theme: "emerald", accent: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-100", btn: "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100",
+                questions: [
+                    { q: "¿Qué estudia la Cinemática?", a: ["Causas del movimiento", "Movimiento sin considerar causas", "Energía térmica", "Estática"], c: 1, r: "La cinemática describe el movimiento atendiendo posición, velocidad y aceleración, sin analizar las fuerzas.", h: "Busca la opción que solo describe el 'cómo' se mueve el objeto." },
+                    { q: "¿Qué es una magnitud escalar?", a: ["Tiene dirección", "Solo número y unidad", "Requiere un vector", "Mide fuerzas"], c: 1, r: "Magnitudes como la masa o el tiempo solo necesitan valor y unidad.", h: "Como la temperatura: no necesitas decir hacia dónde apunta." },
+                    { q: "¿Qué caracteriza al MRU?", a: ["Velocidad variable", "Aceleración constante", "Velocidad constante", "Trayectoria curva"], c: 2, r: "En el MRU, la velocidad no cambia en magnitud ni dirección.", h: "Si recorre distancias iguales en tiempos iguales, nada cambia." },
+                    { q: "¿Cómo se define la rapidez media?", a: ["Vector velocidad", "Distancia entre tiempo total", "Cambio de aceleración", "Desplazamiento / tiempo"], c: 1, r: "La rapidez es escalar y relaciona la longitud total con el tiempo.", h: "Es la relación de todo el camino recorrido." },
+                    { q: "¿Qué es la aceleración?", a: ["Cambio de posición", "Cambio en velocidad por tiempo", "Rapidez fija", "Inercia"], c: 1, r: "Se define como la variación de la velocidad respecto al tiempo.", h: "Ocurre cuando la velocidad deja de ser constante." }
+                ]
+            },
+            intermedio_1: {
+                id: "intermedio_1", title: "Verticales", subtitle: "NIVEL INTERMEDIO 1", description: "Gravedad, caída libre y tiro vertical.", icon: "trending-up", theme: "blue", accent: "text-blue-500", bg: "bg-blue-50", border: "border-blue-100", btn: "bg-blue-600 hover:bg-blue-700 shadow-blue-100",
+                questions: [
+                    { q: "¿Qué movimiento es la caída libre?", a: ["MRU", "MRUA", "Circular", "Reposo"], c: 1, r: "Es un MRUA con aceleración g constante.", h: "Considera que tiene una aceleración terrestre fija." },
+                    { q: "¿Valor aproximado de g en la Tierra?", a: ["1.6 m/s²", "9.81 m/s²", "100 m/s²", "0 m/s²"], c: 1, r: "La aceleración de la gravedad promedio es 9.81 m/s².", h: "Es la constante estándar de atracción." },
+                    { q: "¿Velocidad inicial si se suelta un objeto?", a: ["9.8 m/s", "Máxima", "Cero", "Variable"], c: 2, r: "Partir del reposo implica Vo = 0.", h: "Soltar significa que no hay impulso al inicio." },
+                    { q: "¿v en la cima del tiro vertical?", a: ["Máxima", "Cero", "Igual a g", "Fija"], c: 1, r: "El objeto se detiene momentáneamente antes de bajar.", h: "Es el punto donde deja de subir para caer." },
+                    { q: "¿Aceleración en el punto más alto del tiro vertical?", a: ["Cero", "Gravedad (g)", "Centrífuga", "Vo"], c: 1, r: "La gravedad nunca desaparece.", h: "La Tierra sigue jalando al objeto siempre." }
+                ]
+            },
+            parabolico: {
+                id: "parabolico", title: "Tiro Parabólico", subtitle: "NIVEL INTERMEDIO 2", description: "Movimiento en 2D y trayectorias curvas.", icon: "activity", theme: "indigo", accent: "text-indigo-500", bg: "bg-indigo-50", border: "border-indigo-100", btn: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100",
+                questions: [
+                    { q: "¿De qué se compone el tiro parabólico?", a: ["Dos MRU", "Dos MUA", "MRU en X y MUA en Y", "Giro"], c: 2, r: "Suma de avance constante y caída acelerada.", h: "Galileo separó los ejes X e Y." },
+                    { q: "¿Cómo es Vx en el tiro parabólico?", a: ["Sube", "Baja", "Constante", "Cero"], c: 2, r: "Horizontalmente no hay fuerzas aceleradoras.", h: "Sin aire, nada detiene el avance lateral." },
+                    { q: "¿Ángulo de alcance máximo?", a: ["30°", "60°", "45°", "90°"], c: 2, r: "A 45° se optimiza avance y tiempo.", h: "Justo a la mitad del cuadrante." },
+                    { q: "¿Forma de la trayectoria?", a: ["Círculo", "Recta", "Parábola", "Elipse"], c: 2, r: "Suma de X y Y genera esta curva.", h: "El nombre del tema te da la pista." },
+                    { q: "¿Aceleración en el vuelo?", a: ["Horizontal", "Vertical g", "Cero", "Fricción"], c: 1, r: "Solo la gravedad actúa siempre.", h: "Solo la atracción terrestre influye." }
+                ]
+            },
+            general: {
+                id: "general", title: "General", subtitle: "NIVEL DIFÍCIL", description: "Evaluación integral y análisis vectorial.", icon: "zap", theme: "rose", accent: "text-rose-500", bg: "bg-rose-50", border: "border-rose-100", btn: "bg-rose-600 hover:bg-rose-700 shadow-rose-100",
+                questions: [
+                    { q: "¿Magnitud vectorial?", a: ["Solo valor", "Valor, unidad, dir y sentido", "Tiempo", "Masa"], c: 1, r: "Requiere orientación.", h: "Necesita una flecha de dirección." },
+                    { q: "¿Pendiente en v-t?", a: ["Posición", "Aceleración", "Fuerza", "Masa"], c: 1, r: "Razón Δv/Δt.", h: "Cambio de v entre tiempo." },
+                    { q: "¿Área bajo v-t?", a: ["Aceleración", "Distancia", "Fuerza", "Masa"], c: 1, r: "v * t = d.", h: "Multiplicar ejes da distancia." },
+                    { q: "¿Sistema inercial?", a: ["Acelera", "Reposo o MRU", "Gira", "Imán"], c: 1, r: "Sin aceleración neta.", h: "Sin aceleración del observador." },
+                    { q: "¿Aceleración en MCU?", a: ["No", "Sí, centrípeta", "Frena", "Radio"], c: 1, r: "Cambia dirección vector.", h: "Estás doblando constantemente." }
+                ]
+            }
+        };
+
+        // --- FUNCIONES IA ---
+        async function callTutorIA(prompt, type = "chat") {
+            const systemInstruction = type === "chat" 
+                ? "Eres el Tutor Académico de CEFIMAT Asesorías. Tu especialidad es la Cinemática. Responde dudas de forma muy concisa, profesional y directa. No uses listas con viñetas, ni negritas excesivas ni caracteres especiales complejos. Estructura tu respuesta en uno o dos párrafos breves."
+                : "Eres el Asesor Experto de CEFIMAT. Explica de forma breve, pedagógica y sin usar viñetas por qué la respuesta física mencionada es la correcta. Sé muy directo.";
+
+            // Payload para Groq (OpenAI compatible)
+            const payload = {
+                model: "llama-3.3-70b-versatile", // Modelo rápido y capaz en Groq
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 300
+            };
+
+            try {
+                const response = await fetch(GROQ_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Error API');
+                const data = await response.json();
+                return data.choices?.[0]?.message?.content || "No pude procesar la respuesta.";
+            } catch (err) {
+                console.error(err);
+                return "Lo siento, el servicio de tutoría está saturado o la llave API es incorrecta.";
+            }
+        }
+
+        // --- LÓGICA DE RENDERIZADO Y EVENTOS ---
+
+        // Función principal de renderizado (simula React render)
+        function renderApp() {
+            const appDiv = document.getElementById('app');
+            let content = `
+            <div class="w-full max-w-xl bg-white sm:rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden relative flex flex-col min-h-[600px] sm:min-h-[650px] fade-in">
+                ${getHeaderHTML()}
+                <div class="p-4 sm:p-7 flex-1">
+                    ${getViewHTML()}
+                </div>
+                ${getFooterHTML()}
+            </div>
+            `;
+            appDiv.innerHTML = content;
+            lucide.createIcons(); // Refrescar iconos
+            setupEventListeners(); // Reasignar eventos
+        }
+
+        function getHeaderHTML() {
+            return `
+            <div class="bg-white p-3 sm:p-5 border-b border-slate-100 sticky top-0 z-30 flex flex-col gap-3 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 sm:gap-3">
+                        <div class="relative w-10 h-10 sm:w-12 sm:h-12 shrink-0 bg-white rounded-xl shadow-md overflow-hidden p-1 border border-slate-100">
+                            <img src="https://www.google.com/s2/favicons?domain=www.cefimat.com&sz=128" alt="Logo" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/128?text=C'">
+                        </div>
+                        <div class="flex flex-col">
+                            <h1 class="text-lg sm:text-xl font-black text-slate-800 leading-none">CEFIMAT Asesorías</h1>
+                            <span class="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-wide border-t border-emerald-500 pt-0.5 mt-0.5">CENTRO FÍSICO-MATEMÁTICO</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-1.5 sm:gap-2">
+                        ${state.view === 'welcome' ? `
+                        <button onclick="window.actions.setView('tutor')" class="p-2 sm:p-2.5 text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 border border-emerald-100">
+                            <i data-lucide="sparkles" width="18"></i>
+                        </button>` : ''}
+                        <button onclick="window.actions.setView('stats')" class="p-2 sm:p-2.5 rounded-xl transition-all ${state.view === 'stats' ? 'bg-emerald-600 text-white' : 'text-slate-400 bg-slate-50 hover:bg-slate-100'}">
+                            <i data-lucide="pie-chart" width="18"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-2.5 justify-center sm:justify-start border-t border-slate-50 pt-2">
+                    ${getSocialLink('facebook', 'bg-blue-600', 'https://www.facebook.com/share/1C3nRCi2zV/')}
+                    ${getSocialLink('instagram', 'bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-500', 'https://www.instagram.com/cefimat/')}
+                    <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="p-1.5 bg-black text-white rounded-full hover:scale-110 transition-all flex items-center justify-center">
+                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg>
+                    </a>
+                    ${getSocialLink('message-circle', 'bg-emerald-500', 'https://wa.me/525572008538')}
+                    ${getSocialLink('globe', 'bg-indigo-600', 'https://cefimat.com')}
+                </div>
+            </div>`;
+        }
+
+        function getSocialLink(icon, colorClass, url) {
+            return `<a href="${url}" target="_blank" class="p-1.5 ${colorClass} text-white rounded-full hover:scale-110 transition-all flex items-center justify-center"><i data-lucide="${icon}" width="16"></i></a>`;
+        }
+
+        function getViewHTML() {
+            switch(state.view) {
+                case 'welcome': return getWelcomeHTML();
+                case 'quiz': return getQuizHTML();
+                case 'tutor': return getTutorHTML();
+                case 'finished': return getFinishedHTML();
+                case 'stats': return getStatsHTML();
+                default: return '';
+            }
+        }
+
+        function getWelcomeHTML() {
+            const isDisabled = !state.userName.trim() || !state.userGroup.trim();
+            let buttonsHTML = Object.keys(QUIZZES_DATA).map(key => {
+                const q = QUIZZES_DATA[key];
+                return `
+                <button onclick="window.actions.startQuiz('${key}')" ${isDisabled ? 'disabled' : ''} 
+                    class="w-full p-3 rounded-2xl border transition-all flex items-center gap-3.5 text-left disabled:opacity-40 shadow-sm hover:shadow-md active:scale-95 ${q.bg} ${q.border} group">
+                    <div class="p-2 rounded-xl bg-white shadow-sm ${q.accent} group-hover:scale-110 transition-transform shrink-0">
+                        <i data-lucide="${q.icon}" width="20"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <span class="block font-black text-sm text-slate-800 leading-none">${q.title}</span>
+                        <p class="text-[9px] mt-1 text-slate-500 font-medium leading-tight line-clamp-1">${q.description}</p>
+                    </div>
+                    <i data-lucide="chevron-right" width="16" class="text-slate-300"></i>
+                </button>`;
+            }).join('');
+
+            return `
+            <div class="space-y-6 slide-in">
+                <div class="text-center space-y-2">
+                    <span class="inline-block py-1 px-3 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase tracking-widest border border-emerald-200">Ingreso nivel Licenciatura</span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight leading-tight">Unidad 1: Cinemática</h2>
+                    <div class="inline-flex bg-slate-900 text-white px-3 py-1 rounded-md text-[9px] font-black tracking-[0.2em]">PREGUNTAS TIPO EXAMEN</div>
+                </div>
+                <div class="grid gap-2">
+                    <div class="relative">
+                        <i data-lucide="user" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" width="16"></i>
+                        <input type="text" id="inputName" placeholder="Tu Nombre..." value="${state.userName}" 
+                            oninput="window.actions.updateInput('userName', this.value)" 
+                            class="w-full pl-10 p-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold bg-slate-50 focus:bg-white transition-all shadow-inner" />
+                    </div>
+                    <div class="relative">
+                        <i data-lucide="users" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" width="16"></i>
+                        <input type="text" id="inputGroup" placeholder="Tu Grupo..." value="${state.userGroup}" 
+                            oninput="window.actions.updateInput('userGroup', this.value)" 
+                            class="w-full pl-10 p-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold bg-slate-50 focus:bg-white transition-all shadow-inner" />
+                    </div>
+                </div>
+                <div class="grid gap-3 pt-2">
+                    <div class="flex items-center justify-center">
+                        <span class="bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border border-emerald-200 shadow-sm">Selecciona un cuestionario</span>
+                    </div>
+                    <div class="space-y-2.5">${buttonsHTML}</div>
+                </div>
+            </div>`;
+        }
+
+        function getTutorHTML() {
+            const chatHTML = state.tutorChat.length === 0 
+                ? `<div class="flex flex-col items-center justify-center h-full text-slate-400 gap-2 opacity-60">
+                     <i data-lucide="message-square" width="32"></i>
+                     <p class="font-bold text-center">Hola ${state.userName.split(' ')[0]}, soy tu asesor.<br/>¿Qué concepto de física revisamos?</p>
+                   </div>`
+                : state.tutorChat.map(msg => `
+                    <div class="flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[90%] p-3 rounded-xl shadow-sm ${msg.role === 'user' ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700'}">
+                            ${msg.text}
+                        </div>
+                    </div>`).join('');
+            
+            return `
+            <div class="flex flex-col h-[480px] slide-in">
+                <div class="flex items-center gap-2 mb-3">
+                    <button onclick="window.actions.setView('welcome')" class="p-1.5 hover:bg-slate-100 rounded-lg"><i data-lucide="arrow-left" width="18"></i></button>
+                    <h3 class="text-lg font-black">Asesor Académico ✨</h3>
+                </div>
+                <div id="chat-container" class="flex-1 overflow-y-auto mb-3 space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs custom-scrollbar">
+                    ${chatHTML}
+                    ${state.aiLoading ? '<div class="flex justify-start animate-pulse"><div class="bg-white border border-slate-200 p-3 rounded-xl shadow-sm flex gap-2 items-center"><i data-lucide="loader-2" class="animate-spin text-emerald-500" width="16"></i> <span class="text-emerald-600">Escribiendo...</span></div></div>' : ''}
+                </div>
+                <form onsubmit="window.actions.submitTutor(event)" class="flex gap-1.5">
+                    <input type="text" id="tutorInput" value="${state.tutorQuery}" oninput="window.actions.updateInput('tutorQuery', this.value)" placeholder="Ej: Rapidez vs Velocidad" class="flex-1 p-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-medium shadow-inner bg-slate-50 focus:bg-white" />
+                    <button type="submit" ${state.aiLoading || !state.tutorQuery.trim() ? 'disabled' : ''} class="bg-emerald-600 text-white px-4 rounded-xl shadow-md hover:bg-emerald-700 transition-all disabled:opacity-50"><i data-lucide="sparkles" width="18"></i></button>
+                </form>
+            </div>`;
+        }
+
+        function getQuizHTML() {
+            const currentQData = QUIZZES_DATA[state.quizId].questions[state.currentQuestion];
+            const currentTheme = QUIZZES_DATA[state.quizId];
+            
+            // Barras de progreso
+            const progressHTML = QUIZZES_DATA[state.quizId].questions.map((_, i) => 
+                `<div class="h-1 w-3 rounded-full transition-all duration-300 ${i <= state.currentQuestion ? currentTheme.btn.split(' ')[0] : 'bg-slate-100'}"></div>`
+            ).join('');
+
+            // Opciones
+            const optionsHTML = currentQData.a.map((opt, i) => {
+                let classes = "border-slate-100 bg-white hover:border-emerald-200 shadow-sm";
+                let icon = "";
+                
+                if (state.isAnswered) {
+                    if (i === currentQData.c) {
+                        classes = "border-emerald-500 bg-emerald-50 text-emerald-800";
+                        icon = `<i data-lucide="check-circle-2" width="18" class="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500"></i>`;
+                    } else if (i === state.selectedOption) {
+                        classes = "border-red-500 bg-red-50 text-red-700";
+                        icon = `<i data-lucide="x-circle" width="18" class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"></i>`;
+                    } else {
+                        classes = "border-slate-50 opacity-40";
+                    }
+                }
+
+                return `
+                <button onclick="window.actions.handleAnswer(${i})" ${state.isAnswered ? 'disabled' : ''} 
+                    class="w-full p-3.5 rounded-xl text-left border transition-all font-bold text-sm sm:text-base relative overflow-hidden group ${classes}">
+                    <span class="relative z-10">${opt}</span>
+                    ${icon}
+                </button>`;
+            }).join('');
+
+            return `
+            <div class="space-y-5 fade-in">
+                <div class="flex justify-between items-center">
+                    <button onclick="window.actions.setView('welcome')" class="p-1.5 text-slate-400 hover:bg-slate-50 rounded-lg"><i data-lucide="arrow-left" width="18"></i></button>
+                    <div class="flex gap-1 overflow-hidden">${progressHTML}</div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="text-lg font-black text-slate-800 leading-tight tracking-tight">${currentQData.q}</h3>
+                    <div class="grid gap-2">${optionsHTML}</div>
+                    
+                    ${state.isAnswered ? `
+                    <div class="space-y-3 slide-in">
+                        <div class="p-4 bg-slate-900 text-slate-100 rounded-xl shadow-xl border-l-4 border-emerald-500 text-[11px] leading-relaxed">
+                             <div class="flex justify-between items-start mb-2">
+                                <span class="text-emerald-400 font-black uppercase text-[8px] tracking-widest flex items-center gap-1.5"><i data-lucide="book-open" width="10"></i> Retroalimentación</span>
+                                ${!state.aiResponse ? `<button onclick="window.actions.askAiExplanation()" ${state.aiLoading ? 'disabled' : ''} class="text-[8px] font-black text-white bg-emerald-600 px-2 py-1 rounded flex items-center gap-1 hover:bg-emerald-700 transition-all">${state.aiLoading ? '<i data-lucide="loader-2" class="animate-spin" width="8"></i>' : '<i data-lucide="sparkles" width="8"></i>'} Explicación IA ✨</button>` : ''}
+                             </div>
+                             <p class="opacity-95">${currentQData.r}</p>
+                             ${state.aiResponse ? `<div class="mt-3 pt-3 border-t border-slate-700 text-slate-300 italic"><span class="text-emerald-400 font-black block mb-0.5 uppercase text-[7px]">Nota del Tutor IA ✨:</span>${state.aiResponse}</div>` : ''}
+                        </div>
+                        <button onclick="window.actions.nextStep()" class="w-full text-white p-3.5 rounded-xl font-black text-sm shadow-lg transition-all active:scale-95 ${currentTheme.btn}">CONTINUAR</button>
+                    </div>` 
+                    : `
+                    <button onclick="window.actions.toggleHint()" class="flex items-center gap-1.5 text-emerald-700 font-black text-[9px] bg-emerald-50 px-3 py-2 rounded-lg uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-colors">
+                        <i data-lucide="lightbulb" width="12"></i> ${state.showHint ? "Ocultar Ayuda" : "Pista de Asesoría"}
+                    </button>
+                    ${state.showHint ? `<div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-900 text-[10px] font-bold italic fade-in shadow-sm">${currentQData.h}</div>` : ''}
+                    `}
+                </div>
+            </div>`;
+        }
+
+        function getFinishedHTML() {
+            return `
+            <div class="text-center space-y-6 py-4 slide-in">
+                 <div class="flex justify-center"><i data-lucide="trophy" width="80" class="text-yellow-500 drop-shadow-xl"></i></div>
+                 <div class="space-y-1">
+                    <h2 class="text-2xl font-black tracking-tight uppercase">¡Repaso Logrado!</h2>
+                    <p class="text-slate-400 font-bold uppercase text-[9px] tracking-widest">${QUIZZES_DATA[state.quizId].title}</p>
+                 </div>
+                 <div class="bg-slate-50 p-7 rounded-[2rem] border-2 border-white shadow-inner">
+                    <span class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Aciertos</span>
+                    <span class="text-6xl font-black text-slate-800 leading-none">${state.score}</span>
+                    <span class="text-xl font-black text-slate-200">/${QUIZZES_DATA[state.quizId].questions.length}</span>
+                 </div>
+                 <div class="flex flex-col gap-2">
+                    <button onclick="window.actions.setView('stats')" class="w-full bg-slate-900 text-white p-4 rounded-xl font-black text-sm flex justify-center gap-2 hover:bg-slate-800 transition-all shadow-xl tracking-wide">ESTADÍSTICAS <i data-lucide="pie-chart" width="18"></i></button>
+                    <button onclick="window.actions.reset()" class="text-slate-400 font-black uppercase text-[9px] hover:text-emerald-600 py-2 tracking-widest transition-all">Volver al Inicio</button>
+                 </div>
+            </div>`;
+        }
+
+        function getStatsHTML() {
+            const tabsHTML = Object.keys(QUIZZES_DATA).map(key => `
+                <button onclick="window.actions.setActiveReport('${key}')" 
+                    class="snap-center shrink-0 px-4 py-1.5 rounded-full border-2 font-black text-[9px] uppercase transition-all whitespace-nowrap
+                    ${state.activeReportId === key ? 'bg-emerald-600 text-white border-emerald-600 shadow-md' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}">
+                    ${QUIZZES_DATA[key].title}
+                </button>
+            `).join('');
+
+            let listHTML = '';
+            if (state.globalHistory.length === 0) {
+                listHTML = `<div class="text-center py-10 opacity-20"><i data-lucide="bar-chart-3" class="mx-auto" width="40"></i><p class="mt-2 font-black text-xs uppercase tracking-widest">Sin registros</p></div>`;
+            } else {
+                listHTML = state.globalHistory.map(res => `
+                <div class="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm border-l-4 border-l-emerald-500">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-lg">${res.name.substring(0,1).toUpperCase()}</div>
+                            <div><p class="font-black text-slate-800 text-sm leading-none">${res.name}</p><p class="text-[9px] text-slate-400 font-bold uppercase mt-1">Gpo: ${res.group} • ${new Date(res.timestamp).toLocaleDateString()}</p></div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full flex flex-col items-center justify-center border-2 ${Math.round((res.score/res.total)*100) >= 70 ? 'border-emerald-500 text-emerald-600' : 'border-rose-400 text-rose-500'} bg-slate-50"><span class="text-[10px] font-black">${Math.round((res.score/res.total)*100)}%</span></div>
+                    </div>
+                    ${res.details ? `<div class="mt-3 pt-3 border-t border-slate-50 flex flex-wrap gap-1">
+                        ${res.details.map((d, idx) => `<div class="w-6 h-6 rounded-md flex items-center justify-center text-[8px] font-black ${d.isCorrect ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}">${idx + 1}</div>`).join('')}
+                    </div>` : ''}
+                </div>`).join('');
+            }
+
+            return `
+            <div class="space-y-4 fade-in h-full flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h2 class="text-xl font-black flex gap-2 items-center tracking-tight"><i data-lucide="pie-chart" width="20" class="text-emerald-600"></i> INFORMES</h2>
+                    <button onclick="window.actions.reset()" class="p-1.5 bg-slate-50 rounded-lg border border-slate-100 transition-all hover:bg-slate-100"><i data-lucide="arrow-left" width="18"></i></button>
+                </div>
+                <div class="flex gap-1.5 overflow-x-auto pb-2 pt-1 snap-x custom-scrollbar shrink-0">
+                    ${tabsHTML}
+                </div>
+                <div class="space-y-3 overflow-y-auto pr-1 custom-scrollbar flex-1 min-h-0 text-xs">
+                    ${listHTML}
+                </div>
+            </div>`;
+        }
+
+        function getFooterHTML() {
+            return `
+            <div class="p-3 border-t border-slate-50 flex flex-col items-center gap-1 bg-slate-50/50">
+                <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">CEFIMAT • Evaluación Académica</p>
+                <p class="text-[7px] text-slate-300 font-bold tracking-widest uppercase">Aprende • Supera • Logra</p>
+            </div>`;
+        }
+
+        // --- ACCIONES Y MANEJADORES DE EVENTOS ---
+        let unsubscribeStats = null;
+
+        window.actions = {
+            setView: (newView) => {
+                state.view = newView;
+                if (newView === 'stats') window.actions.fetchStats();
+                else if (unsubscribeStats) { unsubscribeStats(); unsubscribeStats = null; }
+                renderApp();
+            },
+            updateInput: (field, val) => {
+                state[field] = val;
+                // Si es nombre/grupo, solo necesitamos re-renderizar para habilitar botones
+                if (field === 'userName' || field === 'userGroup' || field === 'tutorQuery') {
+                    // Optimizacion: no renderizar toda la app si solo es input
+                    // Pero para simplicidad en Vanilla, llamamos a renderApp si son botones
+                    if (field !== 'tutorQuery') renderApp();
+                    else {
+                        // Habilitar/deshabilitar boton tutor manualmente para no perder foco
+                        const btn = document.querySelector('button[type="submit"]');
+                        if (btn) btn.disabled = !val.trim();
+                    }
+                }
+            },
+            startQuiz: (id) => {
+                state.quizId = id;
+                state.score = 0;
+                state.currentQuestion = 0;
+                state.answersLog = [];
+                state.isAnswered = false;
+                state.selectedOption = null;
+                state.showHint = false;
+                state.aiResponse = '';
+                state.view = 'quiz';
+                renderApp();
+            },
+            handleAnswer: (idx) => {
+                if (state.isAnswered) return;
+                const currentQData = QUIZZES_DATA[state.quizId].questions[state.currentQuestion];
+                const isCorrect = idx === currentQData.c;
+                state.selectedOption = idx;
+                state.isAnswered = true;
+                state.answersLog.push({
+                    question: currentQData.q,
+                    isCorrect: isCorrect,
+                    selected: currentQData.a[idx],
+                    correct: currentQData.a[currentQData.c]
+                });
+                if (isCorrect) state.score++;
+                renderApp();
+            },
+            toggleHint: () => {
+                state.showHint = !state.showHint;
+                renderApp();
+            },
+            nextStep: async () => {
+                const questions = QUIZZES_DATA[state.quizId].questions;
+                if (state.currentQuestion + 1 < questions.length) {
+                    state.currentQuestion++;
+                    state.isAnswered = false;
+                    state.selectedOption = null;
+                    state.showHint = false;
+                    state.aiResponse = '';
+                    renderApp();
+                } else {
+                    await window.actions.saveScore();
+                    state.view = 'finished';
+                    renderApp();
+                }
+            },
+            saveScore: async () => {
+                if (!isFirebaseActive) return;
+                const qData = QUIZZES_DATA[state.quizId];
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', `results_fisica_u1_${state.quizId}`), {
+                        name: state.userName,
+                        group: state.userGroup,
+                        score: state.score,
+                        total: qData.questions.length,
+                        timestamp: Date.now(),
+                        details: state.answersLog
+                    });
+                } catch (e) { console.error(e); }
+            },
+            reset: () => {
+                state.view = 'welcome';
+                state.quizId = null;
+                renderApp();
+            },
+            submitTutor: async (e) => {
+                e.preventDefault();
+                if (!state.tutorQuery.trim()) return;
+                const userMsg = state.tutorQuery;
+                state.tutorChat.push({ role: 'user', text: userMsg });
+                state.tutorQuery = '';
+                state.aiLoading = true;
+                renderApp();
+                
+                // Scroll al fondo
+                setTimeout(() => {
+                    const el = document.getElementById('chat-container');
+                    if(el) el.scrollTop = el.scrollHeight;
+                }, 10);
+
+                const response = await callTutorIA(userMsg, "chat");
+                state.tutorChat.push({ role: 'ai', text: response });
+                state.aiLoading = false;
+                renderApp();
+                
+                 setTimeout(() => {
+                    const el = document.getElementById('chat-container');
+                    if(el) el.scrollTop = el.scrollHeight;
+                    // Mantener foco
+                    document.getElementById('tutorInput')?.focus();
+                }, 10);
+            },
+            askAiExplanation: async () => {
+                state.aiLoading = true;
+                renderApp();
+                const question = QUIZZES_DATA[state.quizId].questions[state.currentQuestion];
+                const userPrompt = `¿Por qué la respuesta a "${question.q}" es "${question.a[question.c]}"? Explica brevemente el concepto físico.`;
+                const response = await callTutorIA(userPrompt, "explanation");
+                state.aiResponse = response;
+                state.aiLoading = false;
+                renderApp();
+            },
+            setActiveReport: (id) => {
+                state.activeReportId = id;
+                window.actions.fetchStats(); // recargar stats
+                renderApp();
+            },
+            fetchStats: () => {
+                if (!isFirebaseActive) {
+                    state.globalHistory = []; 
+                    renderApp();
+                    return;
+                }
+                if (unsubscribeStats) unsubscribeStats();
+                const collectionRef = collection(db, 'artifacts', appId, 'public', 'data', `results_fisica_u1_${state.activeReportId}`);
+                const q = query(collectionRef, orderBy('timestamp', 'desc'));
+                unsubscribeStats = onSnapshot(q, (snapshot) => {
+                    state.globalHistory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (state.view === 'stats') renderApp();
+                });
+            }
+        };
+
+        function setupEventListeners() {
+            // Re-foco de inputs si es necesario
+            if (state.view === 'welcome') {
+                const nameInput = document.getElementById('inputName');
+                const groupInput = document.getElementById('inputGroup');
+                // Intentar mantener foco si se estaba escribiendo (rudimentario)
+                if (document.activeElement === nameInput) nameInput.focus();
+                if (document.activeElement === groupInput) groupInput.focus();
+            }
+        }
+
+        // --- INICIO ---
+        (async () => {
+            if (isFirebaseActive) {
+                try {
+                    await signInAnonymously(auth);
+                    onAuthStateChanged(auth, (user) => {
+                        state.user = user;
+                        // Forzar render inicial
+                    });
+                } catch(e) { console.error("Error Auth", e); }
+            }
+            renderApp();
+        })();
+
+    </script>
+</body>
+</html>
