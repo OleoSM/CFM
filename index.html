@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CEFIMAT Asesorías - Plataforma Universal</title>
+    <title>CEFIMAT Asesorías - Plataforma Dinámica</title>
     
     <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -98,6 +98,7 @@
         // --- ESTADO DE LA APLICACIÓN ---
         const state = {
             view: 'welcome',
+            lastView: 'welcome', // Para volver atrás desde reportes
             theme: 'light',
             userName: '',
             userGroup: '',
@@ -109,28 +110,39 @@
             isAnswered: false,
             selectedOption: null,
             reports: [],
-            isLoading: false,       // Estado de carga para el PDF
-            loadingMessage: '',     // Mensaje de progreso
-            loadedQuestions: []     // Preguntas cargadas del PDF actual
+            isLoading: false,       
+            loadingMessage: '',
+            loadedQuestions: [],
+            scannedUnits: {} 
         };
 
-        // --- LÓGICA DE PROCESAMIENTO DE PDF ---
+        // --- LÓGICA DE PROCESAMIENTO DE PDF (Text extraction) ---
+
+        function normalizeText(text) {
+            if (!text) return "";
+            let normalized = text;
+            try {
+                const isCorrupt = /[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized);
+                if (isCorrupt) {
+                    const bytes = new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0)));
+                    normalized = new TextDecoder('utf-8').decode(bytes);
+                }
+            } catch (e) { console.warn("Error normalizando", e); }
+            normalized = normalized.normalize("NFKC");
+            return normalized.replace(/\s+/g, " ").trim();
+        }
 
         async function extractTextFromPDF(url) {
             try {
-                // Validación básica de protocolo
                 if (window.location.protocol === 'file:') {
-                    throw new Error("Estás abriendo el archivo localmente (doble clic). Necesitas usar un Servidor Local (como Live Server en VS Code) para cargar PDFs externos.");
+                    throw new Error("Estás abriendo el archivo localmente. Usa Live Server.");
                 }
-
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
                 let fullText = "";
-
                 for (let j = 1; j <= pdf.numPages; j++) {
                     state.loadingMessage = `Leyendo página ${j} de ${pdf.numPages}...`;
                     renderView(); 
-
                     const page = await pdf.getPage(j);
                     const textContent = await page.getTextContent();
                     const pageText = textContent.items.map(s => s.str).join(" ");
@@ -138,104 +150,41 @@
                 }
                 return fullText;
             } catch (error) {
-                console.error("Error PDF:", error);
-                // Lanzamos el error con mensaje descriptivo para mostrarlo en la UI
                 throw error; 
             }
         }
 
-        // Función auxiliar para quitar acentos (tildes)
-        function normalizeText(text) {
-            if (!text) return "";
-            
-            let result = "";
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                switch(char) {
-                    case 'á': result += 'a'; break;
-                    case 'é': result += 'e'; break;
-                    case 'í': result += 'i'; break;
-                    case 'ó': result += 'o'; break;
-                    case 'ú': result += 'u'; break;
-                    case 'Á': result += 'A'; break;
-                    case 'É': result += 'E'; break;
-                    case 'Í': result += 'I'; break;
-                    case 'Ó': result += 'O'; break;
-                    case 'Ú': result += 'U'; break;
-                    default: result += char; break;
-                }
-            }
-            return result;
-        }
+        // --- PARSER DE PREGUNTAS ---
 
         function parseQuizText(text) {
             const questions = [];
-            
-            // 1. Normalización y limpieza inicial (Aquí se aplican las reglas de acentos)
             let cleanText = normalizeText(text);
             cleanText = cleanText.replace(/\s+/g, " ").trim();
-
-            // 2. Dividir por bloques de pregunta.
-            // Patrón: Inicio de número seguido de ".-" (Ej: "1.- ", "2.-")
-            // Agregamos '?' al espacio para ser flexibles si no hay espacio después del guion
             const questionBlocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
 
             questionBlocks.forEach(block => {
-                // Validación estricta de estructura mínima:
-                // Debe tener "Num.-", y al menos los incisos A) y D)
                 if (!/\d+\.-\s?/.test(block) || !block.includes("A)") || !block.includes("D)")) return;
-
                 try {
-                    // --- EXTRACCIÓN DE LA PREGUNTA ---
-                    // Separamos por el primer inciso "A)"
-                    // [0] = Texto de la pregunta (incluyendo "1.-")
-                    // [1] = Resto del texto (opciones)
                     const splitParts = block.split(/\s+A\)\s+/);
-                    
                     if (splitParts.length < 2) return;
-
                     let rawQuestion = splitParts[0].trim();
                     const optionsText = splitParts[1].trim();
-
-                    // Limpiar el número inicial ("1.-")
                     let questionText = rawQuestion.replace(/^\d+\.-\s*/, "").trim();
+                    if (questionText.endsWith(":")) questionText = questionText.slice(0, -1).trim();
 
-                    // Limpiar los dos puntos ":" finales si existen (según tu requerimiento)
-                    if (questionText.endsWith(":")) {
-                        questionText = questionText.slice(0, -1).trim();
-                    }
-
-                    // --- EXTRACCIÓN DE LAS OPCIONES ---
-                    // El texto restante son las opciones. Buscamos los separadores B), C), D)
-                    // Usamos regex con espacios para evitar coincidir con texto interno
                     const parts = optionsText.split(/\s+[B-D]\)\s+/);
-                    
-                    // Esperamos 4 partes (A, B, C, D)
                     if (parts.length < 4) return;
-
                     const optA = parts[0].trim();
                     const optB = parts[1].trim();
                     const optC = parts[2].trim();
-                    let optD = parts[3].trim(); // D contiene el resto hasta el final del bloque
+                    let optD = parts[3].trim(); 
 
-                    // Limpieza final de la D:
-                    // Si el PDF traía basura después de la D o si simplemente termina en punto
-                    // El usuario indicó que "termina en punto del inciso D"
-                    if (optD.endsWith(".")) {
-                        optD = optD.slice(0, -1).trim();
-                    }
-
-                    // --- DETECCIÓN DE RESPUESTA CORRECTA ---
                     const optionsRaw = [optA, optB, optC, optD];
-                    let correctIndex = 0; // Por defecto A si falla la detección
+                    let correctIndex = 0; 
 
                     const optionsClean = optionsRaw.map((opt, index) => {
-                        // Buscamos marcas de respuesta correcta (check, palabra correcta)
                         const isCorrect = opt.includes('✓') || opt.includes('✔') || opt.toLowerCase().includes('(correcta)');
-                        
                         if (isCorrect) correctIndex = index;
-
-                        // Limpiamos la marca del texto final
                         return opt.replace(/[✓✔]/g, '').replace(/\(correcta\)/yi, '').trim();
                     });
 
@@ -246,59 +195,114 @@
                         r: "Respuesta identificada en el material.", 
                         h: "Consulta la guía de estudio."
                     });
-
                 } catch (e) {
-                    console.warn("Error procesando bloque:", block.substring(0, 30), e);
+                    console.warn("Error parseando bloque", e);
                 }
             });
-
             return questions;
         }
 
-        // --- ESTRUCTURA DE DATOS (IMPORTANTE: LOS NOMBRES DEBEN COINCIDIR EXACTAMENTE) ---
-        // 'folderName' y 'fileName' deben ser IGUALES al nombre de tu carpeta/archivo en Windows.
+        // --- ESTRUCTURA DE DATOS INICIAL ---
+        // Nota: 'quizzes' inicia vacío para demostrar la carga dinámica
         const DATA = {
             historia_mexico: { 
-                folderName: "Historia_De_Mexico", // <--- CARPETA 1: Asegúrate que no tenga espacios si aquí no los tiene
+                folderName: "Historia_De_Mexico", 
                 title: "H. México", 
                 icon: "scroll-text", accent: "bg-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", darkBg: "dark:bg-emerald-950/40", darkBorder: "dark:border-emerald-900/60", text: "text-emerald-900 dark:text-emerald-400", 
                 units: {
-                    u1: { 
-                        folderName: "Unidad_1", // <--- CARPETA 2
-                        label: "Unidad 1: La Nueva España", 
-                        desc: "Virreinato, instituciones y mestizaje.", 
-                        quizzes: {
-                            q1: { fileName: "Cuestionario_1.pdf", label: "1. Mesoamérica", type: "easy" }, // <--- ARCHIVO PDF
-                            q2: { fileName: "Cuestionario_2.pdf", label: "2. El Virreinato", type: "mid" }
-                        }
-                    },
-                    u2: { 
-                        folderName: "Unidad_2",
-                        label: "Unidad 2: Independencia", 
-                        desc: "Guerra de insurgencia y consumación.", 
-                        quizzes: {
-                            q1: { fileName: "Cuestionario_1.pdf", label: "1. Iniciación", type: "easy" },
-                            q2: { fileName: "Cuestionario_2.pdf", label: "2. Consumación", type: "mid" }
-                        }
-                    }
+                    u1: { folderName: "Unidad_1", label: "Unidad 1: La Nueva España", desc: "Virreinato, instituciones y mestizaje.", quizzes: {} },
+                    u2: { folderName: "Unidad_2", label: "Unidad 2: Independencia", desc: "Guerra de insurgencia y consumación.", quizzes: {} }
                 }
             },
             historia_universal: { 
                 folderName: "Historia_Universal",
                 title: "H. Universal", icon: "globe-2", accent: "bg-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200", darkBg: "dark:bg-indigo-950/40", darkBorder: "dark:border-indigo-900/60", text: "text-indigo-900 dark:text-indigo-400", 
                 units: {
-                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "Conceptos básicos.", quizzes: { q1: { fileName: "Cuestionario_1.pdf", label: "1. Conceptos", type: "easy" } } }
+                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "Conceptos básicos.", quizzes: {} }
                 }
             },
             biologia: { 
                 folderName: "Biologia",
                 title: "Biología", icon: "dna", accent: "bg-green-600", bg: "bg-green-50", border: "border-green-200", darkBg: "dark:bg-green-950/40", darkBorder: "dark:border-green-900/60", text: "text-green-900 dark:text-green-400", 
                 units: {
-                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "La Célula.", quizzes: { q1: { fileName: "Cuestionario_1.pdf", label: "1. Célula", type: "easy" } } }
+                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "La Célula.", quizzes: {} }
                 }
             }
         };
 
+        // --- LÓGICA DE ESCANEO DINÁMICO ---
+        async function scanUnitForQuizzes(subjectKey, unitKey) {
+            const cacheID = `${subjectKey}-${unitKey}`;
+            if (state.scannedUnits[cacheID]) return;
+
+            const subjectData = DATA[subjectKey];
+            const unitData = subjectData.units[unitKey];
+            
+            state.isLoading = true;
+            state.loadingMessage = `Buscando cuestionarios en ${unitData.folderName}...`;
+            renderView();
+
+            let quizIndex = 1;
+            let found = true;
+            const detectedQuizzes = {};
+            const difficulties = ['easy', 'mid', 'hard'];
+
+            while (found) {
+                const fileName = `Cuestionario_${quizIndex}.pdf`;
+                const filePath = `./${subjectData.folderName}/${unitData.folderName}/${fileName}`;
+
+                try {
+                    state.loadingMessage = `Detectando ${fileName}...`;
+                    renderView();
+                    const loadingTask = pdfjsLib.getDocument(filePath);
+                    const pdf = await loadingTask.promise;
+
+                    // Extracción del título
+                    const page = await pdf.getPage(1);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(s => s.str).join(" ");
+                    const cleanPageText = normalizeText(pageText);
+
+                    const qIndex = cleanPageText.search(/\b1\.-/);
+                    let titlePart = "";
+                    
+                    if (qIndex !== -1) {
+                        const headerSection = cleanPageText.substring(0, qIndex).trim();
+                        const match = headerSection.match(/(?:Cuestionario\s*\d*|Tema|Examen)\s*[:.-]?\s+(.*)$/i);
+                        
+                        if (match && match[1]) {
+                            titlePart = match[1].trim();
+                        } else {
+                            if (headerSection.length > 0 && headerSection.length < 100) {
+                                titlePart = headerSection;
+                            }
+                        }
+                    }
+
+                    let extractedLabel = titlePart || `Cuestionario ${quizIndex}`;
+                    extractedLabel = extractedLabel.replace(/^[:.-]+/, "").trim();
+                    if (extractedLabel.length > 60) extractedLabel = extractedLabel.substring(0, 60) + "...";
+
+                    const difficulty = difficulties[(quizIndex - 1) % 3];
+                    detectedQuizzes[`q${quizIndex}`] = {
+                        fileName: fileName,
+                        label: `${quizIndex}. ${extractedLabel}`,
+                        type: difficulty
+                    };
+                    quizIndex++;
+
+                } catch (error) {
+                    console.log(`Detenido escaneo en ${fileName}.`);
+                    found = false;
+                }
+            }
+
+            DATA[subjectKey].units[unitKey].quizzes = detectedQuizzes;
+            state.scannedUnits[cacheID] = true;
+            state.isLoading = false;
+        }
+
+        // --- UTILERÍAS DE UI ---
         const getHumorousPhrase = (perc) => {
             if (perc === 100) return "¡Nivel Dios activado! 🏆.";
             if (perc >= 85) return "¡Impresionante! 🧠🔥 Casi huelo el éxito académico.";
@@ -326,8 +330,13 @@
                 });
             },
             setSubject: (key) => { state.subject = key; state.view = 'units'; renderView(); },
-            setUnit: (unitKey) => { state.unit = unitKey; state.view = 'quizzes'; renderView(); },
-            
+            setUnit: async (unitKey) => { 
+                state.unit = unitKey; 
+                await scanUnitForQuizzes(state.subject, unitKey);
+                state.view = 'quizzes'; 
+                renderView(); 
+            },
+            goToQuizzes: () => { state.view = 'quizzes'; renderView(); }, // Acción para volver de Quiz a Lista
             startQuiz: async (quizKey) => { 
                 state.quiz = quizKey;
                 state.isLoading = true;
@@ -337,22 +346,17 @@
                 const subjectData = DATA[state.subject];
                 const unitData = subjectData.units[state.unit];
                 const quizData = unitData.quizzes[quizKey];
-
-                // Construimos la ruta relativa
                 const filePath = `./${subjectData.folderName}/${unitData.folderName}/${quizData.fileName}`;
-
-                console.log("Intentando cargar:", filePath);
 
                 try {
                     state.loadingMessage = "Descargando PDF...";
                     renderView();
                     const rawText = await extractTextFromPDF(filePath);
-
                     state.loadingMessage = "Procesando preguntas...";
                     renderView();
                     const questions = parseQuizText(rawText);
 
-                    if (questions.length === 0) throw new Error("No se encontraron preguntas válidas (Formato 1.- ... A) ...).");
+                    if (questions.length === 0) throw new Error("No se encontraron preguntas válidas.");
 
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
@@ -364,15 +368,12 @@
 
                 } catch (error) {
                     console.error(error);
-                    // IMPORTANTE: Mostramos el error en pantalla
-                    alert(`ERROR DE CARGA:\n\nNo se pudo encontrar o leer el archivo:\n"${filePath}"\n\nDetalle: ${error.message}\n\n1. Verifica que la carpeta se llame EXACTAMENTE igual.\n2. Verifica que estés usando Live Server.`);
-                    
+                    alert(`ERROR DE CARGA:\n\nNo se pudo leer el archivo: ${filePath}\n${error.message}`);
                     state.isLoading = false;
                     state.view = 'quizzes'; 
                     renderView();
                 }
             },
-
             handleAnswer: (idx) => {
                 if (state.isAnswered || state.loadedQuestions.length === 0) return;
                 state.selectedOption = idx; 
@@ -380,7 +381,6 @@
                 if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
                 renderView();
             },
-
             nextQuestion: () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) { 
                     state.currentQuestion++; state.isAnswered = false; renderView(); 
@@ -401,7 +401,15 @@
             },
             reset: () => { state.view = 'welcome'; state.subject = null; state.unit = null; state.quiz = null; renderView(); },
             goToUnits: () => { state.view = 'units'; renderView(); },
-            goToReports: () => { state.view = 'reports'; renderView(); }
+            goToReports: () => { 
+                state.lastView = state.view; // Guardamos donde estábamos
+                state.view = 'reports'; 
+                renderView(); 
+            },
+            returnFromReports: () => {
+                state.view = state.lastView; // Volvemos donde estábamos
+                renderView();
+            }
         };
 
         function checkDeepLinks() {
@@ -410,19 +418,30 @@
             if (name) state.userName = name.replace(/_/g, ' ');
             if (group) state.userGroup = group.replace(/_/g, ' ');
             if ((subject || unit) && !state.userName) { state.userName = "Alumno Externo"; state.userGroup = "Plataforma Digital"; }
-            if (subject && DATA[subject]) { state.subject = subject; state.view = 'units'; if (unit && DATA[subject].units[unit]) { state.unit = unit; state.view = 'quizzes'; } }
+            if (subject && DATA[subject]) { 
+                state.subject = subject; 
+                state.view = 'units'; 
+                if (unit && DATA[subject].units[unit]) { 
+                    state.unit = unit; 
+                    scanUnitForQuizzes(subject, unit).then(() => {
+                        state.view = 'quizzes';
+                        renderView();
+                    });
+                } 
+            }
         }
-
+      
         function initLayout() {
             const app = document.getElementById('app');
             app.innerHTML = `
+                <!-- Encabezado Persistente -->
                 <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-20 shrink-0 transition-colors shadow-sm">
                     <div class="flex items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
                             <img src="https://www.cefimat.com/images/Logoc.png" class="w-10 h-10 object-contain" alt="Logo CEFIMAT" onerror="this.src='https://www.google.com/s2/favicons?domain=cefimat.com&sz=64'">
                             <div class="text-left">
                                 <h1 class="text-sm font-black text-slate-900 dark:text-white leading-none">CEFIMAT Asesorías</h1>
-                                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight mt-0.5">Centro Físico-Matemático</p>
+                                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight mt-0.5">Plataforma Dinámica</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-1.5">
@@ -437,11 +456,28 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Barra de Redes Sociales -->
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50 dark:border-slate-800/50">
+                        <div class="flex items-center gap-4 text-slate-400 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                            <a href="https://api.whatsapp.com/message/5AMDZSW6XC24L1" target="_blank" class="social-icon hover:text-emerald-600 transition-colors">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-7.6 8.38 8.38 0 0 1 3.8.9L21 3.5Z"/></svg>
+                            </a>
+                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-icon hover:text-indigo-600 transition-colors"><i data-lucide="facebook" width="16"></i></a>
+                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-icon hover:text-pink-600 transition-colors"><i data-lucide="instagram" width="16"></i></a>
+                            <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-icon hover:text-slate-900 dark:hover:text-white transition-colors">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                            </a>
+                        </div>
+                        <a href="https://www.cefimat.com/" target="_blank" class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-900/50 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                            <i data-lucide="globe" width="12"></i> Web Oficial
+                        </a>
+                    </div>
                 </div>
                 <div id="view-content" class="flex-1 overflow-y-auto custom-scrollbar p-6 pb-12 dark:text-slate-200 transition-colors"></div>
                 <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between shrink-0 transition-colors text-center">
                     <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">CEFIMAT © 2026</span>
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Activo</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Online</span></div>
                 </div>
             `;
             lucide.createIcons();
@@ -457,7 +493,7 @@
                     <div class="flex flex-col items-center justify-center h-full space-y-6 fade-in">
                         <div class="loader"></div>
                         <div class="text-center space-y-2">
-                            <p class="text-sm font-black text-slate-700 dark:text-white uppercase tracking-widest animate-pulse">Procesando Archivo</p>
+                            <p class="text-sm font-black text-slate-700 dark:text-white uppercase tracking-widest animate-pulse">Cargando</p>
                             <p class="text-[10px] text-slate-400 font-medium">${state.loadingMessage}</p>
                         </div>
                     </div>
@@ -503,7 +539,8 @@
                 const m = DATA[state.subject];
                 html = `
                     <div class="space-y-8 fade-in text-center">
-                        <button onclick="actions.reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Menú Principal</button>
+                        <!-- Cambio: 'Menú Principal' por 'Regresar' y usa actions.reset() para volver a subjects -->
+                        <button onclick="actions.reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                         <div class="space-y-3">
                             <div class="w-16 h-16 ${m.accent} rounded-3xl mx-auto flex items-center justify-center text-white shadow-xl"><i data-lucide="${m.icon}" width="28"></i></div>
                             <h2 class="text-3xl font-black text-slate-900 dark:text-white uppercase">${m.title}</h2>
@@ -525,17 +562,22 @@
 
             else if (state.view === 'quizzes') {
                 const unit = DATA[state.subject].units[state.unit];
+                const quizKeys = Object.keys(unit.quizzes);
+                
                 html = `
                     <div class="space-y-8 fade-in text-center">
-                        <button onclick="actions.goToUnits()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Unidades</button>
+                        <!-- Cambio: 'Unidades' por 'Regresar' y usa actions.goToUnits() -->
+                        <button onclick="actions.goToUnits()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                         <h2 class="text-2xl font-black text-slate-900 dark:text-white uppercase">${unit.label}</h2>
                         <div class="grid gap-3 max-w-lg mx-auto">
-                            ${Object.keys(unit.quizzes).map(key => {
+                            ${quizKeys.length === 0 ? 
+                                `<div class="p-8 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 text-xs">No se encontraron archivos Cuestionario_X.pdf en esta carpeta.</div>` :
+                                quizKeys.map(key => {
                                 const q = unit.quizzes[key];
                                 return `
                                     <button onclick="actions.startQuiz('${key}')" class="btn-active w-full p-5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shadow-sm">
-                                        <div class="flex flex-col text-left">
-                                            <span class="font-black text-slate-900 dark:text-slate-100 uppercase text-xs">${q.label}</span>
+                                        <div class="flex flex-col text-left max-w-[70%]">
+                                            <span class="font-black text-slate-900 dark:text-slate-100 uppercase text-xs truncate">${q.label}</span>
                                             <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mt-1">
                                                 <i data-lucide="file-text" width="10"></i> ${q.fileName}
                                             </div>
@@ -554,6 +596,9 @@
                 const q = state.loadedQuestions[state.currentQuestion];
                 html = `
                     <div class="space-y-6 fade-in">
+                        <!-- Nuevo: Botón Regresar en el Quiz -->
+                        <button onclick="actions.goToQuizzes()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mb-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
+                        
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-5 rounded-3xl">
                             <div class="space-y-1.5">
                                 <span class="text-[9px] font-black text-slate-400 uppercase">PROGRESO ${state.currentQuestion + 1}/${total}</span>
@@ -619,7 +664,8 @@
                 html = `
                     <div class="space-y-8 fade-in">
                         <div class="flex items-center justify-between">
-                            <button onclick="actions.reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"><i data-lucide="chevron-left" width="16"></i> Menú</button>
+                            <!-- Cambio: 'Menú' por 'Regresar' y usa actions.returnFromReports() para volver a donde estabas -->
+                            <button onclick="actions.returnFromReports()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                             <span class="text-[10px] font-black uppercase">Historial</span>
                         </div>
                         <div class="space-y-4">
