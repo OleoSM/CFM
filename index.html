@@ -431,19 +431,22 @@
             }
         }
       
-        function initLayout() {
+         function initLayout() {
             const app = document.getElementById('app');
             app.innerHTML = `
                 <!-- Encabezado Persistente -->
                 <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-20 shrink-0 transition-colors shadow-sm">
                     <div class="flex items-center justify-between gap-4">
+                        <!-- Identidad (Logo + Nombre) -->
                         <div class="flex items-center gap-3">
                             <img src="https://www.cefimat.com/images/Logoc.png" class="w-10 h-10 object-contain" alt="Logo CEFIMAT" onerror="this.src='https://www.google.com/s2/favicons?domain=cefimat.com&sz=64'">
                             <div class="text-left">
                                 <h1 class="text-sm font-black text-slate-900 dark:text-white leading-none">CEFIMAT Asesorías</h1>
-                                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight mt-0.5">Plataforma Dinámica</p>
+                                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight mt-0.5">Centro Físico-Matemático</p>
                             </div>
                         </div>
+                        
+                        <!-- Acciones -->
                         <div class="flex items-center gap-1.5">
                             <button onclick="actions.toggleTheme()" class="btn-active w-9 h-9 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-amber-400 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
                                 <i data-lucide="${state.theme === 'light' ? 'moon' : 'sun'}" width="16"></i>
@@ -457,16 +460,19 @@
                         </div>
                     </div>
 
-                    <!-- Barra de Redes Sociales -->
+                    <!-- Barra de Redes Sociales (Desktop: visible, Móvil: scroll) -->
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50 dark:border-slate-800/50">
                         <div class="flex items-center gap-4 text-slate-400 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-icon hover:text-indigo-600 transition-colors"><i data-lucide="facebook" width="16"></i></a>
+                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-icon hover:text-pink-600 transition-colors"><i data-lucide="instagram" width="16"></i></a>
                             <a href="https://api.whatsapp.com/message/5AMDZSW6XC24L1" target="_blank" class="social-icon hover:text-emerald-600 transition-colors">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-7.6 8.38 8.38 0 0 1 3.8.9L21 3.5Z"/></svg>
                             </a>
-                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-icon hover:text-indigo-600 transition-colors"><i data-lucide="facebook" width="16"></i></a>
-                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-icon hover:text-pink-600 transition-colors"><i data-lucide="instagram" width="16"></i></a>
                             <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-icon hover:text-slate-900 dark:hover:text-white transition-colors">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
+                            </a>
+                            <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx" target="_blank" class="social-icon hover:text-green-500 transition-colors">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.496 17.306c-.215.352-.676.467-1.028.252-2.853-1.743-6.444-2.138-10.672-1.173-.404.092-.81-.157-.902-.56-.093-.404.157-.81.56-.902 4.632-1.059 8.601-.611 11.79 1.336.353.216.468.677.252 1.029zm1.468-3.26c-.27.441-.848.58-1.289.311-3.262-2.003-8.236-2.585-12.091-1.415-.499.151-1.026-.131-1.177-.63-.151-.499.131-1.026.63-1.177 4.398-1.333 9.878-.68 13.626 1.621.442.27.581.848.311 1.289h-.01zm.129-3.38c-3.911-2.322-10.358-2.536-14.103-1.399-.6.182-1.24-.157-1.422-.757-.182-.6.157-1.24.757-1.422 4.298-1.304 11.417-1.054 15.932 1.625.539.319.718 1.012.399 1.551-.318.539-1.011.718-1.551.399l-.112-.045z"/></svg>
                             </a>
                         </div>
                         <a href="https://www.cefimat.com/" target="_blank" class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-900/50 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
@@ -474,10 +480,14 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Contenido Dinámico -->
                 <div id="view-content" class="flex-1 overflow-y-auto custom-scrollbar p-6 pb-12 dark:text-slate-200 transition-colors"></div>
+
+                <!-- Footer -->
                 <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between shrink-0 transition-colors text-center">
                     <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">CEFIMAT © 2026</span>
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Online</span></div>
+                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Activo</span></div>
                 </div>
             `;
             lucide.createIcons();
