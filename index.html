@@ -109,13 +109,13 @@
             score: 0,
             isAnswered: false,
             selectedOption: null,
-            showHint: false, // Nuevo estado para mostrar/ocultar pista
+            showHint: false, 
             reports: [],
             isLoading: false,       
             loadingMessage: '',
             loadedQuestions: [],
             scannedUnits: {},     // Cache de cuestionarios por unidad
-            scannedSubjects: {}   // Nuevo: Cache de unidades por materia
+            scannedSubjects: {}   // Cache de unidades por materia
         };
 
         // --- LÓGICA DE PROCESAMIENTO DE PDF (Text extraction) ---
@@ -142,9 +142,11 @@
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
                 let fullText = "";
+                // Pantalla de carga genérica para la lectura interna
+                state.loadingMessage = `Procesando material educativo...`; 
+                renderView();
+                
                 for (let j = 1; j <= pdf.numPages; j++) {
-                    state.loadingMessage = `Leyendo página ${j} de ${pdf.numPages}...`;
-                    renderView(); 
                     const page = await pdf.getPage(j);
                     const textContent = await page.getTextContent();
                     const pageText = textContent.items.map(s => s.str).join(" ");
@@ -156,99 +158,129 @@
             }
         }
 
-        // --- PARSER DE PREGUNTAS (ACTUALIZADO CON PISTA) ---
-
+        // --- PARSER DE PREGUNTAS (ACTUALIZADO Y ROBUSTO) ---
         function parseQuizText(text) {
             const questions = [];
             let cleanText = normalizeText(text);
-            cleanText = cleanText.replace(/\s+/g, " ").trim();
-            const questionBlocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
+            
+            // 1. Dividimos el texto usando " A) " como ancla principal.
+            const segments = cleanText.split(/\s+A\)\s+/);
+            
+            if (segments.length < 2) return [];
 
-            questionBlocks.forEach(block => {
-                if (!/\d+\.-\s?/.test(block) || !block.includes("A)") || !block.includes("D)")) return;
-                try {
-                    const splitParts = block.split(/\s+A\)\s+/);
-                    if (splitParts.length < 2) return;
-                    let rawQuestion = splitParts[0].trim();
-                    const optionsText = splitParts[1].trim();
-                    let questionText = rawQuestion.replace(/^\d+\.-\s*/, "").trim();
-                    if (questionText.endsWith(":")) questionText = questionText.slice(0, -1).trim();
+            // 2. Extraer el texto de la Primera Pregunta
+            let currentQText = segments[0];
+            const firstQMatch = currentQText.match(/(\d+[\.\-\)]\s+.*$)/s);
+            
+            if (firstQMatch) {
+                currentQText = firstQMatch[1];
+            } else {
+                currentQText = currentQText.trim();
+            }
 
-                    const parts = optionsText.split(/\s+[B-D]\)\s+/);
-                    if (parts.length < 4) return;
+            // 3. Iteramos por los segmentos.
+            for (let i = 1; i < segments.length; i++) {
+                const segment = segments[i];
+                const parts = segment.split(/\s+(?:B\)|C\)|D\))\s+/);
+
+                if (parts.length >= 4) {
                     const optA = parts[0].trim();
                     const optB = parts[1].trim();
                     const optC = parts[2].trim();
-                    let fullOptD = parts[3].trim(); 
+                    let mixedD = parts.slice(3).join(" D) ");
 
-                    // --- LÓGICA DE EXTRACCIÓN DE PISTA ---
-                    let optD = fullOptD;
-                    let hint = "Sin pista disponible.";
+                    // --- SEPARAR INCISO D DE LA SIGUIENTE PREGUNTA ---
+                    let optD = mixedD;
+                    let nextQText = "";
                     
-                    // Buscamos P) o PISTA al final del texto del inciso D
-                    // Regex busca: espacio + P) o PISTA + cualquier cosa hasta el final o siguiente numero
+                    const nextNumberIdx = mixedD.search(/\s\d+[\.\-\)]\s+/);
+                    
+                    if (nextNumberIdx !== -1) {
+                        optD = mixedD.substring(0, nextNumberIdx).trim();
+                        nextQText = mixedD.substring(nextNumberIdx).trim();
+                    } else {
+                        const qEndMatch = mixedD.match(/([A-Z¡¿\n].*?[:?])\s*$/s);
+                        if (i < segments.length && qEndMatch) {
+                            nextQText = qEndMatch[0];
+                            const splitPoint = mixedD.lastIndexOf(nextQText);
+                            optD = mixedD.substring(0, splitPoint).trim();
+                        }
+                    }
+
+                    // --- EXTRACCIÓN DE PISTA ---
+                    let finalOptD = optD;
+                    let hint = "Sin pista disponible.";
                     const hintRegex = /(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i;
-                    const hintMatch = fullOptD.match(hintRegex);
+                    const hintMatch = optD.match(hintRegex);
 
                     if (hintMatch) {
-                        // Si encontramos pista, la separamos del inciso D
                         hint = hintMatch[1].trim();
-                        // Actualizamos optD quitándole la parte de la pista
-                        optD = fullOptD.replace(hintRegex, "").trim();
+                        finalOptD = optD.replace(hintRegex, "").trim();
                     }
-                    // -------------------------------------
 
-                    const optionsRaw = [optA, optB, optC, optD];
+                    // --- IDENTIFICAR RESPUESTA CORRECTA ---
+                    const optionsRaw = [optA, optB, optC, finalOptD];
                     let correctIndex = 0; 
-
                     const optionsClean = optionsRaw.map((opt, index) => {
                         const isCorrect = opt.includes('✓') || opt.includes('✔') || opt.toLowerCase().includes('(correcta)');
                         if (isCorrect) correctIndex = index;
                         return opt.replace(/[✓✔]/g, '').replace(/\(correcta\)/yi, '').trim();
                     });
 
+                    let cleanQ = currentQText.replace(/^\d+[\.\-\)]\s*/, "").trim();
+                    if (cleanQ.endsWith(":")) cleanQ = cleanQ.slice(0, -1).trim();
+
                     questions.push({
-                        q: questionText,
+                        q: cleanQ,
                         a: optionsClean,
                         c: correctIndex,
                         r: "Respuesta identificada en el material.", 
-                        h: hint // Guardamos la pista extraída
+                        h: hint
                     });
-                } catch (e) {
-                    console.warn("Error parseando bloque", e);
+
+                    currentQText = nextQText;
                 }
-            });
+            }
             return questions;
         }
 
         // --- ESTRUCTURA DE DATOS INICIAL ---
-        // 'units' ahora comienza vacío y se llena dinámicamente
+        // Actualizado: Geografía con tema "Cafesito" e icono de Mundo
         const DATA = {
             historia_mexico: { 
                 folderName: "Historia_De_Mexico", 
                 title: "H. México", 
                 icon: "scroll-text", accent: "bg-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", darkBg: "dark:bg-emerald-950/40", darkBorder: "dark:border-emerald-900/60", text: "text-emerald-900 dark:text-emerald-400", 
-                units: {} // Se llenará dinámicamente
+                units: {} 
             },
             historia_universal: { 
                 folderName: "Historia_Universal",
                 title: "H. Universal", icon: "globe-2", accent: "bg-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200", darkBg: "dark:bg-indigo-950/40", darkBorder: "dark:border-indigo-900/60", text: "text-indigo-900 dark:text-indigo-400", 
                 units: {} 
             },
-            biologia: { 
-                folderName: "Biologia",
-                title: "Biología", icon: "dna", accent: "bg-green-600", bg: "bg-green-50", border: "border-green-200", darkBg: "dark:bg-green-950/40", darkBorder: "dark:border-green-900/60", text: "text-green-900 dark:text-green-400", 
+            geografia: { 
+                folderName: "Geografia",
+                title: "Geografía", 
+                icon: "globe", // Ícono de mundo
+                // Colores tipo "Cafesito" (Amber/Orange oscuros)
+                accent: "bg-amber-800", 
+                bg: "bg-orange-50", 
+                border: "border-amber-200", 
+                darkBg: "dark:bg-orange-950/30", 
+                darkBorder: "dark:border-orange-900/50", 
+                text: "text-amber-900 dark:text-amber-500", 
                 units: {} 
             }
         };
 
-        // --- LÓGICA DE ESCANEO DINÁMICO DE UNIDADES (NUEVO) ---
+        // --- LÓGICA DE ESCANEO DINÁMICO DE UNIDADES ---
         async function scanSubjectForUnits(subjectKey) {
-            if (state.scannedSubjects[subjectKey]) return; // Si ya escaneamos esta materia, no repetir
+            if (state.scannedSubjects[subjectKey]) return; 
 
             const subjectData = DATA[subjectKey];
             state.isLoading = true;
-            state.loadingMessage = `Buscando unidades en ${subjectData.title}...`;
+            // Mensaje Genérico
+            state.loadingMessage = `Explorando unidades disponibles...`;
             renderView();
 
             let unitIndex = 1;
@@ -256,40 +288,31 @@
             const detectedUnits = {};
 
             while (found) {
-                // Asumimos que la carpeta es Unidad_X y validamos su existencia buscando Cuestionario_1.pdf dentro
                 const unitFolderName = `Unidad_${unitIndex}`;
                 const testFile = `Cuestionario_1.pdf`; 
                 const filePath = `./${subjectData.folderName}/${unitFolderName}/${testFile}`;
 
                 try {
-                    state.loadingMessage = `Verificando ${unitFolderName}...`;
-                    renderView();
-                    
-                    // Intentamos cargar el primer cuestionario para confirmar que la carpeta de unidad existe
+                    // No actualizamos el loadingMessage aquí para evitar parpadeos de nombres de archivos
                     const loadingTask = pdfjsLib.getDocument(filePath);
-                    await loadingTask.promise; // Si falla (404), va al catch
+                    await loadingTask.promise; 
 
-                    // Si tuvo éxito, la unidad existe
                     detectedUnits[`u${unitIndex}`] = {
                         folderName: unitFolderName,
                         label: `Unidad ${unitIndex}`,
-                        desc: "Contenido disponible.", // Descripción genérica ya que no leemos metadatos de carpeta
+                        desc: "Contenido disponible.", 
                         quizzes: {}
                     };
                     unitIndex++;
 
                 } catch (error) {
-                    console.log(`Fin de unidades en ${unitFolderName}.`);
                     found = false;
                 }
             }
 
-            // Si no encontró ninguna (quizás estructura antigua), dejamos las hardcodeadas si existieran o vacío
             if (Object.keys(detectedUnits).length > 0) {
                 DATA[subjectKey].units = detectedUnits;
             } else {
-                // Fallback: Si no encuentra nada dinámicamente, podríamos inyectar una unidad 1 manual o dejarlo vacío
-                // Para este ejemplo, si no encuentra, asume que no hay contenido.
                 console.warn("No se detectaron unidades con la estructura Unidad_X/Cuestionario_1.pdf");
             }
 
@@ -306,7 +329,8 @@
             const unitData = subjectData.units[unitKey];
             
             state.isLoading = true;
-            state.loadingMessage = `Buscando cuestionarios en ${unitData.folderName}...`;
+            // Mensaje Genérico
+            state.loadingMessage = `Identificando cuestionarios...`;
             renderView();
 
             let quizIndex = 1;
@@ -319,12 +343,10 @@
                 const filePath = `./${subjectData.folderName}/${unitData.folderName}/${fileName}`;
 
                 try {
-                    state.loadingMessage = `Detectando ${fileName}...`;
-                    renderView();
+                    // No mostramos "Detectando Cuestionario_1..." para mantenerlo limpio
                     const loadingTask = pdfjsLib.getDocument(filePath);
                     const pdf = await loadingTask.promise;
 
-                    // Extracción del título
                     const page = await pdf.getPage(1);
                     const textContent = await page.getTextContent();
                     const pageText = textContent.items.map(s => s.str).join(" ");
@@ -416,7 +438,7 @@
             startQuiz: async (quizKey) => { 
                 state.quiz = quizKey;
                 state.isLoading = true;
-                state.loadingMessage = "Iniciando descarga...";
+                state.loadingMessage = "Preparando evaluación...";
                 renderView(); 
 
                 const subjectData = DATA[state.subject];
@@ -425,10 +447,10 @@
                 const filePath = `./${subjectData.folderName}/${unitData.folderName}/${quizData.fileName}`;
 
                 try {
-                    state.loadingMessage = "Descargando PDF...";
+                    state.loadingMessage = "Cargando contenido...";
                     renderView();
                     const rawText = await extractTextFromPDF(filePath);
-                    state.loadingMessage = "Procesando preguntas y pistas...";
+                    state.loadingMessage = "Analizando preguntas...";
                     renderView();
                     const questions = parseQuizText(rawText);
 
@@ -438,7 +460,7 @@
                     state.currentQuestion = 0;
                     state.score = 0;
                     state.isAnswered = false;
-                    state.showHint = false; // Resetear visualización de pista
+                    state.showHint = false; 
                     state.isLoading = false;
                     state.view = 'quiz';
                     renderView();
@@ -456,14 +478,14 @@
                 state.selectedOption = idx; 
                 state.isAnswered = true;
                 if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
-                state.showHint = true; // Mostrar pista automáticamente al responder (opcional, o dejar que el usuario la abra)
+                state.showHint = true; 
                 renderView();
             },
             nextQuestion: () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) { 
                     state.currentQuestion++; 
                     state.isAnswered = false; 
-                    state.showHint = false; // Ocultar pista para la siguiente pregunta
+                    state.showHint = false; 
                     renderView(); 
                 } else { 
                     const perc = Math.round((state.score / state.loadedQuestions.length) * 100);
@@ -501,11 +523,9 @@
             if ((subject || unit) && !state.userName) { state.userName = "Alumno Externo"; state.userGroup = "Plataforma Digital"; }
             if (subject && DATA[subject]) { 
                 state.subject = subject; 
-                // Asegurar escaneo al entrar por link profundo
                 scanSubjectForUnits(subject).then(() => {
                     state.view = 'units'; 
                     if (unit) { 
-                        // Verificamos si la unidad fue detectada tras el escaneo
                         if (DATA[subject].units[unit]) {
                             state.unit = unit; 
                             scanUnitForQuizzes(subject, unit).then(() => {
@@ -513,7 +533,7 @@
                                 renderView();
                             });
                         } else {
-                            renderView(); // Se queda en units si la unidad del link no existe
+                            renderView(); 
                         }
                     } else {
                         renderView();
@@ -574,7 +594,7 @@
 
                 <!-- Footer -->
                 <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between shrink-0 transition-colors text-center">
-                    <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">CEFIMAT © 2026</span>
+                    <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">PLATAFORMA DISEÑADA POR CEFIMAT ASESORIAS</span>
                     <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Activo</span></div>
                 </div>
             `;
@@ -607,6 +627,7 @@
                         <div class="space-y-4">
                             <div class="flex justify-center"><span class="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-[9px] font-black tracking-[0.25em] shadow-lg uppercase">INGRESO A LICENCIATURA</span></div>
                             <h2 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-none text-center">Impulsa tus <br/><span class="text-indigo-600 dark:text-indigo-400 text-5xl md:text-6xl">Resultados</span></h2>
+                            <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">PREGUNTAS TIPO EXAMEN</p>
                         </div>
                         <div class="space-y-3 max-w-sm mx-auto">
                             <input type="text" placeholder="NOMBRE COMPLETO" oninput="actions.updateInput('userName', this.value)" value="${state.userName}" class="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none text-xs font-bold bg-slate-50 dark:bg-slate-800 dark:text-white uppercase focus:border-indigo-500 transition-colors shadow-sm text-center">
