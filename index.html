@@ -109,11 +109,13 @@
             score: 0,
             isAnswered: false,
             selectedOption: null,
+            showHint: false, // Nuevo estado para mostrar/ocultar pista
             reports: [],
             isLoading: false,       
             loadingMessage: '',
             loadedQuestions: [],
-            scannedUnits: {} 
+            scannedUnits: {},     // Cache de cuestionarios por unidad
+            scannedSubjects: {}   // Nuevo: Cache de unidades por materia
         };
 
         // --- LÓGICA DE PROCESAMIENTO DE PDF (Text extraction) ---
@@ -154,7 +156,7 @@
             }
         }
 
-        // --- PARSER DE PREGUNTAS ---
+        // --- PARSER DE PREGUNTAS (ACTUALIZADO CON PISTA) ---
 
         function parseQuizText(text) {
             const questions = [];
@@ -177,7 +179,24 @@
                     const optA = parts[0].trim();
                     const optB = parts[1].trim();
                     const optC = parts[2].trim();
-                    let optD = parts[3].trim(); 
+                    let fullOptD = parts[3].trim(); 
+
+                    // --- LÓGICA DE EXTRACCIÓN DE PISTA ---
+                    let optD = fullOptD;
+                    let hint = "Sin pista disponible.";
+                    
+                    // Buscamos P) o PISTA al final del texto del inciso D
+                    // Regex busca: espacio + P) o PISTA + cualquier cosa hasta el final o siguiente numero
+                    const hintRegex = /(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i;
+                    const hintMatch = fullOptD.match(hintRegex);
+
+                    if (hintMatch) {
+                        // Si encontramos pista, la separamos del inciso D
+                        hint = hintMatch[1].trim();
+                        // Actualizamos optD quitándole la parte de la pista
+                        optD = fullOptD.replace(hintRegex, "").trim();
+                    }
+                    // -------------------------------------
 
                     const optionsRaw = [optA, optB, optC, optD];
                     let correctIndex = 0; 
@@ -193,7 +212,7 @@
                         a: optionsClean,
                         c: correctIndex,
                         r: "Respuesta identificada en el material.", 
-                        h: "Consulta la guía de estudio."
+                        h: hint // Guardamos la pista extraída
                     });
                 } catch (e) {
                     console.warn("Error parseando bloque", e);
@@ -203,34 +222,82 @@
         }
 
         // --- ESTRUCTURA DE DATOS INICIAL ---
-        // Nota: 'quizzes' inicia vacío para demostrar la carga dinámica
+        // 'units' ahora comienza vacío y se llena dinámicamente
         const DATA = {
             historia_mexico: { 
                 folderName: "Historia_De_Mexico", 
                 title: "H. México", 
                 icon: "scroll-text", accent: "bg-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", darkBg: "dark:bg-emerald-950/40", darkBorder: "dark:border-emerald-900/60", text: "text-emerald-900 dark:text-emerald-400", 
-                units: {
-                    u1: { folderName: "Unidad_1", label: "Unidad 1: La Nueva España", desc: "Virreinato, instituciones y mestizaje.", quizzes: {} },
-                    u2: { folderName: "Unidad_2", label: "Unidad 2: Independencia", desc: "Guerra de insurgencia y consumación.", quizzes: {} }
-                }
+                units: {} // Se llenará dinámicamente
             },
             historia_universal: { 
                 folderName: "Historia_Universal",
                 title: "H. Universal", icon: "globe-2", accent: "bg-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200", darkBg: "dark:bg-indigo-950/40", darkBorder: "dark:border-indigo-900/60", text: "text-indigo-900 dark:text-indigo-400", 
-                units: {
-                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "Conceptos básicos.", quizzes: {} }
-                }
+                units: {} 
             },
             biologia: { 
                 folderName: "Biologia",
                 title: "Biología", icon: "dna", accent: "bg-green-600", bg: "bg-green-50", border: "border-green-200", darkBg: "dark:bg-green-950/40", darkBorder: "dark:border-green-900/60", text: "text-green-900 dark:text-green-400", 
-                units: {
-                    u1: { folderName: "Unidad_1", label: "Unidad 1", desc: "La Célula.", quizzes: {} }
-                }
+                units: {} 
             }
         };
 
-        // --- LÓGICA DE ESCANEO DINÁMICO ---
+        // --- LÓGICA DE ESCANEO DINÁMICO DE UNIDADES (NUEVO) ---
+        async function scanSubjectForUnits(subjectKey) {
+            if (state.scannedSubjects[subjectKey]) return; // Si ya escaneamos esta materia, no repetir
+
+            const subjectData = DATA[subjectKey];
+            state.isLoading = true;
+            state.loadingMessage = `Buscando unidades en ${subjectData.title}...`;
+            renderView();
+
+            let unitIndex = 1;
+            let found = true;
+            const detectedUnits = {};
+
+            while (found) {
+                // Asumimos que la carpeta es Unidad_X y validamos su existencia buscando Cuestionario_1.pdf dentro
+                const unitFolderName = `Unidad_${unitIndex}`;
+                const testFile = `Cuestionario_1.pdf`; 
+                const filePath = `./${subjectData.folderName}/${unitFolderName}/${testFile}`;
+
+                try {
+                    state.loadingMessage = `Verificando ${unitFolderName}...`;
+                    renderView();
+                    
+                    // Intentamos cargar el primer cuestionario para confirmar que la carpeta de unidad existe
+                    const loadingTask = pdfjsLib.getDocument(filePath);
+                    await loadingTask.promise; // Si falla (404), va al catch
+
+                    // Si tuvo éxito, la unidad existe
+                    detectedUnits[`u${unitIndex}`] = {
+                        folderName: unitFolderName,
+                        label: `Unidad ${unitIndex}`,
+                        desc: "Contenido disponible.", // Descripción genérica ya que no leemos metadatos de carpeta
+                        quizzes: {}
+                    };
+                    unitIndex++;
+
+                } catch (error) {
+                    console.log(`Fin de unidades en ${unitFolderName}.`);
+                    found = false;
+                }
+            }
+
+            // Si no encontró ninguna (quizás estructura antigua), dejamos las hardcodeadas si existieran o vacío
+            if (Object.keys(detectedUnits).length > 0) {
+                DATA[subjectKey].units = detectedUnits;
+            } else {
+                // Fallback: Si no encuentra nada dinámicamente, podríamos inyectar una unidad 1 manual o dejarlo vacío
+                // Para este ejemplo, si no encuentra, asume que no hay contenido.
+                console.warn("No se detectaron unidades con la estructura Unidad_X/Cuestionario_1.pdf");
+            }
+
+            state.scannedSubjects[subjectKey] = true;
+            state.isLoading = false;
+        }
+
+        // --- LÓGICA DE ESCANEO DINÁMICO DE CUESTIONARIOS ---
         async function scanUnitForQuizzes(subjectKey, unitKey) {
             const cacheID = `${subjectKey}-${unitKey}`;
             if (state.scannedUnits[cacheID]) return;
@@ -292,7 +359,6 @@
                     quizIndex++;
 
                 } catch (error) {
-                    console.log(`Detenido escaneo en ${fileName}.`);
                     found = false;
                 }
             }
@@ -319,6 +385,10 @@
                 document.documentElement.classList.toggle('dark', state.theme === 'dark');
                 initLayout();
             },
+            toggleHint: () => {
+                state.showHint = !state.showHint;
+                renderView(); // Re-renderizar para actualizar la vista de la pista
+            },
             updateInput: (id, val) => {
                 state[id] = val;
                 const canStart = state.userName.trim() !== '' && state.userGroup.trim() !== '';
@@ -329,14 +399,20 @@
                     btn.style.opacity = canStart ? "1" : "0.5";
                 });
             },
-            setSubject: (key) => { state.subject = key; state.view = 'units'; renderView(); },
+            setSubject: async (key) => { 
+                state.subject = key; 
+                // AHORA ESCANEAMOS UNIDADES AL ELEGIR MATERIA
+                await scanSubjectForUnits(key);
+                state.view = 'units'; 
+                renderView(); 
+            },
             setUnit: async (unitKey) => { 
                 state.unit = unitKey; 
                 await scanUnitForQuizzes(state.subject, unitKey);
                 state.view = 'quizzes'; 
                 renderView(); 
             },
-            goToQuizzes: () => { state.view = 'quizzes'; renderView(); }, // Acción para volver de Quiz a Lista
+            goToQuizzes: () => { state.view = 'quizzes'; renderView(); }, 
             startQuiz: async (quizKey) => { 
                 state.quiz = quizKey;
                 state.isLoading = true;
@@ -352,7 +428,7 @@
                     state.loadingMessage = "Descargando PDF...";
                     renderView();
                     const rawText = await extractTextFromPDF(filePath);
-                    state.loadingMessage = "Procesando preguntas...";
+                    state.loadingMessage = "Procesando preguntas y pistas...";
                     renderView();
                     const questions = parseQuizText(rawText);
 
@@ -362,6 +438,7 @@
                     state.currentQuestion = 0;
                     state.score = 0;
                     state.isAnswered = false;
+                    state.showHint = false; // Resetear visualización de pista
                     state.isLoading = false;
                     state.view = 'quiz';
                     renderView();
@@ -379,11 +456,15 @@
                 state.selectedOption = idx; 
                 state.isAnswered = true;
                 if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
+                state.showHint = true; // Mostrar pista automáticamente al responder (opcional, o dejar que el usuario la abra)
                 renderView();
             },
             nextQuestion: () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) { 
-                    state.currentQuestion++; state.isAnswered = false; renderView(); 
+                    state.currentQuestion++; 
+                    state.isAnswered = false; 
+                    state.showHint = false; // Ocultar pista para la siguiente pregunta
+                    renderView(); 
                 } else { 
                     const perc = Math.round((state.score / state.loadedQuestions.length) * 100);
                     const quizInfo = DATA[state.subject].units[state.unit].quizzes[state.quiz];
@@ -402,12 +483,12 @@
             reset: () => { state.view = 'welcome'; state.subject = null; state.unit = null; state.quiz = null; renderView(); },
             goToUnits: () => { state.view = 'units'; renderView(); },
             goToReports: () => { 
-                state.lastView = state.view; // Guardamos donde estábamos
+                state.lastView = state.view; 
                 state.view = 'reports'; 
                 renderView(); 
             },
             returnFromReports: () => {
-                state.view = state.lastView; // Volvemos donde estábamos
+                state.view = state.lastView; 
                 renderView();
             }
         };
@@ -420,14 +501,24 @@
             if ((subject || unit) && !state.userName) { state.userName = "Alumno Externo"; state.userGroup = "Plataforma Digital"; }
             if (subject && DATA[subject]) { 
                 state.subject = subject; 
-                state.view = 'units'; 
-                if (unit && DATA[subject].units[unit]) { 
-                    state.unit = unit; 
-                    scanUnitForQuizzes(subject, unit).then(() => {
-                        state.view = 'quizzes';
+                // Asegurar escaneo al entrar por link profundo
+                scanSubjectForUnits(subject).then(() => {
+                    state.view = 'units'; 
+                    if (unit) { 
+                        // Verificamos si la unidad fue detectada tras el escaneo
+                        if (DATA[subject].units[unit]) {
+                            state.unit = unit; 
+                            scanUnitForQuizzes(subject, unit).then(() => {
+                                state.view = 'quizzes';
+                                renderView();
+                            });
+                        } else {
+                            renderView(); // Se queda en units si la unidad del link no existe
+                        }
+                    } else {
                         renderView();
-                    });
-                } 
+                    }
+                });
             }
         }
       
@@ -460,7 +551,7 @@
                         </div>
                     </div>
 
-                    <!-- Barra de Redes Sociales (Desktop: visible, Móvil: scroll) -->
+                    <!-- Barra de Redes Sociales -->
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50 dark:border-slate-800/50">
                         <div class="flex items-center gap-4 text-slate-400 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                             <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-icon hover:text-indigo-600 transition-colors"><i data-lucide="facebook" width="16"></i></a>
@@ -470,9 +561,6 @@
                             </a>
                             <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-icon hover:text-slate-900 dark:hover:text-white transition-colors">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
-                            </a>
-                            <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx" target="_blank" class="social-icon hover:text-green-500 transition-colors">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.496 17.306c-.215.352-.676.467-1.028.252-2.853-1.743-6.444-2.138-10.672-1.173-.404.092-.81-.157-.902-.56-.093-.404.157-.81.56-.902 4.632-1.059 8.601-.611 11.79 1.336.353.216.468.677.252 1.029zm1.468-3.26c-.27.441-.848.58-1.289.311-3.262-2.003-8.236-2.585-12.091-1.415-.499.151-1.026-.131-1.177-.63-.151-.499.131-1.026.63-1.177 4.398-1.333 9.878-.68 13.626 1.621.442.27.581.848.311 1.289h-.01zm.129-3.38c-3.911-2.322-10.358-2.536-14.103-1.399-.6.182-1.24-.157-1.422-.757-.182-.6.157-1.24.757-1.422 4.298-1.304 11.417-1.054 15.932 1.625.539.319.718 1.012.399 1.551-.318.539-1.011.718-1.551.399l-.112-.045z"/></svg>
                             </a>
                         </div>
                         <a href="https://www.cefimat.com/" target="_blank" class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-900/50 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
@@ -547,16 +635,19 @@
 
             else if (state.view === 'units') {
                 const m = DATA[state.subject];
+                const unitKeys = Object.keys(m.units);
+                
                 html = `
                     <div class="space-y-8 fade-in text-center">
-                        <!-- Cambio: 'Menú Principal' por 'Regresar' y usa actions.reset() para volver a subjects -->
                         <button onclick="actions.reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                         <div class="space-y-3">
                             <div class="w-16 h-16 ${m.accent} rounded-3xl mx-auto flex items-center justify-center text-white shadow-xl"><i data-lucide="${m.icon}" width="28"></i></div>
                             <h2 class="text-3xl font-black text-slate-900 dark:text-white uppercase">${m.title}</h2>
                         </div>
                         <div class="space-y-4 text-left max-w-xl mx-auto">
-                            ${Object.keys(m.units).map(key => `
+                            ${unitKeys.length === 0 ? 
+                                `<div class="p-8 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 text-xs text-center">No se encontraron carpetas 'Unidad_X' con cuestionarios.</div>` :
+                                unitKeys.map(key => `
                                 <button onclick="actions.setUnit('${key}')" class="btn-active w-full p-6 rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-sm">
                                     <div class="flex items-center gap-4 mb-2">
                                         <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0"><i data-lucide="layers" width="14"></i></div>
@@ -576,7 +667,6 @@
                 
                 html = `
                     <div class="space-y-8 fade-in text-center">
-                        <!-- Cambio: 'Unidades' por 'Regresar' y usa actions.goToUnits() -->
                         <button onclick="actions.goToUnits()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                         <h2 class="text-2xl font-black text-slate-900 dark:text-white uppercase">${unit.label}</h2>
                         <div class="grid gap-3 max-w-lg mx-auto">
@@ -604,9 +694,9 @@
             else if (state.view === 'quiz') {
                 const total = state.loadedQuestions.length;
                 const q = state.loadedQuestions[state.currentQuestion];
+                
                 html = `
                     <div class="space-y-6 fade-in">
-                        <!-- Nuevo: Botón Regresar en el Quiz -->
                         <button onclick="actions.goToQuizzes()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mb-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                         
                         <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-5 rounded-3xl">
@@ -618,10 +708,22 @@
                             </div>
                             <div class="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl shadow-sm border border-slate-100"><span class="text-[12px] font-black">${state.score} PTS</span></div>
                         </div>
-                        <div class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl text-amber-700 text-[10px] font-bold border border-amber-200 flex items-start gap-3">
-                            <i data-lucide="lightbulb" width="16" class="text-amber-500 shrink-0"></i>
-                            <span><span class="uppercase font-black mr-1">Nota:</span> ${q.h}</span>
+                        
+                        <!-- UI DE PISTA DINÁMICA -->
+                        <div class="flex flex-col gap-2">
+                            <button onclick="actions.toggleHint()" class="self-start flex items-center gap-2 text-[10px] font-bold text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/30 transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40">
+                                <i data-lucide="${state.showHint ? 'eye-off' : 'eye'}" width="14"></i>
+                                ${state.showHint ? 'OCULTAR PISTA' : 'VER PISTA'}
+                            </button>
+                            
+                            ${state.showHint ? `
+                            <div class="fade-in p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl text-amber-700 dark:text-amber-400 text-[11px] font-medium border border-amber-200 dark:border-amber-900/50 flex items-start gap-3">
+                                <i data-lucide="lightbulb" width="16" class="text-amber-500 shrink-0 mt-0.5"></i>
+                                <span><span class="uppercase font-black mr-1">Pista:</span> ${q.h}</span>
+                            </div>
+                            ` : ''}
                         </div>
+
                         <h3 class="text-xl font-black text-slate-900 dark:text-white leading-snug text-center">${q.q}</h3>
                         <div class="grid gap-3">
                             ${q.a.map((opt, i) => {
@@ -674,7 +776,6 @@
                 html = `
                     <div class="space-y-8 fade-in">
                         <div class="flex items-center justify-between">
-                            <!-- Cambio: 'Menú' por 'Regresar' y usa actions.returnFromReports() para volver a donde estabas -->
                             <button onclick="actions.returnFromReports()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
                             <span class="text-[10px] font-black uppercase">Historial</span>
                         </div>
