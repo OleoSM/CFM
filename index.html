@@ -3,828 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CEFIMAT Asesorías - Plataforma Dinámica</title>
+    <title>CEFIMAT Asesorias - Plataforma de Cuestionarios</title>
     
-    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PDF.js para leer los archivos -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
     <script>
-        // Configuración de Tailwind
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { primary: '#0f172a', accent: '#4f46e5' },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    screens: { 'xs': '375px' }
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
                 }
             }
         }
-        
-        // Configuración del Worker de PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
+        * { box-sizing: border-box; }
+        
         body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f1f5f9; 
-            overscroll-behavior: none; 
-            touch-action: manipulation;
-            transition: background-color 0.3s ease;
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            min-height: 100vh;
+            transition: background 0.3s;
         }
 
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body.dark { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
         .responsive-container {
-            width: 100%; height: 100%;
-            display: flex; flex-direction: column;
-            background: white; overflow: hidden;
-            position: relative;
-            transform: translateZ(0); will-change: transform;
-            transition: all 0.3s ease;
+            width: 100%; 
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column;
         }
 
         @media (min-width: 768px) {
-            body { display: flex; align-items: center; justify-content: center; height: 100vh; padding: 2rem; }
+            body { 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                padding: 2rem; 
+            }
             .responsive-container {
-                max-width: 1200px; height: 85vh; max-height: 900px;
+                max-width: 1000px; 
+                min-height: auto;
+                height: 90vh; 
+                max-height: 800px;
                 border-radius: 2rem;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-                border: 1px solid rgba(226, 232, 240, 0.8);
+                overflow: hidden;
             }
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
-        
-        .btn-active:active { transform: scale(0.97); opacity: 0.9; }
-        .subject-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .subject-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-        
-        .diff-tag {
-            font-size: 0.65rem; padding: 2px 8px; border-radius: 6px;
-            font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
-        }
-        .diff-easy { background: #ecfdf5; color: #059669; }
-        .diff-mid { background: #fffbeb; color: #d97706; }
-        .diff-hard { background: #fef2f2; color: #dc2626; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
 
-        /* Animación de carga */
-        .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite;
+        .subject-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .subject-card:not(.locked)::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .subject-card:not(.locked):hover::before { opacity: 1; }
+        .subject-card:not(.locked):hover { 
+            transform: translateY(-8px) scale(1.02); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .subject-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(50%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .social-link {
+            transition: all 0.2s;
+        }
+        .social-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
     </style>
 </head>
-<body class="bg-slate-100 dark:bg-slate-950 transition-colors">
+<body id="body">
+    <div id="app" class="responsive-container"></div>
 
-    <div id="app" class="responsive-container border-slate-200 dark:border-slate-800 dark:bg-slate-900">
-        <!-- El contenido se inyecta vía JS -->
-    </div>
-
-    <script type="module">
-        // --- ESTADO DE LA APLICACIÓN ---
+    <script>
+        // State
         const state = {
-            view: 'welcome',
-            lastView: 'welcome', // Para volver atrás desde reportes
-            theme: 'light',
-            userName: '',
-            userGroup: '',
-            subject: null,
-            unit: null,
-            quiz: null,
-            currentQuestion: 0,
-            score: 0,
-            isAnswered: false,
-            selectedOption: null,
-            showHint: false, 
-            reports: [],
-            isLoading: false,       
-            loadingMessage: '',
-            loadedQuestions: [],
-            scannedUnits: {},     // Cache de cuestionarios por unidad
-            scannedSubjects: {}   // Cache de unidades por materia
+            darkMode: localStorage.getItem('darkMode') !== 'false',
+            userName: localStorage.getItem('userName') || '',
+            userGroup: localStorage.getItem('userGroup') || ''
         };
 
-        // --- LÓGICA DE PROCESAMIENTO DE PDF (Text extraction) ---
-
-        function normalizeText(text) {
-            if (!text) return "";
-            let normalized = text;
-            try {
-                const isCorrupt = /[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized);
-                if (isCorrupt) {
-                    const bytes = new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0)));
-                    normalized = new TextDecoder('utf-8').decode(bytes);
-                }
-            } catch (e) { console.warn("Error normalizando", e); }
-            normalized = normalized.normalize("NFKC");
-            return normalized.replace(/\s+/g, " ").trim();
+        function isUnlocked() {
+            return state.userName.trim().length > 0 && state.userGroup.trim().length > 0;
         }
 
-        async function extractTextFromPDF(url) {
-            try {
-                if (window.location.protocol === 'file:') {
-                    throw new Error("Estás abriendo el archivo localmente. Usa Live Server.");
-                }
-                const loadingTask = pdfjsLib.getDocument(url);
-                const pdf = await loadingTask.promise;
-                let fullText = "";
-                // Pantalla de carga genérica para la lectura interna
-                state.loadingMessage = `Procesando material educativo...`; 
-                renderView();
-                
-                for (let j = 1; j <= pdf.numPages; j++) {
-                    const page = await pdf.getPage(j);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(s => s.str).join(" ");
-                    fullText += pageText + " ";
-                }
-                return fullText;
-            } catch (error) {
-                throw error; 
-            }
+        // Toggle dark mode
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+            applyTheme();
         }
 
-        // --- PARSER DE PREGUNTAS (ACTUALIZADO Y ROBUSTO) ---
-        function parseQuizText(text) {
-            const questions = [];
-            let cleanText = normalizeText(text);
-            
-            // 1. Dividimos el texto usando " A) " como ancla principal.
-            const segments = cleanText.split(/\s+A\)\s+/);
-            
-            if (segments.length < 2) return [];
-
-            // 2. Extraer el texto de la Primera Pregunta
-            let currentQText = segments[0];
-            const firstQMatch = currentQText.match(/(\d+[\.\-\)]\s+.*$)/s);
-            
-            if (firstQMatch) {
-                currentQText = firstQMatch[1];
+        function applyTheme() {
+            const body = document.getElementById('body');
+            if (state.darkMode) {
+                body.classList.add('dark');
             } else {
-                currentQText = currentQText.trim();
+                body.classList.remove('dark');
             }
-
-            // 3. Iteramos por los segmentos.
-            for (let i = 1; i < segments.length; i++) {
-                const segment = segments[i];
-                const parts = segment.split(/\s+(?:B\)|C\)|D\))\s+/);
-
-                if (parts.length >= 4) {
-                    const optA = parts[0].trim();
-                    const optB = parts[1].trim();
-                    const optC = parts[2].trim();
-                    let mixedD = parts.slice(3).join(" D) ");
-
-                    // --- SEPARAR INCISO D DE LA SIGUIENTE PREGUNTA ---
-                    let optD = mixedD;
-                    let nextQText = "";
-                    
-                    const nextNumberIdx = mixedD.search(/\s\d+[\.\-\)]\s+/);
-                    
-                    if (nextNumberIdx !== -1) {
-                        optD = mixedD.substring(0, nextNumberIdx).trim();
-                        nextQText = mixedD.substring(nextNumberIdx).trim();
-                    } else {
-                        const qEndMatch = mixedD.match(/([A-Z¡¿\n].*?[:?])\s*$/s);
-                        if (i < segments.length && qEndMatch) {
-                            nextQText = qEndMatch[0];
-                            const splitPoint = mixedD.lastIndexOf(nextQText);
-                            optD = mixedD.substring(0, splitPoint).trim();
-                        }
-                    }
-
-                    // --- EXTRACCIÓN DE PISTA ---
-                    let finalOptD = optD;
-                    let hint = "Sin pista disponible.";
-                    const hintRegex = /(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i;
-                    const hintMatch = optD.match(hintRegex);
-
-                    if (hintMatch) {
-                        hint = hintMatch[1].trim();
-                        finalOptD = optD.replace(hintRegex, "").trim();
-                    }
-
-                    // --- IDENTIFICAR RESPUESTA CORRECTA ---
-                    const optionsRaw = [optA, optB, optC, finalOptD];
-                    let correctIndex = 0; 
-                    const optionsClean = optionsRaw.map((opt, index) => {
-                        const isCorrect = opt.includes('✓') || opt.includes('✔') || opt.toLowerCase().includes('(correcta)');
-                        if (isCorrect) correctIndex = index;
-                        return opt.replace(/[✓✔]/g, '').replace(/\(correcta\)/yi, '').trim();
-                    });
-
-                    let cleanQ = currentQText.replace(/^\d+[\.\-\)]\s*/, "").trim();
-                    if (cleanQ.endsWith(":")) cleanQ = cleanQ.slice(0, -1).trim();
-
-                    questions.push({
-                        q: cleanQ,
-                        a: optionsClean,
-                        c: correctIndex,
-                        r: "Respuesta identificada en el material.", 
-                        h: hint
-                    });
-
-                    currentQText = nextQText;
-                }
-            }
-            return questions;
+            render();
         }
 
-        // --- ESTRUCTURA DE DATOS INICIAL ---
-        // Actualizado: Geografía con tema "Cafesito" e icono de Mundo
-        const DATA = {
-            historia_mexico: { 
-                folderName: "Historia_De_Mexico", 
-                title: "H. México", 
-                icon: "scroll-text", accent: "bg-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", darkBg: "dark:bg-emerald-950/40", darkBorder: "dark:border-emerald-900/60", text: "text-emerald-900 dark:text-emerald-400", 
-                units: {} 
-            },
-            historia_universal: { 
-                folderName: "Historia_Universal",
-                title: "H. Universal", icon: "globe-2", accent: "bg-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200", darkBg: "dark:bg-indigo-950/40", darkBorder: "dark:border-indigo-900/60", text: "text-indigo-900 dark:text-indigo-400", 
-                units: {} 
-            },
-            geografia: { 
-                folderName: "Geografia",
-                title: "Geografía", 
-                icon: "globe", // Ícono de mundo
-                // Colores tipo "Cafesito" (Amber/Orange oscuros)
-                accent: "bg-amber-800", 
-                bg: "bg-orange-50", 
-                border: "border-amber-200", 
-                darkBg: "dark:bg-orange-950/30", 
-                darkBorder: "dark:border-orange-900/50", 
-                text: "text-amber-900 dark:text-amber-500", 
-                units: {} 
+        // Save user data (only on blur, not on every keystroke)
+        function saveUserName() {
+            const input = document.getElementById('userName');
+            if (input) {
+                state.userName = input.value;
+                localStorage.setItem('userName', state.userName);
+                render();
             }
-        };
-
-        // --- LÓGICA DE ESCANEO DINÁMICO DE UNIDADES ---
-        async function scanSubjectForUnits(subjectKey) {
-            if (state.scannedSubjects[subjectKey]) return; 
-
-            const subjectData = DATA[subjectKey];
-            state.isLoading = true;
-            // Mensaje Genérico
-            state.loadingMessage = `Explorando unidades disponibles...`;
-            renderView();
-
-            let unitIndex = 1;
-            let found = true;
-            const detectedUnits = {};
-
-            while (found) {
-                const unitFolderName = `Unidad_${unitIndex}`;
-                const testFile = `Cuestionario_1.pdf`; 
-                const filePath = `./${subjectData.folderName}/${unitFolderName}/${testFile}`;
-
-                try {
-                    // No actualizamos el loadingMessage aquí para evitar parpadeos de nombres de archivos
-                    const loadingTask = pdfjsLib.getDocument(filePath);
-                    await loadingTask.promise; 
-
-                    detectedUnits[`u${unitIndex}`] = {
-                        folderName: unitFolderName,
-                        label: `Unidad ${unitIndex}`,
-                        desc: "Contenido disponible.", 
-                        quizzes: {}
-                    };
-                    unitIndex++;
-
-                } catch (error) {
-                    found = false;
-                }
-            }
-
-            if (Object.keys(detectedUnits).length > 0) {
-                DATA[subjectKey].units = detectedUnits;
-            } else {
-                console.warn("No se detectaron unidades con la estructura Unidad_X/Cuestionario_1.pdf");
-            }
-
-            state.scannedSubjects[subjectKey] = true;
-            state.isLoading = false;
         }
 
-        // --- LÓGICA DE ESCANEO DINÁMICO DE CUESTIONARIOS ---
-        async function scanUnitForQuizzes(subjectKey, unitKey) {
-            const cacheID = `${subjectKey}-${unitKey}`;
-            if (state.scannedUnits[cacheID]) return;
+        function saveUserGroup() {
+            const input = document.getElementById('userGroup');
+            if (input) {
+                state.userGroup = input.value;
+                localStorage.setItem('userGroup', state.userGroup);
+                render();
+            }
+        }
 
-            const subjectData = DATA[subjectKey];
-            const unitData = subjectData.units[unitKey];
+        function handleIngresar() {
+            // Guardar valores actuales
+            const nameInput = document.getElementById('userName');
+            const groupInput = document.getElementById('userGroup');
             
-            state.isLoading = true;
-            // Mensaje Genérico
-            state.loadingMessage = `Identificando cuestionarios...`;
-            renderView();
-
-            let quizIndex = 1;
-            let found = true;
-            const detectedQuizzes = {};
-            const difficulties = ['easy', 'mid', 'hard'];
-
-            while (found) {
-                const fileName = `Cuestionario_${quizIndex}.pdf`;
-                const filePath = `./${subjectData.folderName}/${unitData.folderName}/${fileName}`;
-
-                try {
-                    // No mostramos "Detectando Cuestionario_1..." para mantenerlo limpio
-                    const loadingTask = pdfjsLib.getDocument(filePath);
-                    const pdf = await loadingTask.promise;
-
-                    const page = await pdf.getPage(1);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(s => s.str).join(" ");
-                    const cleanPageText = normalizeText(pageText);
-
-                    const qIndex = cleanPageText.search(/\b1\.-/);
-                    let titlePart = "";
-                    
-                    if (qIndex !== -1) {
-                        const headerSection = cleanPageText.substring(0, qIndex).trim();
-                        const match = headerSection.match(/(?:Cuestionario\s*\d*|Tema|Examen)\s*[:.-]?\s+(.*)$/i);
-                        
-                        if (match && match[1]) {
-                            titlePart = match[1].trim();
-                        } else {
-                            if (headerSection.length > 0 && headerSection.length < 100) {
-                                titlePart = headerSection;
-                            }
-                        }
-                    }
-
-                    let extractedLabel = titlePart || `Cuestionario ${quizIndex}`;
-                    extractedLabel = extractedLabel.replace(/^[:.-]+/, "").trim();
-                    if (extractedLabel.length > 60) extractedLabel = extractedLabel.substring(0, 60) + "...";
-
-                    const difficulty = difficulties[(quizIndex - 1) % 3];
-                    detectedQuizzes[`q${quizIndex}`] = {
-                        fileName: fileName,
-                        label: `${quizIndex}. ${extractedLabel}`,
-                        type: difficulty
-                    };
-                    quizIndex++;
-
-                } catch (error) {
-                    found = false;
-                }
+            if (nameInput) {
+                state.userName = nameInput.value;
+                localStorage.setItem('userName', state.userName);
+            }
+            if (groupInput) {
+                state.userGroup = groupInput.value;
+                localStorage.setItem('userGroup', state.userGroup);
             }
 
-            DATA[subjectKey].units[unitKey].quizzes = detectedQuizzes;
-            state.scannedUnits[cacheID] = true;
-            state.isLoading = false;
+            // Verificar si están completos
+            if (isUnlocked()) {
+                // Mostrar mensaje de bienvenida
+                showToast(`Bienvenido, ${state.userName}!`);
+            } else {
+                // Shake si faltan datos
+                const userInfo = document.getElementById('userInfoCard');
+                if (userInfo) {
+                    userInfo.classList.add('shake');
+                    setTimeout(() => userInfo.classList.remove('shake'), 500);
+                }
+                if (!state.userName.trim()) {
+                    document.getElementById('userName')?.focus();
+                } else if (!state.userGroup.trim()) {
+                    document.getElementById('userGroup')?.focus();
+                }
+            }
+            render();
         }
 
-        // --- UTILERÍAS DE UI ---
-        const getHumorousPhrase = (perc) => {
-            if (perc === 100) return "¡Nivel Dios activado! 🏆.";
-            if (perc >= 85) return "¡Impresionante! 🧠🔥 Casi huelo el éxito académico.";
-            if (perc >= 70) return "¡Muy bien! ☕✨ Estás cerca de la iluminación total.";
-            if (perc >= 50) return "En el medio, como el jamón del sándwich. 🥪 ¡A seguir!";
-            if (perc >= 30) return "No está mal, pero hasta mi despertador tiene más ritmo. ⏰";
-            if (perc > 0) return "¡Ups! 📚🙃 A sacudir esas neuronas con más fuerza.";
-            return "Bueno... al menos pusiste bien tu nombre. 😅";
-        };
-
-        window.actions = {
-            toggleTheme: () => {
-                state.theme = state.theme === 'light' ? 'dark' : 'light';
-                document.documentElement.classList.toggle('dark', state.theme === 'dark');
-                initLayout();
-            },
-            toggleHint: () => {
-                state.showHint = !state.showHint;
-                renderView(); // Re-renderizar para actualizar la vista de la pista
-            },
-            updateInput: (id, val) => {
-                state[id] = val;
-                const canStart = state.userName.trim() !== '' && state.userGroup.trim() !== '';
-                const helper = document.getElementById('helper-text');
-                if (helper) helper.innerText = canStart ? 'SELECCIONA MATERIA' : 'INGRESA TUS DATOS PARA COMENZAR';
-                document.querySelectorAll('.subject-card').forEach(btn => {
-                    btn.disabled = !canStart;
-                    btn.style.opacity = canStart ? "1" : "0.5";
-                });
-            },
-            setSubject: async (key) => { 
-                state.subject = key; 
-                // AHORA ESCANEAMOS UNIDADES AL ELEGIR MATERIA
-                await scanSubjectForUnits(key);
-                state.view = 'units'; 
-                renderView(); 
-            },
-            setUnit: async (unitKey) => { 
-                state.unit = unitKey; 
-                await scanUnitForQuizzes(state.subject, unitKey);
-                state.view = 'quizzes'; 
-                renderView(); 
-            },
-            goToQuizzes: () => { state.view = 'quizzes'; renderView(); }, 
-            startQuiz: async (quizKey) => { 
-                state.quiz = quizKey;
-                state.isLoading = true;
-                state.loadingMessage = "Preparando evaluación...";
-                renderView(); 
-
-                const subjectData = DATA[state.subject];
-                const unitData = subjectData.units[state.unit];
-                const quizData = unitData.quizzes[quizKey];
-                const filePath = `./${subjectData.folderName}/${unitData.folderName}/${quizData.fileName}`;
-
-                try {
-                    state.loadingMessage = "Cargando contenido...";
-                    renderView();
-                    const rawText = await extractTextFromPDF(filePath);
-                    state.loadingMessage = "Analizando preguntas...";
-                    renderView();
-                    const questions = parseQuizText(rawText);
-
-                    if (questions.length === 0) throw new Error("No se encontraron preguntas válidas.");
-
-                    state.loadedQuestions = questions;
-                    state.currentQuestion = 0;
-                    state.score = 0;
-                    state.isAnswered = false;
-                    state.showHint = false; 
-                    state.isLoading = false;
-                    state.view = 'quiz';
-                    renderView();
-
-                } catch (error) {
-                    console.error(error);
-                    alert(`ERROR DE CARGA:\n\nNo se pudo leer el archivo: ${filePath}\n${error.message}`);
-                    state.isLoading = false;
-                    state.view = 'quizzes'; 
-                    renderView();
-                }
-            },
-            handleAnswer: (idx) => {
-                if (state.isAnswered || state.loadedQuestions.length === 0) return;
-                state.selectedOption = idx; 
-                state.isAnswered = true;
-                if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
-                state.showHint = true; 
-                renderView();
-            },
-            nextQuestion: () => {
-                if (state.currentQuestion + 1 < state.loadedQuestions.length) { 
-                    state.currentQuestion++; 
-                    state.isAnswered = false; 
-                    state.showHint = false; 
-                    renderView(); 
-                } else { 
-                    const perc = Math.round((state.score / state.loadedQuestions.length) * 100);
-                    const quizInfo = DATA[state.subject].units[state.unit].quizzes[state.quiz];
-                    state.reports.unshift({ 
-                        subjectTitle: DATA[state.subject].title, 
-                        unitLabel: DATA[state.subject].units[state.unit].label, 
-                        quizLabel: quizInfo.label, 
-                        score: state.score, 
-                        total: state.loadedQuestions.length, 
-                        perc: perc, 
-                        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-                    });
-                    state.view = 'finished'; renderView(); 
-                }
-            },
-            reset: () => { state.view = 'welcome'; state.subject = null; state.unit = null; state.quiz = null; renderView(); },
-            goToUnits: () => { state.view = 'units'; renderView(); },
-            goToReports: () => { 
-                state.lastView = state.view; 
-                state.view = 'reports'; 
-                renderView(); 
-            },
-            returnFromReports: () => {
-                state.view = state.lastView; 
-                renderView();
-            }
-        };
-
-        function checkDeepLinks() {
-            const params = new URLSearchParams(window.location.search);
-            const subject = params.get('subject'), unit = params.get('unit'), name = params.get('name'), group = params.get('group');
-            if (name) state.userName = name.replace(/_/g, ' ');
-            if (group) state.userGroup = group.replace(/_/g, ' ');
-            if ((subject || unit) && !state.userName) { state.userName = "Alumno Externo"; state.userGroup = "Plataforma Digital"; }
-            if (subject && DATA[subject]) { 
-                state.subject = subject; 
-                scanSubjectForUnits(subject).then(() => {
-                    state.view = 'units'; 
-                    if (unit) { 
-                        if (DATA[subject].units[unit]) {
-                            state.unit = unit; 
-                            scanUnitForQuizzes(subject, unit).then(() => {
-                                state.view = 'quizzes';
-                                renderView();
-                            });
-                        } else {
-                            renderView(); 
-                        }
-                    } else {
-                        renderView();
-                    }
-                });
-            }
+        function showToast(msg) {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium shadow-lg z-50';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
         }
-      
-         function initLayout() {
+
+        function handleSubjectClick(e, url) {
+            if (!isUnlocked()) {
+                e.preventDefault();
+                const userInfo = document.getElementById('userInfoCard');
+                if (userInfo) {
+                    userInfo.classList.add('shake');
+                    setTimeout(() => userInfo.classList.remove('shake'), 500);
+                }
+                return false;
+            }
+            window.location.href = url;
+        }
+
+        function render() {
             const app = document.getElementById('app');
+            const isDark = state.darkMode;
+            const unlocked = isUnlocked();
+            
+            const glassClass = isDark ? 'glass-dark' : 'glass-light';
+            const textPrimary = isDark ? 'text-white' : 'text-slate-900';
+            const textSecondary = isDark ? 'text-slate-400' : 'text-slate-600';
+            const textMuted = isDark ? 'text-slate-500' : 'text-slate-400';
+            const borderColor = isDark ? 'border-white/5' : 'border-black/5';
+            const inputBg = isDark ? 'bg-white/5 text-white placeholder-slate-500' : 'bg-black/5 text-slate-900 placeholder-slate-400';
+            const lockedClass = unlocked ? '' : 'locked';
+
+            app.className = `responsive-container ${glassClass}`;
+
             app.innerHTML = `
-                <!-- Encabezado Persistente -->
-                <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-20 shrink-0 transition-colors shadow-sm">
-                    <div class="flex items-center justify-between gap-4">
-                        <!-- Identidad (Logo + Nombre) -->
-                        <div class="flex items-center gap-3">
-                            <img src="https://www.cefimat.com/images/Logoc.png" class="w-10 h-10 object-contain" alt="Logo CEFIMAT" onerror="this.src='https://www.google.com/s2/favicons?domain=cefimat.com&sz=64'">
-                            <div class="text-left">
-                                <h1 class="text-sm font-black text-slate-900 dark:text-white leading-none">CEFIMAT Asesorías</h1>
-                                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight mt-0.5">Centro Físico-Matemático</p>
-                            </div>
+                <!-- Header -->
+                <div class="px-6 py-5 border-b ${borderColor} flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                            <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
                         </div>
-                        
-                        <!-- Acciones -->
-                        <div class="flex items-center gap-1.5">
-                            <button onclick="actions.toggleTheme()" class="btn-active w-9 h-9 flex items-center justify-center bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-amber-400 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
-                                <i data-lucide="${state.theme === 'light' ? 'moon' : 'sun'}" width="16"></i>
-                            </button>
-                            <button onclick="actions.goToReports()" class="btn-active w-9 h-9 flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-100 dark:border-emerald-900/50 transition-colors">
-                                <i data-lucide="bar-chart-2" width="16"></i>
-                            </button>
-                            <button onclick="actions.reset()" class="btn-active w-9 h-9 flex items-center justify-center bg-slate-900 dark:bg-slate-700 text-white rounded-xl shadow-md transition-colors">
-                                <i data-lucide="home" width="16"></i>
-                            </button>
+                        <div>
+                            <h1 class="text-lg font-bold ${textPrimary}">CEFIMAT</h1>
+                            <p class="text-[10px] ${textMuted} uppercase tracking-wider">Centro Fisico-Matematico</p>
                         </div>
                     </div>
-
-                    <!-- Barra de Redes Sociales -->
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50 dark:border-slate-800/50">
-                        <div class="flex items-center gap-4 text-slate-400 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-icon hover:text-indigo-600 transition-colors"><i data-lucide="facebook" width="16"></i></a>
-                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-icon hover:text-pink-600 transition-colors"><i data-lucide="instagram" width="16"></i></a>
-                            <a href="https://api.whatsapp.com/message/5AMDZSW6XC24L1" target="_blank" class="social-icon hover:text-emerald-600 transition-colors">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-7.6 8.38 8.38 0 0 1 3.8.9L21 3.5Z"/></svg>
-                            </a>
-                            <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-icon hover:text-slate-900 dark:hover:text-white transition-colors">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>
-                            </a>
-                        </div>
-                        <a href="https://www.cefimat.com/" target="_blank" class="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-900/50 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
-                            <i data-lucide="globe" width="12"></i> Web Oficial
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all">
+                            <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                        </button>
+                        <a href="https://open.spotify.com/user/cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-green-500">
+                            <i data-lucide="music" class="w-4 h-4"></i>
+                        </a>
+                        <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-blue-500">
+                            <i data-lucide="facebook" class="w-4 h-4"></i>
+                        </a>
+                        <a href="https://www.instagram.com/cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-pink-500">
+                            <i data-lucide="instagram" class="w-4 h-4"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-slate-100">
+                            <i data-lucide="video" class="w-4 h-4"></i>
+                        </a>
+                        <a href="https://www.cefimat.com/" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500">
+                            <i data-lucide="globe" class="w-4 h-4"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Contenido Dinámico -->
-                <div id="view-content" class="flex-1 overflow-y-auto custom-scrollbar p-6 pb-12 dark:text-slate-200 transition-colors"></div>
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                    <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                        <!-- Hero -->
+                        <div class="text-center space-y-4 py-2">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${glassClass} text-xs text-indigo-500 font-medium">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                INGRESO A LICENCIATURA
+                            </div>
+                            <h2 class="text-4xl md:text-5xl font-black ${textPrimary} leading-tight">
+                                Prepara tu<br>
+                                <span class="gradient-text">Examen</span>
+                            </h2>
+                        </div>
+
+                        <!-- User Info (Centro) -->
+                        <div id="userInfoCard" class="${glassClass} rounded-2xl p-6 ${!unlocked ? 'ring-2 ring-indigo-500/50' : ''}">
+                            <div class="text-center mb-4">
+                                <p class="${textSecondary} text-sm">
+                                    ${unlocked 
+                                        ? `<i data-lucide="check-circle" class="w-4 h-4 inline mr-1 text-emerald-500"></i>Bienvenido, <strong class="${textPrimary}">${state.userName}</strong>`
+                                        : `<i data-lucide="lock" class="w-4 h-4 inline mr-1 text-amber-500"></i>Ingresa tus datos para desbloquear las materias`
+                                    }
+                                </p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <div class="flex-1">
+                                    <label class="block text-xs ${textSecondary} mb-2 font-medium">
+                                        <i data-lucide="user" class="w-3 h-3 inline mr-1"></i>Nombre
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="userName"
+                                        value="${state.userName}"
+                                        onblur="saveUserName()"
+                                        onkeydown="if(event.key==='Enter')handleIngresar()"
+                                        placeholder="Tu nombre..."
+                                        class="w-full px-4 py-3 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm"
+                                    >
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-xs ${textSecondary} mb-2 font-medium">
+                                        <i data-lucide="users" class="w-3 h-3 inline mr-1"></i>Grupo
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="userGroup"
+                                        value="${state.userGroup}"
+                                        onblur="saveUserGroup()"
+                                        onkeydown="if(event.key==='Enter')handleIngresar()"
+                                        placeholder="Tu grupo..."
+                                        class="w-full px-4 py-3 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm"
+                                    >
+                                </div>
+                                <div class="flex items-end">
+                                    <button 
+                                        onclick="handleIngresar()"
+                                        class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                                    >
+                                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                                        Ingresar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Materias Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- Historia de Mexico -->
+                            <a href="#" onclick="handleSubjectClick(event, 'historia_mexico.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center gap-4">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                                    <i data-lucide="scroll-text" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-sm font-bold text-emerald-500">Historia de Mexico</span>
+                                    <p class="text-xs ${textMuted} mt-1">8 unidades disponibles</p>
+                                </div>
+                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
+                            </a>
+
+                            <!-- Historia Universal -->
+                            <a href="#" onclick="handleSubjectClick(event, 'historia_universal.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col items-center gap-4">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                                    <i data-lucide="globe-2" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-sm font-bold text-indigo-500">Historia Universal</span>
+                                    <p class="text-xs ${textMuted} mt-1">8 unidades disponibles</p>
+                                </div>
+                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
+                            </a>
+
+                            <!-- Geografia -->
+                            <a href="#" onclick="handleSubjectClick(event, 'geografia.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col items-center gap-4">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                                    <i data-lucide="map" class="w-7 h-7 text-white"></i>
+                                </div>
+                                <div class="text-center">
+                                    <span class="text-sm font-bold text-amber-500">Geografia</span>
+                                    <p class="text-xs ${textMuted} mt-1">2 unidades disponibles</p>
+                                </div>
+                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
+                            </a>
+                        </div>
+
+                        <!-- Proximas materias -->
+                        <div class="${glassClass} rounded-2xl p-4 text-center">
+                            <p class="text-xs ${textSecondary}">
+                                <i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>
+                                Mas materias proximamente: Literatura, Filosofia, Matematicas, Fisica, Quimica, Biologia, Espanol
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Footer -->
-                <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between shrink-0 transition-colors text-center">
-                    <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">PLATAFORMA DISEÑADA POR CEFIMAT ASESORIAS</span>
-                    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-500"></div><span class="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Activo</span></div>
+                <div class="px-6 py-4 border-t ${borderColor} flex items-center justify-between">
+                    <span class="text-[10px] ${textMuted} uppercase tracking-wider">CEFIMAT Asesorias 2024</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span class="text-[10px] text-emerald-500 uppercase tracking-wider font-bold">Activo</span>
+                    </div>
                 </div>
             `;
+
             lucide.createIcons();
-            renderView();
+            
+            // Restore cursor position in inputs
+            const nameInput = document.getElementById('userName');
+            const groupInput = document.getElementById('userGroup');
+            if (nameInput && document.activeElement?.id === 'userName') {
+                nameInput.focus();
+            }
+            if (groupInput && document.activeElement?.id === 'userGroup') {
+                groupInput.focus();
+            }
         }
 
-        function renderView() {
-            const container = document.getElementById('view-content');
-            let html = "";
-
-            if (state.isLoading) {
-                html = `
-                    <div class="flex flex-col items-center justify-center h-full space-y-6 fade-in">
-                        <div class="loader"></div>
-                        <div class="text-center space-y-2">
-                            <p class="text-sm font-black text-slate-700 dark:text-white uppercase tracking-widest animate-pulse">Cargando</p>
-                            <p class="text-[10px] text-slate-400 font-medium">${state.loadingMessage}</p>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML = html;
-                return;
-            }
-
-            if (state.view === 'welcome') {
-                const canStart = state.userName.trim() !== '' && state.userGroup.trim() !== '';
-                html = `
-                    <div class="space-y-8 fade-in text-center">
-                        <div class="space-y-4">
-                            <div class="flex justify-center"><span class="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-[9px] font-black tracking-[0.25em] shadow-lg uppercase">INGRESO A LICENCIATURA</span></div>
-                            <h2 class="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-none text-center">Impulsa tus <br/><span class="text-indigo-600 dark:text-indigo-400 text-5xl md:text-6xl">Resultados</span></h2>
-                            <p class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">PREGUNTAS TIPO EXAMEN</p>
-                        </div>
-                        <div class="space-y-3 max-w-sm mx-auto">
-                            <input type="text" placeholder="NOMBRE COMPLETO" oninput="actions.updateInput('userName', this.value)" value="${state.userName}" class="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none text-xs font-bold bg-slate-50 dark:bg-slate-800 dark:text-white uppercase focus:border-indigo-500 transition-colors shadow-sm text-center">
-                            <input type="text" placeholder="GRUPO" oninput="actions.updateInput('userGroup', this.value)" value="${state.userGroup}" class="w-full px-5 py-4 rounded-xl border border-slate-200 dark:border-slate-700 outline-none text-xs font-bold bg-slate-50 dark:bg-slate-800 dark:text-white uppercase focus:border-indigo-500 transition-colors shadow-sm text-center">
-                        </div>
-                        <div class="space-y-6 pt-2">
-                            <div class="flex items-center gap-3">
-                                <div class="h-[1px] bg-slate-200 dark:bg-slate-800 flex-1"></div>
-                                <span id="helper-text" class="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase text-center">${canStart ? 'SELECCIONA MATERIA' : 'INGRESA TUS DATOS PARA COMENZAR'}</span>
-                                <div class="h-[1px] bg-slate-200 dark:bg-slate-800 flex-1"></div>
-                            </div>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                ${Object.keys(DATA).map(key => {
-                                    const m = DATA[key];
-                                    const isActive = canStart;
-                                    return `<button onclick="actions.setSubject('${key}')" ${!isActive ? 'disabled' : ''} class="btn-active subject-card p-5 rounded-3xl border ${m.border} ${m.bg} ${m.darkBg} ${m.darkBorder} ${isActive ? 'opacity-100' : 'opacity-50'} flex flex-col items-center gap-3 shadow-sm text-center">
-                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white ${m.accent} shadow-md"><i data-lucide="${m.icon}" width="20"></i></div>
-                                        <span class="font-bold ${m.text} text-[11px] uppercase">${m.title}</span>
-                                    </button>`;
-                                }).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            else if (state.view === 'units') {
-                const m = DATA[state.subject];
-                const unitKeys = Object.keys(m.units);
-                
-                html = `
-                    <div class="space-y-8 fade-in text-center">
-                        <button onclick="actions.reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
-                        <div class="space-y-3">
-                            <div class="w-16 h-16 ${m.accent} rounded-3xl mx-auto flex items-center justify-center text-white shadow-xl"><i data-lucide="${m.icon}" width="28"></i></div>
-                            <h2 class="text-3xl font-black text-slate-900 dark:text-white uppercase">${m.title}</h2>
-                        </div>
-                        <div class="space-y-4 text-left max-w-xl mx-auto">
-                            ${unitKeys.length === 0 ? 
-                                `<div class="p-8 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 text-xs text-center">No se encontraron carpetas 'Unidad_X' con cuestionarios.</div>` :
-                                unitKeys.map(key => `
-                                <button onclick="actions.setUnit('${key}')" class="btn-active w-full p-6 rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shadow-sm">
-                                    <div class="flex items-center gap-4 mb-2">
-                                        <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0"><i data-lucide="layers" width="14"></i></div>
-                                        <span class="font-extrabold text-slate-900 dark:text-slate-100 uppercase text-xs">${m.units[key].label}</span>
-                                    </div>
-                                    <p class="text-[10px] font-medium text-slate-500 pl-12">${m.units[key].desc}</p>
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            else if (state.view === 'quizzes') {
-                const unit = DATA[state.subject].units[state.unit];
-                const quizKeys = Object.keys(unit.quizzes);
-                
-                html = `
-                    <div class="space-y-8 fade-in text-center">
-                        <button onclick="actions.goToUnits()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mx-auto"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
-                        <h2 class="text-2xl font-black text-slate-900 dark:text-white uppercase">${unit.label}</h2>
-                        <div class="grid gap-3 max-w-lg mx-auto">
-                            ${quizKeys.length === 0 ? 
-                                `<div class="p-8 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 text-xs">No se encontraron archivos Cuestionario_X.pdf en esta carpeta.</div>` :
-                                quizKeys.map(key => {
-                                const q = unit.quizzes[key];
-                                return `
-                                    <button onclick="actions.startQuiz('${key}')" class="btn-active w-full p-5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shadow-sm">
-                                        <div class="flex flex-col text-left max-w-[70%]">
-                                            <span class="font-black text-slate-900 dark:text-slate-100 uppercase text-xs truncate">${q.label}</span>
-                                            <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 uppercase mt-1">
-                                                <i data-lucide="file-text" width="10"></i> ${q.fileName}
-                                            </div>
-                                        </div>
-                                        <span class="diff-tag diff-${q.type}">${q.type}</span>
-                                    </button>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            else if (state.view === 'quiz') {
-                const total = state.loadedQuestions.length;
-                const q = state.loadedQuestions[state.currentQuestion];
-                
-                html = `
-                    <div class="space-y-6 fade-in">
-                        <button onclick="actions.goToQuizzes()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 mb-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
-                        
-                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-900 p-5 rounded-3xl">
-                            <div class="space-y-1.5">
-                                <span class="text-[9px] font-black text-slate-400 uppercase">PROGRESO ${state.currentQuestion + 1}/${total}</span>
-                                <div class="w-40 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div class="h-full bg-indigo-500" style="width: ${((state.currentQuestion + 1) / total) * 100}%"></div>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl shadow-sm border border-slate-100"><span class="text-[12px] font-black">${state.score} PTS</span></div>
-                        </div>
-                        
-                        <!-- UI DE PISTA DINÁMICA -->
-                        <div class="flex flex-col gap-2">
-                            <button onclick="actions.toggleHint()" class="self-start flex items-center gap-2 text-[10px] font-bold text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-900/30 transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40">
-                                <i data-lucide="${state.showHint ? 'eye-off' : 'eye'}" width="14"></i>
-                                ${state.showHint ? 'OCULTAR PISTA' : 'VER PISTA'}
-                            </button>
-                            
-                            ${state.showHint ? `
-                            <div class="fade-in p-4 bg-amber-50 dark:bg-amber-950/30 rounded-2xl text-amber-700 dark:text-amber-400 text-[11px] font-medium border border-amber-200 dark:border-amber-900/50 flex items-start gap-3">
-                                <i data-lucide="lightbulb" width="16" class="text-amber-500 shrink-0 mt-0.5"></i>
-                                <span><span class="uppercase font-black mr-1">Pista:</span> ${q.h}</span>
-                            </div>
-                            ` : ''}
-                        </div>
-
-                        <h3 class="text-xl font-black text-slate-900 dark:text-white leading-snug text-center">${q.q}</h3>
-                        <div class="grid gap-3">
-                            ${q.a.map((opt, i) => {
-                                let style = "border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800";
-                                if (state.isAnswered) {
-                                    if (i === q.c) style = "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/50 border-2";
-                                    else if (i === state.selectedOption) style = "border-red-500 bg-red-50 dark:bg-red-950/50 border-2";
-                                }
-                                return `<button onclick="actions.handleAnswer(${i})" ${state.isAnswered ? 'disabled' : ''} class="btn-active p-5 rounded-2xl text-left border font-bold text-[12px] ${style} transition-all">${opt}</button>`;
-                            }).join('')}
-                        </div>
-                        ${state.isAnswered ? `<button onclick="actions.nextQuestion()" class="btn-active w-full bg-slate-900 text-white p-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl">Siguiente Pregunta</button>` : ''}
-                    </div>
-                `;
-            }
-
-            else if (state.view === 'finished') {
-                const total = state.loadedQuestions.length;
-                const perc = Math.round((state.score / total) * 100);
-                html = `
-                    <div class="text-center space-y-8 py-8 fade-in">
-                        <div class="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-inner border border-slate-200"><i data-lucide="award" width="48" class="text-slate-900 dark:text-amber-400"></i></div>
-                        <div class="space-y-2">
-                            <h2 class="text-4xl font-black text-slate-900 dark:text-white uppercase">¡LOGRADO!</h2>
-                            <p class="text-slate-400 font-bold uppercase text-[10px]">${state.userName}</p>
-                        </div>
-                        <div class="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl mx-2">
-                            <span class="block text-[9px] font-black text-slate-400 uppercase mb-4">RESULTADO FINAL</span>
-                            <div class="flex items-end justify-center gap-2">
-                                <span class="text-7xl font-black text-slate-900 dark:text-white leading-none">${state.score}</span>
-                                <span class="text-2xl font-bold text-slate-200 dark:text-slate-700 mb-2">/ ${total}</span>
-                            </div>
-                            <div class="mt-6 space-y-4">
-                                <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${perc}%"></div></div>
-                                <span class="text-xs font-black">${perc}% EFECTIVIDAD</span>
-                            </div>
-                            <div class="mt-8 p-5 bg-indigo-50 dark:bg-indigo-900/30 rounded-3xl border-2 border-indigo-100">
-                                <p class="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 italic">"${getHumorousPhrase(perc)}"</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 px-2">
-                            <button onclick="actions.goToReports()" class="btn-active w-full bg-slate-100 text-slate-900 p-5 rounded-2xl font-black text-[10px] uppercase shadow-sm">Historial</button>
-                            <button onclick="actions.reset()" class="btn-active w-full bg-slate-900 text-white p-5 rounded-2xl font-black text-[10px] uppercase shadow-xl">Inicio</button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            else if (state.view === 'reports') {
-                html = `
-                    <div class="space-y-8 fade-in">
-                        <div class="flex items-center justify-between">
-                            <button onclick="actions.returnFromReports()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"><i data-lucide="chevron-left" width="16"></i> Regresar</button>
-                            <span class="text-[10px] font-black uppercase">Historial</span>
-                        </div>
-                        <div class="space-y-4">
-                            ${state.reports.length === 0 ? '<p class="text-center text-slate-400 text-xs py-20">No hay registros aún.</p>' : 
-                            state.reports.map(rep => `
-                                <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
-                                    <div>
-                                        <div class="flex items-center gap-2"><span class="text-[10px] font-black uppercase">${rep.quizLabel}</span><span class="text-[7px] text-slate-400">${rep.date}</span></div>
-                                        <div class="text-xs font-bold text-slate-500">${rep.subjectTitle} - ${rep.unitLabel}</div>
-                                    </div>
-                                    <div class="text-right"><span class="text-xl font-black">${rep.score}</span><span class="text-[9px] text-slate-400">/${rep.total}</span></div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = html;
-            lucide.createIcons(container);
-            container.scrollTop = 0;
-        }
-
-        window.onload = () => {
-            checkDeepLinks();
-            initLayout();
-        };
+        // Init
+        applyTheme();
     </script>
 </body>
 </html>

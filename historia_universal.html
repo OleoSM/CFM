@@ -1,0 +1,619 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Historia Universal - CEFIMAT</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+
+        body.dark { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .responsive-container {
+            width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
+            .responsive-container {
+                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
+                border-radius: 2rem; overflow: hidden;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+
+        .card-hover { transition: all 0.3s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #059669, #047857);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .loader {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(16, 185, 129, 0.1);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
+
+        .theme-toggle:hover { transform: rotate(180deg); }
+    </style>
+</head>
+<body id="body">
+    <div id="app" class="responsive-container"></div>
+
+    <script>
+        const SUBJECT = {
+            key: 'historia_universal',
+            folderName: 'Historia_Universal',
+            title: 'Historia Universal',
+            icon: 'globe-2',
+            color: 'indigo'
+        };
+
+        const state = {
+            view: 'units',
+            unit: null,
+            quiz: null,
+            currentQuestion: 0,
+            score: 0,
+            isAnswered: false,
+            selectedOption: null,
+            showHint: false,
+            isLoading: true,
+            loadingMessage: 'Cargando unidades...',
+            loadedQuestions: [],
+            units: {},
+            scannedUnits: {},
+            darkMode: localStorage.getItem('darkMode') !== 'false'
+        };
+
+        // Theme
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.getElementById('body');
+            if (state.darkMode) {
+                body.classList.add('dark');
+            } else {
+                body.classList.remove('dark');
+            }
+        }
+
+        function getThemeClasses() {
+            const isDark = state.darkMode;
+            return {
+                glass: isDark ? 'glass-dark' : 'glass-light',
+                textPrimary: isDark ? 'text-white' : 'text-slate-900',
+                textSecondary: isDark ? 'text-slate-400' : 'text-slate-600',
+                textMuted: isDark ? 'text-slate-500' : 'text-slate-400',
+                border: isDark ? 'border-white/5' : 'border-black/5',
+                btnPrimary: `bg-gradient-to-r from-${SUBJECT.color}-500 to-${SUBJECT.color}-600 text-white`,
+                subjectBg: `bg-${SUBJECT.color}-500/10`,
+                subjectBorder: `border-${SUBJECT.color}-500/20`,
+                subjectText: `text-${SUBJECT.color}-500`,
+                gradientIcon: `from-${SUBJECT.color}-500 to-${SUBJECT.color}-600`
+            };
+        }
+
+        // --- PDF Functions ---
+        function normalizeText(text) {
+            if (!text) return "";
+            let normalized = text;
+            try {
+                if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
+                    normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
+                }
+            } catch (e) {}
+            return normalized.normalize("NFKC").replace(/\s+/g, " ").trim();
+        }
+
+        async function extractTextFromPDF(url) {
+            const pdf = await pdfjsLib.getDocument(url).promise;
+            let fullText = "";
+            for (let j = 1; j <= pdf.numPages; j++) {
+                state.loadingMessage = `Leyendo pagina ${j}/${pdf.numPages}...`;
+                renderView();
+                const page = await pdf.getPage(j);
+                const tc = await page.getTextContent();
+                fullText += tc.items.map(s => s.str).join(" ") + " ";
+            }
+            return fullText;
+        }
+
+        function parseQuizText(text) {
+            const questions = [];
+            let cleanText = normalizeText(text);
+            let blocks = [];
+            
+            if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
+            else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+
+            blocks.forEach(block => {
+                if (!block.includes("A)") && !block.includes("a)")) return;
+                try {
+                    const parts = block.split(/\s+[Aa][).\-]+\s+/);
+                    if (parts.length < 2) return;
+                    
+                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
+                    if (!q || q.length < 5) return;
+
+                    const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
+                    if (optParts.length < 4) return;
+
+                    let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
+                    
+                    let hint = "Sin pista disponible.";
+                    const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
+                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
+                    const nq = opts[3].match(/\s+\d+[).\-]/);
+                    if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
+
+                    let correct = 0;
+                    opts = opts.map((o, i) => {
+                        if (o.includes('âœ“') || o.includes('âœ”') || o.toLowerCase().includes('(correcta)')) correct = i;
+                        return o.replace(/[âœ“âœ”]/g, '').replace(/\(correcta\)/gi, '').trim();
+                    });
+
+                    if (opts.some(o => !o)) return;
+                    questions.push({ q, a: opts, c: correct, h: hint });
+                } catch (e) {}
+            });
+            return questions;
+        }
+
+        // --- Scan Functions ---
+        async function scanUnits() {
+            state.isLoading = true;
+            state.loadingMessage = 'Buscando unidades...';
+            renderView();
+
+            const units = {};
+            for (let i = 1; i <= 20; i++) {
+                try {
+                    await pdfjsLib.getDocument(`./${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
+                    units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
+                } catch { break; }
+            }
+            state.units = units;
+            state.isLoading = false;
+            renderView();
+        }
+
+        async function scanQuizzes(unitKey) {
+            if (state.scannedUnits[unitKey]) return;
+            
+            state.isLoading = true;
+            state.loadingMessage = 'Buscando cuestionarios...';
+            renderView();
+
+            const unit = state.units[unitKey];
+            const quizzes = {};
+            
+            for (let i = 1; i <= 20; i++) {
+                try {
+                    const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
+                    const page = await pdf.getPage(1);
+                    const tc = await page.getTextContent();
+                    const txt = normalizeText(tc.items.map(s => s.str).join(" "));
+                    
+                    let title = `Cuestionario ${i}`;
+                    const idx = txt.search(/\b1\.-/);
+                    if (idx > 0) {
+                        const h = txt.substring(0, idx).trim();
+                        if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
+                    }
+                    quizzes[`q${i}`] = { fileName: `Cuestionario_${i}.pdf`, label: title, number: i };
+                } catch { break; }
+            }
+            
+            state.units[unitKey].quizzes = quizzes;
+            state.scannedUnits[unitKey] = true;
+            state.isLoading = false;
+            renderView();
+        }
+
+        // --- URL Hash Functions ---
+        function updateHash() {
+            let hash = '';
+            if (state.unit) hash = state.unit;
+            if (state.unit && state.quiz) hash = `${state.unit}/${state.quiz}`;
+            window.location.hash = hash;
+        }
+
+        function getShareLink() {
+            return window.location.href;
+        }
+
+        function getMateriaLink() {
+            return window.location.origin + window.location.pathname;
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(getShareLink()).then(() => {
+                showToast('Enlace copiado!');
+            });
+        }
+
+        function copyMateriaLink() {
+            navigator.clipboard.writeText(getMateriaLink()).then(() => {
+                showToast('Enlace de materia copiado!');
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium shadow-lg z-50';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        async function handleHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return;
+
+            const parts = hash.split('/');
+            const unitKey = parts[0];
+            const quizKey = parts[1];
+
+            if (unitKey && unitKey.startsWith('u')) {
+                if (Object.keys(state.units).length === 0) {
+                    await scanUnits();
+                }
+
+                if (state.units[unitKey]) {
+                    state.unit = unitKey;
+                    await scanQuizzes(unitKey);
+                    
+                    if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
+                        state.view = 'quizzes';
+                        await actions.startQuiz(quizKey);
+                    } else {
+                        state.view = 'quizzes';
+                        renderView();
+                    }
+                }
+            }
+        }
+
+        // --- Actions ---
+        window.actions = {
+            setUnit: async (key) => { 
+                state.unit = key; 
+                await scanQuizzes(key); 
+                state.view = 'quizzes'; 
+                updateHash();
+                renderView(); 
+            },
+            startQuiz: async (key) => {
+                state.quiz = key;
+                state.isLoading = true;
+                state.loadingMessage = 'Cargando cuestionario...';
+                renderView();
+
+                const unit = state.units[state.unit];
+                const quiz = unit.quizzes[key];
+                
+                try {
+                    const text = await extractTextFromPDF(`./${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
+                    const questions = parseQuizText(text);
+                    if (questions.length === 0) throw new Error("No se encontraron preguntas");
+
+                    state.loadedQuestions = questions;
+                    state.currentQuestion = 0;
+                    state.score = 0;
+                    state.isAnswered = false;
+                    state.showHint = false;
+                    state.isLoading = false;
+                    state.view = 'quiz';
+                    updateHash();
+                    renderView();
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                    state.isLoading = false;
+                    state.view = 'quizzes';
+                    renderView();
+                }
+            },
+            answer: (idx) => {
+                if (state.isAnswered) return;
+                state.selectedOption = idx;
+                state.isAnswered = true;
+                if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
+                renderView();
+            },
+            next: () => {
+                if (state.currentQuestion + 1 < state.loadedQuestions.length) {
+                    state.currentQuestion++;
+                    state.isAnswered = false;
+                    state.showHint = false;
+                    renderView();
+                } else {
+                    state.view = 'finished';
+                    renderView();
+                }
+            },
+            hint: () => { state.showHint = !state.showHint; renderView(); },
+            goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
+            goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
+            restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
+            copyLink: () => { copyLink(); }
+        };
+
+        // --- Render ---
+        function renderView() {
+            const app = document.getElementById('app');
+            const t = getThemeClasses();
+            
+            app.className = `responsive-container ${t.glass}`;
+
+            const header = `
+                <div class="px-6 py-4 border-b ${t.border} flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <a href="index.html" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        </a>
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg">
+                            <i data-lucide="${SUBJECT.icon}" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-sm font-bold ${t.textPrimary}">${SUBJECT.title}</h1>
+                            <p class="text-[10px] ${t.textMuted}">CEFIMAT</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${state.view !== 'units' ? `
+                            <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText}" title="Copiar enlace">
+                                <i data-lucide="link" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                        <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
+                            <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            let content = '';
+
+            if (state.isLoading) {
+                content = `${header}
+                    <div class="flex-1 flex flex-col items-center justify-center gap-6 p-8">
+                        <div class="loader"></div>
+                        <p class="${t.textPrimary} font-medium">${state.loadingMessage}</p>
+                    </div>`;
+            }
+            else if (state.view === 'units') {
+                const units = Object.entries(state.units);
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in">
+                            <div class="flex items-center justify-between">
+                                <div></div>
+                                <div class="text-center flex-1">
+                                    <h2 class="text-2xl font-black ${t.textPrimary}">Selecciona una Unidad</h2>
+                                    <p class="${t.textSecondary} text-sm">${units.length} unidades disponibles</p>
+                                </div>
+                                <button onclick="copyMateriaLink()" class="flex items-center gap-2 px-3 py-2 rounded-xl ${t.glass} ${t.textSecondary} hover:${t.subjectText} text-xs transition-colors" title="Copiar enlace de materia">
+                                    <i data-lucide="link" class="w-3 h-3"></i>
+                                    <span class="hidden sm:inline">Copiar URL</span>
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8">No se encontraron unidades</p>` :
+                                units.map(([k, u]) => `
+                                    <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl ${t.glass} card-hover flex items-center gap-4 text-left">
+                                        <div class="w-12 h-12 rounded-xl ${t.subjectBg} ${t.subjectBorder} border flex items-center justify-center">
+                                            <span class="${t.subjectText} font-black text-lg">${k.replace('u','')}</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="${t.textPrimary} font-bold">${u.label}</h3>
+                                            <p class="${t.textSecondary} text-xs">Cuestionarios disponibles</p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 ${t.textMuted}"></i>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            else if (state.view === 'quizzes') {
+                const unit = state.units[state.unit];
+                const quizzes = Object.entries(unit.quizzes);
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in">
+                            <div class="flex items-center justify-between">
+                                <button onclick="actions.goUnits()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Regresar
+                                </button>
+                                <button onclick="actions.copyLink()" class="flex items-center gap-2 px-3 py-2 rounded-xl ${t.glass} ${t.textSecondary} hover:${t.subjectText} text-xs transition-colors" title="Copiar enlace de unidad">
+                                    <i data-lucide="link" class="w-3 h-3"></i>
+                                    <span class="hidden sm:inline">Copiar URL</span>
+                                </button>
+                            </div>
+                            <div class="text-center space-y-2">
+                                <h2 class="text-2xl font-black ${t.textPrimary}">${unit.label}</h2>
+                                <p class="${t.textSecondary} text-sm">${quizzes.length} cuestionarios</p>
+                            </div>
+                            <div class="space-y-3">
+                                ${quizzes.map(([k, q]) => `
+                                    <button onclick="actions.startQuiz('${k}')" class="w-full p-5 rounded-2xl ${t.glass} card-hover flex items-center gap-4 text-left">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg">
+                                            <span class="text-white font-black">${q.number}</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h3 class="${t.textPrimary} font-bold truncate">${q.label}</h3>
+                                            <p class="${t.textSecondary} text-xs">${q.fileName}</p>
+                                        </div>
+                                        <i data-lucide="play" class="w-5 h-5 ${t.subjectText}"></i>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            else if (state.view === 'quiz') {
+                const q = state.loadedQuestions[state.currentQuestion];
+                const total = state.loadedQuestions.length;
+                const progress = ((state.currentQuestion + 1) / total) * 100;
+                
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up">
+                            <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                            </button>
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs ${t.textSecondary}">Pregunta ${state.currentQuestion + 1}/${total}</span>
+                                        <span class="text-xs font-bold ${t.subjectText}">${state.score} pts</span>
+                                    </div>
+                                    <div class="h-2 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                        <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="${t.glass} rounded-2xl p-6 space-y-4">
+                                <h3 class="text-lg font-bold ${t.textPrimary} leading-relaxed">${q.q}</h3>
+                                ${state.showHint ? `
+                                    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                        <p class="text-sm text-amber-600 dark:text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
+                                    </div>
+                                ` : `<button onclick="actions.hint()" class="text-xs text-amber-500 hover:text-amber-400"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
+                            </div>
+                            <div class="space-y-3">
+                                ${q.a.map((opt, i) => {
+                                    let cls = `${t.glass} ${t.border}`;
+                                    let icon = '';
+                                    if (state.isAnswered) {
+                                        if (i === q.c) { cls = 'bg-emerald-500/20 border-emerald-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>'; }
+                                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-500"></i>'; }
+                                    }
+                                    return `
+                                        <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-${SUBJECT.color}-500/50 transition-all">
+                                            <span class="w-8 h-8 rounded-lg ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} flex items-center justify-center text-sm font-bold ${t.textSecondary}">${String.fromCharCode(65+i)}</span>
+                                            <span class="flex-1 text-sm ${t.textPrimary}">${opt}</span>
+                                            ${icon}
+                                        </button>`;
+                                }).join('')}
+                            </div>
+                            ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Ver Resultados'}</button>` : ''}
+                        </div>
+                    </div>`;
+            }
+            else if (state.view === 'finished') {
+                const total = state.loadedQuestions.length;
+                const perc = Math.round((state.score / total) * 100);
+                const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
+                
+                content = `${header}
+                    <div class="flex-1 flex items-center justify-center p-6">
+                        <div class="text-center space-y-8 fade-in max-w-md">
+                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
+                                <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black ${t.textPrimary}">${msg}</h2>
+                            </div>
+                            <div class="${t.glass} rounded-3xl p-8 space-y-6">
+                                <div class="flex items-end justify-center gap-2">
+                                    <span class="text-6xl font-black ${t.subjectText}">${state.score}</span>
+                                    <span class="text-2xl ${t.textMuted} mb-2">/ ${total}</span>
+                                </div>
+                                <div class="h-3 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                    <div class="h-full progress-bar rounded-full" style="width:${perc}%"></div>
+                                </div>
+                                <p class="${t.textSecondary}">${perc}% de efectividad</p>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl ${t.glass} ${t.textPrimary} font-bold hover:opacity-80">Otro Quiz</button>
+                                <a href="index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            app.innerHTML = content;
+            lucide.createIcons();
+        }
+
+        // Init
+        async function init() {
+            applyTheme();
+            const hash = window.location.hash.slice(1);
+            if (hash) {
+                await handleHash();
+            } else {
+                await scanUnits();
+            }
+        }
+        init();
+    </script>
+</body>
+</html>
+
