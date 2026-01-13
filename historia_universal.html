@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -166,7 +166,25 @@
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
             } catch (e) {}
-            return normalized.normalize("NFKC").replace(/\s+/g, " ").trim();
+            // Normalizar y limpiar caracteres especiales
+            normalized = normalized.normalize("NFKC");
+            // Reemplazar tildes con versiones sin tilde
+            normalized = normalized
+                .replace(/[áàäâã]/gi, match => match === match.toUpperCase() ? 'A' : 'a')
+                .replace(/[éèëê]/gi, match => match === match.toUpperCase() ? 'E' : 'e')
+                .replace(/[íìïî]/gi, match => match === match.toUpperCase() ? 'I' : 'i')
+                .replace(/[óòöôõ]/gi, match => match === match.toUpperCase() ? 'O' : 'o')
+                .replace(/[úùüû]/gi, match => match === match.toUpperCase() ? 'U' : 'u')
+                .replace(/ñ/gi, match => match === match.toUpperCase() ? 'N' : 'n');
+            // Limpiar guiones especiales y simbolos ortograficos
+            normalized = normalized
+                .replace(/[–—−]/g, '-')  // Diferentes tipos de guiones a guion simple
+                .replace(/[''´`]/g, "'") // Diferentes apostrofes
+                .replace(/[""]/g, '"')   // Diferentes comillas
+                .replace(/[¿¡]/g, '')    // Quitar signos de interrogacion/exclamacion invertidos
+                .replace(/\s+/g, " ")
+                .trim();
+            return normalized;
         }
 
         async function extractTextFromPDF(url) {
@@ -212,9 +230,20 @@
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
+                    // Detectar cual opcion tiene el check/palomita (diversas variantes)
+                    const checkPatterns = /[✓✔☑✅√▸►●•∙]/;
                     opts = opts.map((o, i) => {
-                        if (o.includes('âœ“') || o.includes('âœ”') || o.toLowerCase().includes('(correcta)')) correct = i;
-                        return o.replace(/[âœ“âœ”]/g, '').replace(/\(correcta\)/gi, '').trim();
+                        // Buscar checks, palomitas o marcadores de respuesta correcta
+                        if (checkPatterns.test(o) || o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                            correct = i;
+                        }
+                        // Limpiar todos los simbolos de check y marcadores
+                        return o
+                            .replace(/[✓✔☑✅√▸►●•∙]/g, '')
+                            .replace(/\(correcta\)/gi, '')
+                            .replace(/\(correcto\)/gi, '')
+                            .replace(/^\s*[-_]\s*/, '')
+                            .trim();
                     });
 
                     if (opts.some(o => !o)) return;
@@ -425,11 +454,6 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        ${state.view !== 'units' ? `
-                            <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText}" title="Copiar enlace">
-                                <i data-lucide="link" class="w-4 h-4"></i>
-                            </button>
-                        ` : ''}
                         <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
                             <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
                         </button>
@@ -457,10 +481,7 @@
                                     <h2 class="text-2xl font-black ${t.textPrimary}">Selecciona una Unidad</h2>
                                     <p class="${t.textSecondary} text-sm">${units.length} unidades disponibles</p>
                                 </div>
-                                <button onclick="copyMateriaLink()" class="flex items-center gap-2 px-3 py-2 rounded-xl ${t.glass} ${t.textSecondary} hover:${t.subjectText} text-xs transition-colors" title="Copiar enlace de materia">
-                                    <i data-lucide="link" class="w-3 h-3"></i>
-                                    <span class="hidden sm:inline">Copiar URL</span>
-                                </button>
+                                <div></div>
                             </div>
                             <div class="space-y-3">
                                 ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8">No se encontraron unidades</p>` :
@@ -489,10 +510,6 @@
                             <div class="flex items-center justify-between">
                                 <button onclick="actions.goUnits()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
                                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Regresar
-                                </button>
-                                <button onclick="actions.copyLink()" class="flex items-center gap-2 px-3 py-2 rounded-xl ${t.glass} ${t.textSecondary} hover:${t.subjectText} text-xs transition-colors" title="Copiar enlace de unidad">
-                                    <i data-lucide="link" class="w-3 h-3"></i>
-                                    <span class="hidden sm:inline">Copiar URL</span>
                                 </button>
                             </div>
                             <div class="text-center space-y-2">

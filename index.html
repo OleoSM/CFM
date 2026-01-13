@@ -263,33 +263,16 @@
                 <div class="px-6 py-5 border-b ${borderColor} flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                            <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+                            <i data-lucide="play-circle" class="w-6 h-6 text-white"></i>
                         </div>
                         <div>
                             <h1 class="text-lg font-bold ${textPrimary}">CEFIMAT</h1>
                             <p class="text-[10px] ${textMuted} uppercase tracking-wider">Centro Fisico-Matematico</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all">
-                            <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
-                        </button>
-                        <a href="https://open.spotify.com/user/cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-green-500">
-                            <i data-lucide="music" class="w-4 h-4"></i>
-                        </a>
-                        <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-blue-500">
-                            <i data-lucide="facebook" class="w-4 h-4"></i>
-                        </a>
-                        <a href="https://www.instagram.com/cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-pink-500">
-                            <i data-lucide="instagram" class="w-4 h-4"></i>
-                        </a>
-                        <a href="https://www.tiktok.com/@cefimat" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-slate-100">
-                            <i data-lucide="video" class="w-4 h-4"></i>
-                        </a>
-                        <a href="https://www.cefimat.com/" target="_blank" class="social-link w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500">
-                            <i data-lucide="globe" class="w-4 h-4"></i>
-                        </a>
-                    </div>
+                    <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all">
+                        <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                    </button>
                 </div>
 
                 <!-- Content -->
@@ -320,7 +303,7 @@
                             <div class="flex flex-col sm:flex-row gap-4">
                                 <div class="flex-1">
                                     <label class="block text-xs ${textSecondary} mb-2 font-medium">
-                                        <i data-lucide="user" class="w-3 h-3 inline mr-1"></i>Nombre
+                                        <i data-lucide="user" class="w-3 h-3 inline mr-1"></i>Nombre del Alumno
                                     </label>
                                     <input 
                                         type="text" 
@@ -408,11 +391,38 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="px-6 py-4 border-t ${borderColor} flex items-center justify-between">
-                    <span class="text-[10px] ${textMuted} uppercase tracking-wider">CEFIMAT Asesorias 2024</span>
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span class="text-[10px] text-emerald-500 uppercase tracking-wider font-bold">Activo</span>
+                <div class="px-6 py-4 border-t ${borderColor}">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-[10px] ${textMuted} uppercase tracking-wider">CEFIMAT Asesorias 2026</span>
+                        
+                        <!-- Redes Sociales -->
+                        <div class="flex items-center gap-4">
+                            <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-green-500 transition-colors">
+                                <i data-lucide="music" class="w-4 h-4"></i>
+                                <span class="text-xs hidden sm:inline">Spotify</span>
+                            </a>
+                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-blue-500 transition-colors">
+                                <i data-lucide="facebook" class="w-4 h-4"></i>
+                                <span class="text-xs hidden sm:inline">Facebook</span>
+                            </a>
+                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-pink-500 transition-colors">
+                                <i data-lucide="instagram" class="w-4 h-4"></i>
+                                <span class="text-xs hidden sm:inline">Instagram</span>
+                            </a>
+                            <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-slate-100 transition-colors">
+                                <i data-lucide="video" class="w-4 h-4"></i>
+                                <span class="text-xs hidden sm:inline">TikTok</span>
+                            </a>
+                            <a href="https://www.cefimat.com/" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-indigo-500 transition-colors">
+                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                <span class="text-xs hidden sm:inline">Web</span>
+                            </a>
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span class="text-[10px] text-emerald-500 uppercase tracking-wider font-bold">Activo</span>
+                        </div>
                     </div>
                 </div>
             `;
