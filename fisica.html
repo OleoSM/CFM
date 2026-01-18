@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -121,7 +121,8 @@
             loadingMessage: 'Cargando unidades...',
             loadedQuestions: [],
             units: {},
-            scannedUnits: {}
+            scannedUnits: {},
+            quizDifficulty: 'NA'
         };
 
         // --- PDF Functions ---
@@ -129,11 +130,41 @@
             if (!text) return "";
             let normalized = text;
             try {
+                // Intentar decodificar UTF-8 si es necesario
                 if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
             } catch (e) {}
-            return normalized.normalize("NFKC").replace(/\s+/g, " ").trim();
+            
+            // Normalizar y limpiar caracteres especiales
+            normalized = normalized.normalize("NFKC");
+            
+            // CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE LÍNEA
+            // Eliminar guiones al final de línea que parten palabras (ej: "pro- blema" -> "problema")
+            normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+            // Unir palabras cortadas por saltos de línea sin guión
+            normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
+            
+            // Preservar acentos y caracteres especiales del español (NO eliminarlos)
+            // Solo normalizar caracteres Unicode raros a sus equivalentes estándar
+            normalized = normalized
+                .replace(/[áàäâãå]/gi, match => match.toUpperCase() === match ? 'Á' : 'á')
+                .replace(/[éèëê]/gi, match => match.toUpperCase() === match ? 'É' : 'é')
+                .replace(/[íìïî]/gi, match => match.toUpperCase() === match ? 'Í' : 'í')
+                .replace(/[óòöôõø]/gi, match => match.toUpperCase() === match ? 'Ó' : 'ó')
+                .replace(/[úùüû]/gi, match => match.toUpperCase() === match ? 'Ú' : 'ú')
+                .replace(/[ñ]/g, 'ñ')
+                .replace(/[Ñ]/g, 'Ñ');
+            
+            // Limpiar guiones especiales y símbolos ortográficos
+            normalized = normalized
+                .replace(/[–—−]/g, '-')  // Diferentes tipos de guiones a guion simple
+                .replace(/[''´`]/g, "'") // Diferentes apóstrofes
+                .replace(/[""]/g, '"')   // Diferentes comillas
+                .replace(/\s+/g, " ")    // Múltiples espacios a uno solo
+                .trim();
+            
+            return normalized;
         }
 
         async function extractTextFromPDF(url) {
@@ -147,6 +178,60 @@
                 fullText += tc.items.map(s => s.str).join(" ") + " ";
             }
             return fullText;
+        }
+
+        function detectDifficulty(questions) {
+            if (!questions || questions.length === 0) return "NA";
+            
+            let score = 0;
+            let totalQuestions = questions.length;
+            
+            questions.forEach(q => {
+                // 1. Longitud de la pregunta (más larga = más difícil)
+                if (q.q.length > 150) score += 2;
+                else if (q.q.length > 100) score += 1;
+                
+                // 2. Longitud promedio de las opciones
+                const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
+                if (avgOptionLength > 80) score += 2;
+                else if (avgOptionLength > 50) score += 1;
+                
+                // 3. Complejidad de vocabulario (palabras largas)
+                const words = q.q.split(/\s+/);
+                const longWords = words.filter(w => w.length > 12).length;
+                if (longWords > 3) score += 2;
+                else if (longWords > 1) score += 1;
+                
+                // 4. Presencia de números o fórmulas
+                if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
+                
+                // 5. Preguntas con términos técnicos o conceptos avanzados
+                const technicalTerms = /(?:concepto|teoría|análisis|hipótesis|principio|fenómeno|estructura|proceso|sistema|característica|definición|relación|consecuencia)/i;
+                if (technicalTerms.test(q.q)) score += 1;
+            });
+            
+            // Calcular puntuación promedio por pregunta
+            const avgScore = score / totalQuestions;
+            
+            // Clasificar según el puntaje promedio
+            if (avgScore >= 4) return "Difícil";
+            else if (avgScore >= 2) return "Medio";
+            else return "Fácil";
+        }
+
+        function getDifficultyBadge(difficulty) {
+            if (!difficulty || difficulty === 'NA') {
+                return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
+            }
+            
+            const styles = {
+                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
+            };
+            
+            const styleClass = styles[difficulty] || styles['NA'];
+            return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
         function parseQuizText(text) {
@@ -312,6 +397,9 @@
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
+                    state.quizDifficulty = detectDifficulty(questions);
+                    state.units[state.unit].quizzes[key].difficulty = state.quizDifficulty;
+
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
@@ -435,7 +523,10 @@
                                             <span class="text-white font-black">${q.number}</span>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-white font-bold truncate">${q.label}</h3>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <h3 class="text-white font-bold truncate">${q.label}</h3>
+                                                ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
+                                            </div>
                                             <p class="text-slate-400 text-xs">${q.fileName}</p>
                                         </div>
                                         <i data-lucide="play" class="w-5 h-5 ${SUBJECT.text}"></i>
@@ -453,6 +544,10 @@
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 slide-up">
+                            <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                            </button>
+                            ${getDifficultyBadge(state.quizDifficulty)}
                             <div class="flex items-center justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="flex justify-between mb-2">

@@ -122,6 +122,7 @@
             loadedQuestions: [],
             units: {},
             scannedUnits: {},
+            quizDifficulty: 'NA',
             darkMode: localStorage.getItem('darkMode') !== 'false'
         };
 
@@ -161,29 +162,63 @@
         function normalizeText(text) {
             if (!text) return "";
             let normalized = text;
-            try {
-                if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
-                    normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
-                }
-            } catch (e) {}
-            // Normalizar y limpiar caracteres especiales
-            normalized = normalized.normalize("NFKC");
-            // Reemplazar tildes con versiones sin tilde
+            
+            // DEBUG: Mostrar el patrón exacto con espacios
+            const debugPattern = text.match(/[a-z]\s*\u00B4\s*[aeiou]/gi);
+            if (debugPattern && debugPattern.length > 0) {
+                console.log('🔍 DEBUG - Patrón encontrado:', debugPattern.slice(0, 10));
+                debugPattern.slice(0, 3).forEach(pattern => {
+                    console.log(`  "${pattern}" → Códigos:`, Array.from(pattern).map(c => 
+                        c === ' ' ? 'ESPACIO' : `${c} (U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')})`
+                    ).join(' + '));
+                });
+            }
+            
+            // PASO 1: Corregir acentos malformados
+            // El PDF puede tener espacios: "pa ´ i s" o "pa´is"
+            // Buscar: letra + (espacio opcional) + ´ + (espacio opcional) + vocal
+            
+            // Con espacios opcionales alrededor del acento
             normalized = normalized
-                .replace(/[áàäâã]/gi, match => match === match.toUpperCase() ? 'A' : 'a')
-                .replace(/[éèëê]/gi, match => match === match.toUpperCase() ? 'E' : 'e')
-                .replace(/[íìïî]/gi, match => match === match.toUpperCase() ? 'I' : 'i')
-                .replace(/[óòöôõ]/gi, match => match === match.toUpperCase() ? 'O' : 'o')
-                .replace(/[úùüû]/gi, match => match === match.toUpperCase() ? 'U' : 'u')
-                .replace(/ñ/gi, match => match === match.toUpperCase() ? 'N' : 'n');
-            // Limpiar guiones especiales y simbolos ortograficos
+                .replace(/([a-zA-Z])\s*\u00B4\s*a/g, '$1á')
+                .replace(/([a-zA-Z])\s*\u00B4\s*A/g, '$1Á')
+                .replace(/([a-zA-Z])\s*\u00B4\s*e/g, '$1é')
+                .replace(/([a-zA-Z])\s*\u00B4\s*E/g, '$1É')
+                .replace(/([a-zA-Z])\s*\u00B4\s*i/g, '$1í')
+                .replace(/([a-zA-Z])\s*\u00B4\s*I/g, '$1Í')
+                .replace(/([a-zA-Z])\s*\u00B4\s*o/g, '$1ó')
+                .replace(/([a-zA-Z])\s*\u00B4\s*O/g, '$1Ó')
+                .replace(/([a-zA-Z])\s*\u00B4\s*u/g, '$1ú')
+                .replace(/([a-zA-Z])\s*\u00B4\s*U/g, '$1Ú')
+                // Al inicio de palabra con espacios opcionales
+                .replace(/\s*\u00B4\s*a/g, 'á')
+                .replace(/\s*\u00B4\s*A/g, 'Á')
+                .replace(/\s*\u00B4\s*e/g, 'é')
+                .replace(/\s*\u00B4\s*E/g, 'É')
+                .replace(/\s*\u00B4\s*i/g, 'í')
+                .replace(/\s*\u00B4\s*I/g, 'Í')
+                .replace(/\s*\u00B4\s*o/g, 'ó')
+                .replace(/\s*\u00B4\s*O/g, 'Ó')
+                .replace(/\s*\u00B4\s*u/g, 'ú')
+                .replace(/\s*\u00B4\s*U/g, 'Ú')
+                // Limpiar cualquier ´ suelto que quede
+                .replace(/\u00B4/g, '');
+            
+            // PASO 2: Normalizar Unicode
+            normalized = normalized.normalize("NFC");
+            
+            // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE LÍNEA
+            normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+            normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
+            
+            // PASO 4: Limpiar guiones especiales y símbolos ortográficos
             normalized = normalized
-                .replace(/[–—−]/g, '-')  // Diferentes tipos de guiones a guion simple
-                .replace(/[''´`]/g, "'") // Diferentes apostrofes
-                .replace(/[""]/g, '"')   // Diferentes comillas
-                .replace(/[¿¡]/g, '')    // Quitar signos de interrogacion/exclamacion invertidos
+                .replace(/[–—−]/g, '-')
+                .replace(/['']/g, "'")
+                .replace(/[""]/g, '"')
                 .replace(/\s+/g, " ")
                 .trim();
+            
             return normalized;
         }
 
@@ -200,14 +235,96 @@
             return fullText;
         }
 
+        function detectDifficulty(questions) {
+            if (!questions || questions.length === 0) return 'NA';
+            
+            let totalScore = 0;
+            const factors = {
+                questionLength: 0,
+                optionLength: 0,
+                vocabulary: 0,
+                technical: 0
+            };
+            
+            questions.forEach(q => {
+                // 1. Longitud de la pregunta
+                const qLen = q.q.length;
+                if (qLen > 200) factors.questionLength += 3;
+                else if (qLen > 100) factors.questionLength += 2;
+                else factors.questionLength += 1;
+                
+                // 2. Longitud promedio de opciones
+                const avgOptLen = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
+                if (avgOptLen > 80) factors.optionLength += 3;
+                else if (avgOptLen > 40) factors.optionLength += 2;
+                else factors.optionLength += 1;
+                
+                // 3. Complejidad del vocabulario (palabras largas)
+                const allText = q.q + ' ' + q.a.join(' ');
+                const words = allText.split(/\s+/);
+                const longWords = words.filter(w => w.length > 8).length;
+                const longWordRatio = longWords / words.length;
+                if (longWordRatio > 0.3) factors.vocabulary += 3;
+                else if (longWordRatio > 0.15) factors.vocabulary += 2;
+                else factors.vocabulary += 1;
+                
+                // 4. Presencia de números, fórmulas o términos técnicos
+                const technicalPatterns = /\d+|[A-Z]{2,}|[α-ω]|[\+\-\*\/=<>≤≥→←↔]/;
+                const hasTechnical = technicalPatterns.test(allText);
+                if (hasTechnical) factors.technical += 2;
+                else factors.technical += 1;
+            });
+            
+            // Calcular puntuación total
+            totalScore = (
+                factors.questionLength + 
+                factors.optionLength + 
+                factors.vocabulary + 
+                factors.technical
+            ) / questions.length;
+            
+            // Clasificar según puntuación
+            if (totalScore >= 9) return 'Difícil';
+            else if (totalScore >= 6) return 'Medio';
+            else return 'Fácil';
+        }
+
+        function getDifficultyBadge(difficulty) {
+            const badges = {
+                'NA': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-slate-500/20 text-slate-400">NA</span>',
+                'Fácil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-green-500/20 text-green-400">Fácil</span>',
+                'Medio': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-yellow-500/20 text-yellow-400">Medio</span>',
+                'Difícil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400">Difícil</span>'
+            };
+            return badges[difficulty] || badges['NA'];
+        }
+
         function parseQuizText(text) {
             const questions = [];
             let cleanText = normalizeText(text);
             let blocks = [];
             
-            if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
-            else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
-            else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            // Intentar múltiples patrones de numeración en orden de especificidad
+            // Patrón 1: "1.- " (número, punto, guion, espacio)
+            if (/\b\d+\.-/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
+            }
+            // Patrón 2: "1. " seguido de mayúscula (número, punto, espacio, letra mayúscula)
+            else if (/\b\d+\.\s+[A-ZÁÉÍÓÚÑ¿]/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            }
+            // Patrón 3: "1) " (número, paréntesis, espacio)
+            else if (/\b\d+\)\s/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            }
+            // Patrón 4: "1 ¿" (número, espacio, signo de interrogación)
+            else if (/\b\d+\s+¿/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
+            }
+            // Patrón 5: "1 " seguido de mayúscula (número, espacio, letra mayúscula)
+            else if (/\b\d+\s+[A-ZÁÉÍÓÚÑ]/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\s+[A-ZÁÉÍÓÚÑ])/g);
+            }
 
             blocks.forEach(block => {
                 if (!block.includes("A)") && !block.includes("a)")) return;
@@ -215,7 +332,8 @@
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
                     
-                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
+                    // Limpiar el número de pregunta con más patrones flexibles
+                    let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
                     if (!q || q.length < 5) return;
 
                     const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
@@ -260,11 +378,26 @@
             renderView();
 
             const units = {};
+            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            
             for (let i = 1; i <= 20; i++) {
-                try {
-                    await pdfjsLib.getDocument(`./${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
-                    units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
-                } catch { break; }
+                let foundUnit = false;
+                
+                // Intentar encontrar al menos un cuestionario con cualquier sufijo
+                for (const diff of difficulties) {
+                    try {
+                        const fileName = diff ? `Cuestionario_1_${diff}.pdf` : `Cuestionario_1.pdf`;
+                        await pdfjsLib.getDocument(`./${SUBJECT.folderName}/Unidad_${i}/${fileName}`).promise;
+                        units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
+                        foundUnit = true;
+                        break;
+                    } catch { 
+                        continue;
+                    }
+                }
+                
+                // Si no encontramos ningún cuestionario 1 en esta unidad, terminar búsqueda
+                if (!foundUnit) break;
             }
             state.units = units;
             state.isLoading = false;
@@ -281,21 +414,50 @@
             const unit = state.units[unitKey];
             const quizzes = {};
             
+            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            
             for (let i = 1; i <= 20; i++) {
-                try {
-                    const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
-                    const page = await pdf.getPage(1);
-                    const tc = await page.getTextContent();
-                    const txt = normalizeText(tc.items.map(s => s.str).join(" "));
-                    
-                    let title = `Cuestionario ${i}`;
-                    const idx = txt.search(/\b1\.-/);
-                    if (idx > 0) {
-                        const h = txt.substring(0, idx).trim();
-                        if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
+                let foundQuiz = false;
+                
+                // Intentar cargar con cada sufijo de dificultad
+                for (const diff of difficulties) {
+                    try {
+                        const fileName = diff ? `Cuestionario_${i}_${diff}.pdf` : `Cuestionario_${i}.pdf`;
+                        const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
+                        const page = await pdf.getPage(1);
+                        const tc = await page.getTextContent();
+                        const txt = normalizeText(tc.items.map(s => s.str).join(" "));
+                        
+                        let title = `Cuestionario ${i}`;
+                        const idx = txt.search(/\b1\.-/);
+                        if (idx > 0) {
+                            const h = txt.substring(0, idx).trim();
+                            if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
+                        }
+                        
+                        // Extraer dificultad del nombre del archivo
+                        let difficulty = 'NA';
+                        if (diff === 'Facil') difficulty = 'Fácil';
+                        else if (diff === 'Medio') difficulty = 'Medio';
+                        else if (diff === 'Dificil') difficulty = 'Difícil';
+                        
+                        quizzes[`q${i}`] = { 
+                            fileName: fileName, 
+                            label: title, 
+                            number: i,
+                            difficulty: difficulty
+                        };
+                        
+                        foundQuiz = true;
+                        break; // Encontramos el archivo, salir del loop de dificultades
+                    } catch { 
+                        // Continuar probando con el siguiente sufijo
+                        continue;
                     }
-                    quizzes[`q${i}`] = { fileName: `Cuestionario_${i}.pdf`, label: title, number: i };
-                } catch { break; }
+                }
+                
+                // Si no encontramos ningún archivo con este número, terminar búsqueda
+                if (!foundQuiz) break;
             }
             
             state.units[unitKey].quizzes = quizzes;
@@ -391,6 +553,9 @@
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
+                    // Usar la dificultad ya detectada del nombre del archivo
+                    state.quizDifficulty = quiz.difficulty || 'NA';
+
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
@@ -426,6 +591,25 @@
                 }
             },
             hint: () => { state.showHint = !state.showHint; renderView(); },
+            goBack: () => {
+                // Navegación tipo "cd .." - regresar a la vista anterior
+                if (state.view === 'quiz' || state.view === 'finished') {
+                    // Si estamos en quiz o terminado, regresar a lista de quizzes
+                    state.quiz = null;
+                    state.view = 'quizzes';
+                    updateHash();
+                } else if (state.view === 'quizzes') {
+                    // Si estamos en lista de quizzes, regresar a unidades
+                    state.unit = null;
+                    state.quiz = null;
+                    state.view = 'units';
+                    window.location.hash = '';
+                } else {
+                    // Si estamos en unidades, ir a index.html
+                    window.location.href = 'index.html';
+                }
+                renderView();
+            },
             goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
             goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
             restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
@@ -442,12 +626,10 @@
             const header = `
                 <div class="px-6 py-4 border-b ${t.border} flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <a href="index.html" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
+                        <button onclick="actions.goBack()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
                             <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        </a>
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg">
-                            <i data-lucide="${SUBJECT.icon}" class="w-5 h-5 text-white"></i>
-                        </div>
+                        </button>
+                        <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-10 w-auto object-contain">
                         <div>
                             <h1 class="text-sm font-bold ${t.textPrimary}">${SUBJECT.title}</h1>
                             <p class="text-[10px] ${t.textMuted}">CEFIMAT</p>
@@ -526,7 +708,10 @@
                                             <h3 class="${t.textPrimary} font-bold truncate">${q.label}</h3>
                                             <p class="${t.textSecondary} text-xs">${q.fileName}</p>
                                         </div>
-                                        <i data-lucide="play" class="w-5 h-5 ${t.subjectText}"></i>
+                                        <div class="flex flex-col items-end gap-2">
+                                            <i data-lucide="play" class="w-5 h-5 ${t.subjectText}"></i>
+                                            ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
+                                        </div>
                                     </button>
                                 `).join('')}
                             </div>
@@ -541,9 +726,12 @@
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 slide-up">
-                            <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
-                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
-                            </button>
+                            <div class="flex items-center justify-between">
+                                <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                                </button>
+                                ${getDifficultyBadge(state.quizDifficulty)}
+                            </div>
                             <div class="flex items-center justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="flex justify-between mb-2">
