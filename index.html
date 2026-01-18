@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CEFIMAT Asesorias - Plataforma de Cuestionarios</title>
+    <title>CEFIMAT Asesorías - Plataforma de Cuestionarios</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -26,84 +26,67 @@
         
         body { 
             font-family: 'Inter', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             min-height: 100vh;
             transition: background 0.3s;
         }
 
         body.dark { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
         .glass-light {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .glass-dark {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .fade-in { animation: fadeIn 0.5s ease-out; }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(20px); } 
+            from { opacity: 0; transform: translateY(30px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
 
-        .responsive-container {
-            width: 100%; 
-            min-height: 100vh;
-            display: flex; 
-            flex-direction: column;
-        }
-
-        @media (min-width: 768px) {
-            body { 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                padding: 2rem; 
-            }
-            .responsive-container {
-                max-width: 1000px; 
-                min-height: auto;
-                height: 90vh; 
-                max-height: 800px;
-                border-radius: 2rem;
-                overflow: hidden;
-            }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
-
         .subject-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            text-decoration: none;
         }
-        .subject-card:not(.locked)::before {
+
+        .subject-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.4s;
         }
+
         .subject-card:not(.locked):hover::before { opacity: 1; }
+        
         .subject-card:not(.locked):hover { 
-            transform: translateY(-8px) scale(1.02); 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(-12px) scale(1.03); 
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
         }
+
         .subject-card.locked {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
-            filter: grayscale(50%);
+            filter: grayscale(40%);
+        }
+
+        .subject-card .icon-wrapper {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .subject-card:not(.locked):hover .icon-wrapper {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .gradient-text {
@@ -113,11 +96,20 @@
             background-clip: text;
         }
 
+        .hero-badge {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
         .social-link {
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
         .social-link:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
         }
 
         .theme-toggle:hover {
@@ -129,24 +121,102 @@
         }
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
+
+        /* User Profile Dropdown */
+        .user-dropdown {
+            position: relative;
+        }
+        .user-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .user-dropdown:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Animación de entrada para las cards */
+        .card-1 { animation-delay: 0.1s; }
+        .card-2 { animation-delay: 0.2s; }
+        .card-3 { animation-delay: 0.3s; }
     </style>
 </head>
-<body id="body">
-    <div id="app" class="responsive-container"></div>
+<body id="body" class="min-h-screen">
+    <!-- Navigation -->
+    <nav id="nav" class="nav-blur sticky top-0 z-50"></nav>
+
+    <!-- Main Content -->
+    <main id="main" class="container mx-auto px-4 py-12 max-w-7xl">
+        <!-- Hero Section -->
+        <section id="hero" class="text-center space-y-6 mb-16 fade-in"></section>
+
+        <!-- Subject Cards -->
+        <section id="subjects" class="max-w-5xl mx-auto mb-16"></section>
+
+        <!-- Coming Soon -->
+        <section id="comingSoon" class="max-w-4xl mx-auto mb-16 fade-in"></section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer" class="mt-20"></footer>
 
     <script>
+        // Check authentication on page load
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (!isLoggedIn) {
+            window.location.href = 'auth.html';
+        }
+
+        // Get user data
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
         // State
         const state = {
             darkMode: localStorage.getItem('darkMode') !== 'false',
-            userName: localStorage.getItem('userName') || '',
-            userGroup: localStorage.getItem('userGroup') || ''
+            userName: userData.name || '',
+            userGroup: userData.group || ''
         };
 
         function isUnlocked() {
-            return state.userName.trim().length > 0 && state.userGroup.trim().length > 0;
+            return isLoggedIn && state.userName.trim().length > 0 && state.userGroup.trim().length > 0;
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userGroup');
+            window.location.href = 'auth.html';
         }
 
         // Toggle dark mode
@@ -166,278 +236,215 @@
             render();
         }
 
-        // Save user data (only on blur, not on every keystroke)
-        function saveUserName() {
-            const input = document.getElementById('userName');
-            if (input) {
-                state.userName = input.value;
-                localStorage.setItem('userName', state.userName);
-                render();
-            }
-        }
-
-        function saveUserGroup() {
-            const input = document.getElementById('userGroup');
-            if (input) {
-                state.userGroup = input.value;
-                localStorage.setItem('userGroup', state.userGroup);
-                render();
-            }
-        }
-
-        function handleIngresar() {
-            // Guardar valores actuales
-            const nameInput = document.getElementById('userName');
-            const groupInput = document.getElementById('userGroup');
-            
-            if (nameInput) {
-                state.userName = nameInput.value;
-                localStorage.setItem('userName', state.userName);
-            }
-            if (groupInput) {
-                state.userGroup = groupInput.value;
-                localStorage.setItem('userGroup', state.userGroup);
-            }
-
-            // Verificar si están completos
-            if (isUnlocked()) {
-                // Mostrar mensaje de bienvenida
-                showToast(`Bienvenido, ${state.userName}!`);
-            } else {
-                // Shake si faltan datos
-                const userInfo = document.getElementById('userInfoCard');
-                if (userInfo) {
-                    userInfo.classList.add('shake');
-                    setTimeout(() => userInfo.classList.remove('shake'), 500);
-                }
-                if (!state.userName.trim()) {
-                    document.getElementById('userName')?.focus();
-                } else if (!state.userGroup.trim()) {
-                    document.getElementById('userGroup')?.focus();
-                }
-            }
-            render();
-        }
-
-        function showToast(msg) {
-            const existing = document.querySelector('.toast-msg');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.className = 'toast-msg fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium shadow-lg z-50';
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
-        }
-
-        function handleSubjectClick(e, url) {
-            if (!isUnlocked()) {
-                e.preventDefault();
-                const userInfo = document.getElementById('userInfoCard');
-                if (userInfo) {
-                    userInfo.classList.add('shake');
-                    setTimeout(() => userInfo.classList.remove('shake'), 500);
-                }
-                return false;
-            }
-            window.location.href = url;
-        }
-
         function render() {
-            const app = document.getElementById('app');
             const isDark = state.darkMode;
-            const unlocked = isUnlocked();
             
             const glassClass = isDark ? 'glass-dark' : 'glass-light';
             const textPrimary = isDark ? 'text-white' : 'text-slate-900';
             const textSecondary = isDark ? 'text-slate-400' : 'text-slate-600';
             const textMuted = isDark ? 'text-slate-500' : 'text-slate-400';
-            const borderColor = isDark ? 'border-white/5' : 'border-black/5';
-            const inputBg = isDark ? 'bg-white/5 text-white placeholder-slate-500' : 'bg-black/5 text-slate-900 placeholder-slate-400';
-            const lockedClass = unlocked ? '' : 'locked';
+            const borderColor = isDark ? 'border-white/10' : 'border-black/10';
 
-            app.className = `responsive-container ${glassClass}`;
-
-            app.innerHTML = `
-                <!-- Header -->
-                <div class="px-6 py-5 border-b ${borderColor} flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                            <i data-lucide="play-circle" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-bold ${textPrimary}">CEFIMAT</h1>
-                            <p class="text-[10px] ${textMuted} uppercase tracking-wider">Centro Fisico-Matematico</p>
+            // Navigation
+            document.getElementById('nav').innerHTML = `
+                <div class="${glassClass} shadow-lg">
+                    <div class="container mx-auto px-6 py-4 max-w-7xl">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-12 w-auto object-contain">
+                                <div class="border-l ${borderColor} pl-4 h-12 flex flex-col justify-center">
+                                    <h1 class="text-lg font-black ${textPrimary}">CEFIMAT</h1>
+                                    <p class="text-[9px] ${textMuted} uppercase tracking-widest">Asesorías</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="toggleDarkMode()" class="theme-toggle w-11 h-11 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all shadow-md">
+                                    <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
+                                </button>
+                                <div class="user-dropdown">
+                                    <button class="${glassClass} px-4 py-2 rounded-xl flex items-center gap-3 hover:ring-2 hover:ring-indigo-500/50 transition-all shadow-md">
+                                        <div class="user-avatar">${state.userName.charAt(0)}</div>
+                                        <div class="text-left hidden md:block">
+                                            <p class="text-sm font-bold ${textPrimary} leading-tight">${state.userName}</p>
+                                            <p class="text-xs ${textMuted}">Grupo ${state.userGroup}</p>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-4 h-4 ${textMuted}"></i>
+                                    </button>
+                                    <div class="user-dropdown-menu ${glassClass} rounded-2xl shadow-2xl overflow-hidden">
+                                        <div class="p-4 border-b ${borderColor}">
+                                            <p class="text-sm font-bold ${textPrimary}">${state.userName}</p>
+                                            <p class="text-xs ${textMuted}">${userData.email || ''}</p>
+                                            <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-xs font-bold">
+                                                <i data-lucide="users" class="w-3 h-3"></i>
+                                                Grupo ${state.userGroup}
+                                            </div>
+                                        </div>
+                                        <button onclick="logout()" class="w-full px-4 py-3 text-left flex items-center gap-3 ${textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-colors">
+                                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                                            <span class="text-sm font-medium">Cerrar sesión</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all">
-                        <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
-                    </button>
                 </div>
+            `;
 
-                <!-- Content -->
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                    <div class="max-w-4xl mx-auto space-y-8 fade-in">
-                        <!-- Hero -->
-                        <div class="text-center space-y-4 py-2">
-                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${glassClass} text-xs text-indigo-500 font-medium">
-                                <i data-lucide="sparkles" class="w-3 h-3"></i>
-                                INGRESO A LICENCIATURA
-                            </div>
-                            <h2 class="text-4xl md:text-5xl font-black ${textPrimary} leading-tight">
-                                Prepara tu<br>
-                                <span class="gradient-text">Examen</span>
-                            </h2>
+            // Hero Section
+            document.getElementById('hero').innerHTML = `
+                <div class="hero-badge inline-flex items-center gap-2 px-5 py-2 rounded-full ${glassClass} text-xs text-indigo-500 font-bold shadow-lg">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    INGRESO A LICENCIATURA 2026
+                </div>
+                <h2 class="text-5xl md:text-7xl font-black ${textPrimary} leading-tight">
+                    Bienvenido, <span class="gradient-text">${state.userName}</span>
+                </h2>
+                <p class="text-lg ${textSecondary} max-w-2xl mx-auto">
+                    Selecciona una materia para acceder a tus cuestionarios interactivos
+                </p>
+            `;
+
+            // Subject Cards (all unlocked since user is authenticated)
+            document.getElementById('subjects').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Historia de México -->
+                    <a href="historia_mexico.html" class="subject-card card-1 fade-in ${glassClass} p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-6 group">
+                        <div class="icon-wrapper w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl">
+                            <i data-lucide="scroll-text" class="w-12 h-12 text-white"></i>
                         </div>
+                        <div class="text-center">
+                            <h3 class="text-xl font-black text-emerald-600 mb-2">Historia de México</h3>
+                            <p class="text-sm ${textMuted} font-medium">8 unidades disponibles</p>
+                            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                Ingreso a Licenciatura
+                            </div>
+                        </div>
+                    </a>
 
-                        <!-- User Info (Centro) -->
-                        <div id="userInfoCard" class="${glassClass} rounded-2xl p-6 ${!unlocked ? 'ring-2 ring-indigo-500/50' : ''}">
-                            <div class="text-center mb-4">
-                                <p class="${textSecondary} text-sm">
-                                    ${unlocked 
-                                        ? `<i data-lucide="check-circle" class="w-4 h-4 inline mr-1 text-emerald-500"></i>Bienvenido, <strong class="${textPrimary}">${state.userName}</strong>`
-                                        : `<i data-lucide="lock" class="w-4 h-4 inline mr-1 text-amber-500"></i>Ingresa tus datos para desbloquear las materias`
-                                    }
+                    <!-- Historia Universal -->
+                    <a href="historia_universal.html" class="subject-card card-2 fade-in ${glassClass} p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-6 group">
+                        <div class="icon-wrapper w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl">
+                            <i data-lucide="globe-2" class="w-12 h-12 text-white"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-xl font-black text-indigo-600 mb-2">Historia Universal</h3>
+                            <p class="text-sm ${textMuted} font-medium">8 unidades disponibles</p>
+                            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-600 text-xs font-bold">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                Ingreso a Licenciatura
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Geografía -->
+                    <a href="geografia.html" class="subject-card card-3 fade-in ${glassClass} p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-6 group">
+                        <div class="icon-wrapper w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl">
+                            <i data-lucide="map" class="w-12 h-12 text-white"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-xl font-black text-amber-600 mb-2">Geografía</h3>
+                            <p class="text-sm ${textMuted} font-medium">2 unidades disponibles</p>
+                            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 text-amber-600 text-xs font-bold">
+                                <i data-lucide="book-open" class="w-3 h-3"></i>
+                                Ingreso a Licenciatura
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            `;
+
+            // Coming Soon
+            document.getElementById('comingSoon').innerHTML = `
+                <div class="${glassClass} rounded-3xl p-8 text-center shadow-xl">
+                    <div class="flex items-center justify-center gap-2 mb-4">
+                        <i data-lucide="clock" class="w-5 h-5 text-indigo-500"></i>
+                        <h3 class="text-lg font-bold ${textPrimary}">Próximamente</h3>
+                    </div>
+                    <p class="text-sm ${textSecondary} mb-6">
+                        Más materias estarán disponibles pronto
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        ${['Literatura', 'Filosofía', 'Matemáticas', 'Física', 'Química', 'Biología', 'Español'].map(materia => 
+                            `<span class="px-4 py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${materia}</span>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Footer
+            document.getElementById('footer').innerHTML = `
+                <div class="${glassClass} border-t ${borderColor}">
+                    <div class="container mx-auto px-6 py-8 max-w-7xl">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                            <!-- Logo & Info -->
+                            <div class="space-y-4">
+                                <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-16 w-auto object-contain">
+                                <p class="text-sm ${textSecondary} leading-relaxed">
+                                    Centro de preparación académica especializado en ingreso a licenciatura.
                                 </p>
                             </div>
-                            <div class="flex flex-col sm:flex-row gap-4">
-                                <div class="flex-1">
-                                    <label class="block text-xs ${textSecondary} mb-2 font-medium">
-                                        <i data-lucide="user" class="w-3 h-3 inline mr-1"></i>Nombre del Alumno
-                                    </label>
-                                    <input 
-                                        type="text" 
-                                        id="userName"
-                                        value="${state.userName}"
-                                        onblur="saveUserName()"
-                                        onkeydown="if(event.key==='Enter')handleIngresar()"
-                                        placeholder="Tu nombre..."
-                                        class="w-full px-4 py-3 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm"
-                                    >
+
+                            <!-- Redes Sociales -->
+                            <div>
+                                <h4 class="text-sm font-bold ${textPrimary} mb-4 uppercase tracking-wider">Síguenos</h4>
+                                <div class="space-y-3">
+                                    <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="social-link flex items-center gap-3 ${textSecondary} hover:text-green-500 transition-colors">
+                                        <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                            <i data-lucide="music" class="w-4 h-4"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">Spotify Podcast</span>
+                                    </a>
+                                    <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-link flex items-center gap-3 ${textSecondary} hover:text-blue-500 transition-colors">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                            <i data-lucide="facebook" class="w-4 h-4"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">Facebook</span>
+                                    </a>
+                                    <a href="https://www.instagram.com/cefimat" target="_blank" class="social-link flex items-center gap-3 ${textSecondary} hover:text-pink-500 transition-colors">
+                                        <div class="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center">
+                                            <i data-lucide="instagram" class="w-4 h-4"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">Instagram</span>
+                                    </a>
+                                    <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-link flex items-center gap-3 ${textSecondary} hover:text-slate-800 dark:hover:text-white transition-colors">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-800/10 flex items-center justify-center">
+                                            <i data-lucide="video" class="w-4 h-4"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">TikTok</span>
+                                    </a>
+                                    <a href="https://www.cefimat.com/" target="_blank" class="social-link flex items-center gap-3 ${textSecondary} hover:text-indigo-500 transition-colors">
+                                        <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                                            <i data-lucide="globe" class="w-4 h-4"></i>
+                                        </div>
+                                        <span class="text-sm font-medium">Sitio Web</span>
+                                    </a>
                                 </div>
-                                <div class="flex-1">
-                                    <label class="block text-xs ${textSecondary} mb-2 font-medium">
-                                        <i data-lucide="users" class="w-3 h-3 inline mr-1"></i>Grupo
-                                    </label>
-                                    <input 
-                                        type="text" 
-                                        id="userGroup"
-                                        value="${state.userGroup}"
-                                        onblur="saveUserGroup()"
-                                        onkeydown="if(event.key==='Enter')handleIngresar()"
-                                        placeholder="Tu grupo..."
-                                        class="w-full px-4 py-3 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm"
-                                    >
-                                </div>
-                                <div class="flex items-end">
-                                    <button 
-                                        onclick="handleIngresar()"
-                                        class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                                    >
-                                        <i data-lucide="log-in" class="w-4 h-4"></i>
-                                        Ingresar
-                                    </button>
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <h4 class="text-sm font-bold ${textPrimary} mb-4 uppercase tracking-wider">Estado del Sistema</h4>
+                                <div class="flex items-center gap-3 p-4 rounded-xl ${glassClass}">
+                                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    <div>
+                                        <p class="text-sm font-bold text-emerald-500">Sistema Activo</p>
+                                        <p class="text-xs ${textMuted}">Todos los servicios operando</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Materias Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <!-- Historia de Mexico -->
-                            <a href="#" onclick="handleSubjectClick(event, 'historia_mexico.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center gap-4">
-                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                                    <i data-lucide="scroll-text" class="w-7 h-7 text-white"></i>
-                                </div>
-                                <div class="text-center">
-                                    <span class="text-sm font-bold text-emerald-500">Historia de Mexico</span>
-                                    <p class="text-xs ${textMuted} mt-1">8 unidades disponibles</p>
-                                </div>
-                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
-                            </a>
-
-                            <!-- Historia Universal -->
-                            <a href="#" onclick="handleSubjectClick(event, 'historia_universal.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col items-center gap-4">
-                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                                    <i data-lucide="globe-2" class="w-7 h-7 text-white"></i>
-                                </div>
-                                <div class="text-center">
-                                    <span class="text-sm font-bold text-indigo-500">Historia Universal</span>
-                                    <p class="text-xs ${textMuted} mt-1">8 unidades disponibles</p>
-                                </div>
-                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
-                            </a>
-
-                            <!-- Geografia -->
-                            <a href="#" onclick="handleSubjectClick(event, 'geografia.html')" class="subject-card ${lockedClass} p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col items-center gap-4">
-                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
-                                    <i data-lucide="map" class="w-7 h-7 text-white"></i>
-                                </div>
-                                <div class="text-center">
-                                    <span class="text-sm font-bold text-amber-500">Geografia</span>
-                                    <p class="text-xs ${textMuted} mt-1">2 unidades disponibles</p>
-                                </div>
-                                ${!unlocked ? `<i data-lucide="lock" class="w-4 h-4 ${textMuted} absolute top-3 right-3"></i>` : ''}
-                            </a>
-                        </div>
-
-                        <!-- Proximas materias -->
-                        <div class="${glassClass} rounded-2xl p-4 text-center">
-                            <p class="text-xs ${textSecondary}">
-                                <i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>
-                                Mas materias proximamente: Literatura, Filosofia, Matematicas, Fisica, Quimica, Biologia, Espanol
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="px-6 py-4 border-t ${borderColor}">
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span class="text-[10px] ${textMuted} uppercase tracking-wider">CEFIMAT Asesorias 2026</span>
-                        
-                        <!-- Redes Sociales -->
-                        <div class="flex items-center gap-4">
-                            <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-green-500 transition-colors">
-                                <i data-lucide="music" class="w-4 h-4"></i>
-                                <span class="text-xs hidden sm:inline">Spotify</span>
-                            </a>
-                            <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-blue-500 transition-colors">
-                                <i data-lucide="facebook" class="w-4 h-4"></i>
-                                <span class="text-xs hidden sm:inline">Facebook</span>
-                            </a>
-                            <a href="https://www.instagram.com/cefimat" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-pink-500 transition-colors">
-                                <i data-lucide="instagram" class="w-4 h-4"></i>
-                                <span class="text-xs hidden sm:inline">Instagram</span>
-                            </a>
-                            <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-slate-100 transition-colors">
-                                <i data-lucide="video" class="w-4 h-4"></i>
-                                <span class="text-xs hidden sm:inline">TikTok</span>
-                            </a>
-                            <a href="https://www.cefimat.com/" target="_blank" class="social-link flex items-center gap-2 ${textSecondary} hover:text-indigo-500 transition-colors">
-                                <i data-lucide="globe" class="w-4 h-4"></i>
-                                <span class="text-xs hidden sm:inline">Web</span>
-                            </a>
-                        </div>
-                        
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span class="text-[10px] text-emerald-500 uppercase tracking-wider font-bold">Activo</span>
+                        <div class="border-t ${borderColor} pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <p class="text-xs ${textMuted} uppercase tracking-widest">© 2026 CEFIMAT Asesorías. Todos los derechos reservados.</p>
+                            <p class="text-xs ${textMuted}">Hecho con <span class="text-red-500">❤</span> para nuestros estudiantes</p>
                         </div>
                     </div>
                 </div>
             `;
 
             lucide.createIcons();
-            
-            // Restore cursor position in inputs
-            const nameInput = document.getElementById('userName');
-            const groupInput = document.getElementById('userGroup');
-            if (nameInput && document.activeElement?.id === 'userName') {
-                nameInput.focus();
-            }
-            if (groupInput && document.activeElement?.id === 'userGroup') {
-                groupInput.focus();
-            }
         }
 
         // Init

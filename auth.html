@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CEFIMAT - Iniciar Sesión</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+
+        body.dark { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+
+        .tab-btn.active {
+            position: relative;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 2px;
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body id="body" class="min-h-screen flex items-center justify-center p-4">
+    <div id="app" class="w-full max-w-md"></div>
+
+    <script>
+        const state = {
+            darkMode: localStorage.getItem('darkMode') !== 'false',
+            mode: 'login', // 'login' or 'register'
+        };
+
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.getElementById('body');
+            if (state.darkMode) {
+                body.classList.add('dark');
+            } else {
+                body.classList.remove('dark');
+            }
+            render();
+        }
+
+        function switchMode(mode) {
+            state.mode = mode;
+            render();
+        }
+
+        function showToast(msg, type = 'success') {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+            
+            const bgColor = type === 'success' ? 'from-emerald-500 to-teal-600' : 'from-red-500 to-pink-600';
+            const icon = type === 'success' ? 'check-circle' : 'alert-circle';
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-msg fixed top-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-2xl bg-gradient-to-r ${bgColor} text-white text-sm font-bold shadow-2xl z-50`;
+            toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 inline mr-2"></i>${msg}`;
+            document.body.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                const form = document.getElementById('loginForm');
+                form.classList.add('shake');
+                setTimeout(() => form.classList.remove('shake'), 500);
+                showToast('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            // Simulación de login
+            const userData = {
+                email: email,
+                name: email.split('@')[0],
+                group: 'A1',
+                avatar: email[0].toUpperCase()
+            };
+
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('userName', userData.name);
+            localStorage.setItem('userGroup', userData.group);
+
+            showToast(`¡Bienvenido, ${userData.name}!`);
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const group = document.getElementById('registerGroup').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (!name || !email || !group || !password || !confirmPassword) {
+                const form = document.getElementById('registerForm');
+                form.classList.add('shake');
+                setTimeout(() => form.classList.remove('shake'), 500);
+                showToast('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showToast('Las contraseñas no coinciden', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showToast('La contraseña debe tener al menos 6 caracteres', 'error');
+                return;
+            }
+
+            // Simulación de registro
+            const userData = {
+                email: email,
+                name: name,
+                group: group,
+                avatar: name[0].toUpperCase()
+            };
+
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('userName', userData.name);
+            localStorage.setItem('userGroup', userData.group);
+
+            showToast(`¡Cuenta creada! Bienvenido, ${userData.name}!`);
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+
+        function render() {
+            const app = document.getElementById('app');
+            const isDark = state.darkMode;
+            
+            const glassClass = isDark ? 'glass-dark' : 'glass-light';
+            const textPrimary = isDark ? 'text-white' : 'text-slate-900';
+            const textSecondary = isDark ? 'text-slate-400' : 'text-slate-600';
+            const textMuted = isDark ? 'text-slate-500' : 'text-slate-400';
+            const borderColor = isDark ? 'border-white/10' : 'border-black/10';
+            const inputBg = isDark ? 'bg-white/5 text-white placeholder-slate-500' : 'bg-white/80 text-slate-900 placeholder-slate-400';
+
+            app.innerHTML = `
+                <div class="fade-in">
+                    <!-- Logo & Theme Toggle -->
+                    <div class="flex items-center justify-between mb-8">
+                        <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-12 w-auto object-contain">
+                        <button onclick="toggleDarkMode()" class="theme-toggle w-10 h-10 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all shadow-md">
+                            <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Auth Card -->
+                    <div class="${glassClass} rounded-3xl shadow-2xl overflow-hidden">
+                        <!-- Header -->
+                        <div class="p-8 text-center">
+                            <h1 class="text-3xl font-black ${textPrimary} mb-2">
+                                ${state.mode === 'login' ? 'Bienvenido' : 'Crear Cuenta'}
+                            </h1>
+                            <p class="text-sm ${textSecondary}">
+                                ${state.mode === 'login' 
+                                    ? 'Ingresa a tu cuenta para continuar' 
+                                    : 'Regístrate para acceder a los cuestionarios'}
+                            </p>
+                        </div>
+
+                        <!-- Tabs -->
+                        <div class="flex border-b ${borderColor} px-8">
+                            <button 
+                                onclick="switchMode('login')" 
+                                class="tab-btn flex-1 py-3 text-sm font-bold transition-colors ${state.mode === 'login' ? 'text-indigo-500 active' : textMuted}"
+                            >
+                                Iniciar Sesión
+                            </button>
+                            <button 
+                                onclick="switchMode('register')" 
+                                class="tab-btn flex-1 py-3 text-sm font-bold transition-colors ${state.mode === 'register' ? 'text-indigo-500 active' : textMuted}"
+                            >
+                                Registrarse
+                            </button>
+                        </div>
+
+                        <!-- Forms -->
+                        <div class="p-8">
+                            ${state.mode === 'login' ? `
+                                <!-- Login Form -->
+                                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electrónico
+                                        </label>
+                                        <input 
+                                            type="email" 
+                                            id="loginEmail"
+                                            placeholder="tu@email.com"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contraseña
+                                        </label>
+                                        <input 
+                                            type="password" 
+                                            id="loginPassword"
+                                            placeholder="••••••••"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <button 
+                                        type="submit"
+                                        class="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-sm hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <i data-lucide="log-in" class="w-5 h-5"></i>
+                                        Iniciar Sesión
+                                    </button>
+                                </form>
+                            ` : `
+                                <!-- Register Form -->
+                                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-5">
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="user" class="w-3 h-3 inline mr-1"></i>Nombre Completo
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="registerName"
+                                            placeholder="Tu nombre completo"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electrónico
+                                        </label>
+                                        <input 
+                                            type="email" 
+                                            id="registerEmail"
+                                            placeholder="tu@email.com"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="users" class="w-3 h-3 inline mr-1"></i>Grupo
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            id="registerGroup"
+                                            placeholder="Ejemplo: A1, B2..."
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contraseña
+                                        </label>
+                                        <input 
+                                            type="password" 
+                                            id="registerPassword"
+                                            placeholder="Mínimo 6 caracteres"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Confirmar Contraseña
+                                        </label>
+                                        <input 
+                                            type="password" 
+                                            id="registerConfirmPassword"
+                                            placeholder="Repite tu contraseña"
+                                            class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
+                                            required
+                                        >
+                                    </div>
+
+                                    <button 
+                                        type="submit"
+                                        class="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-sm hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                                        Crear Cuenta
+                                    </button>
+                                </form>
+                            `}
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="p-6 border-t ${borderColor} text-center">
+                            <p class="text-xs ${textMuted}">
+                                Al continuar, aceptas los términos y condiciones de CEFIMAT
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Back to Home -->
+                    <div class="text-center mt-6">
+                        <a href="index.html" class="inline-flex items-center gap-2 text-sm ${textSecondary} hover:text-indigo-500 transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            Volver al inicio
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            lucide.createIcons();
+        }
+
+        // Init
+        applyTheme();
+    </script>
+</body>
+</html>
