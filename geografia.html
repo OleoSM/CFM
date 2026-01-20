@@ -189,7 +189,8 @@
             units: {},
             scannedUnits: {},
             quizDifficulty: 'NA',
-            darkMode: localStorage.getItem('darkMode') !== 'false'
+            darkMode: localStorage.getItem('darkMode') !== 'false',
+            unitDescriptions: {}
         };
 
         // Theme
@@ -494,6 +495,28 @@
         }
 
         // --- Scan Functions ---
+        async function loadUnitDescriptions() {
+            try {
+                const response = await fetch('./unit_descriptions.json');
+                const data = await response.json();
+                
+                // Convertir el array de Geografia a un objeto indexado por número de unidad
+                if (data.Geografia) {
+                    const descriptions = {};
+                    data.Geografia.forEach(unit => {
+                        descriptions[unit.unit] = {
+                            title: unit.title,
+                            description: unit.description
+                        };
+                    });
+                    state.unitDescriptions = descriptions;
+                }
+            } catch (error) {
+                console.warn('No se pudieron cargar las descripciones de unidades:', error);
+                state.unitDescriptions = {};
+            }
+        }
+
         async function scanUnits() {
             state.isLoading = true;
             state.loadingMessage = 'Buscando unidades...';
@@ -840,20 +863,23 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8 col-span-2">No se encontraron unidades</p>` :
-                                units.map(([k, u]) => `
+                                units.map(([k, u]) => {
+                                    const unitNum = parseInt(k.replace('u',''));
+                                    const desc = state.unitDescriptions[unitNum] || {};
+                                    return `
                                     <button onclick="actions.setUnit('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
                                         <div class="flex items-start gap-4">
                                             <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
-                                                <span class="text-white font-black text-xl">${k.replace('u','')}</span>
+                                                <span class="text-white font-black text-xl">${unitNum}</span>
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <h3 class="${t.textPrimary} font-bold text-lg mb-1 group-hover:${t.subjectText} transition-colors">${u.label}</h3>
-                                                <p class="${t.textSecondary} text-sm">Cuestionarios de ${SUBJECT.title}</p>
+                                                ${desc.title ? `<p class="${t.textSecondary} text-sm mb-2 line-clamp-2">${desc.title}</p>` : `<p class="${t.textSecondary} text-sm">Cuestionarios de ${SUBJECT.title}</p>`}
                                             </div>
                                             <i data-lucide="chevron-right" class="w-5 h-5 ${t.textMuted} group-hover:${t.subjectText} transition-colors flex-shrink-0"></i>
                                         </div>
                                     </button>
-                                `).join('')}
+                                `}).join('')}
                             </div>
                         </div>
                     </div>
@@ -862,6 +888,8 @@
             else if (state.view === 'quizzes') {
                 const unit = state.units[state.unit];
                 const quizzes = Object.entries(unit.quizzes);
+                const unitNum = parseInt(state.unit.replace('u',''));
+                const desc = state.unitDescriptions[unitNum] || {};
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 fade-in pb-6">
@@ -870,8 +898,9 @@
                                     <i data-lucide="book-open" class="w-4 h-4 ${t.subjectText}"></i>
                                     <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${unit.label}</span>
                                 </div>
-                                <h2 class="text-3xl font-black ${t.textPrimary}">Selecciona un Cuestionario</h2>
-                                <p class="${t.textSecondary} text-sm">${quizzes.length} cuestionarios disponibles</p>
+                                <h2 class="text-3xl font-black ${t.textPrimary}">${desc.title || unit.label}</h2>
+                                ${desc.description ? `<p class="${t.textSecondary} text-sm max-w-xl mx-auto">${desc.description}</p>` : ''}
+                                <p class="${t.textMuted} text-xs pt-2">${quizzes.length} cuestionarios disponibles</p>
                             </div>
                             <div class="grid grid-cols-1 gap-4">
                                 ${quizzes.map(([k, q]) => `
@@ -992,6 +1021,7 @@
         // Init
         async function init() {
             applyTheme();
+            await loadUnitDescriptions(); // Cargar descripciones primero
             const hash = window.location.hash.slice(1);
             if (hash) {
                 await handleHash();
