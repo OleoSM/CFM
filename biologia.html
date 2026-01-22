@@ -139,29 +139,29 @@
             // Normalizar y limpiar caracteres especiales
             normalized = normalized.normalize("NFKC");
             
-            // CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE LÍNEA
-            // Eliminar guiones al final de línea que parten palabras (ej: "pro- blema" -> "problema")
+            // CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
+            // Eliminar guiones al final de l\u00EDnea que parten palabras (ej: "pro- blema" -> "problema")
             normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
-            // Unir palabras cortadas por saltos de línea sin guión
+            // Unir palabras cortadas por saltos de l\u00EDnea sin gui\u00F3n
             normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
             
-            // Preservar acentos y caracteres especiales del español (NO eliminarlos)
-            // Solo normalizar caracteres Unicode raros a sus equivalentes estándar
+            // Preservar acentos y caracteres especiales del espa\u00F1ol (NO eliminarlos)
+            // Solo normalizar caracteres Unicode raros a sus equivalentes est\u00E1ndar
             normalized = normalized
-                .replace(/[áàäâãå]/gi, match => match.toUpperCase() === match ? 'Á' : 'á')
-                .replace(/[éèëê]/gi, match => match.toUpperCase() === match ? 'É' : 'é')
-                .replace(/[íìïî]/gi, match => match.toUpperCase() === match ? 'Í' : 'í')
-                .replace(/[óòöôõø]/gi, match => match.toUpperCase() === match ? 'Ó' : 'ó')
-                .replace(/[úùüû]/gi, match => match.toUpperCase() === match ? 'Ú' : 'ú')
-                .replace(/[ñ]/g, 'ñ')
-                .replace(/[Ñ]/g, 'Ñ');
+                .replace(/[\u00E1àäâãå]/gi, match => match.toUpperCase() === match ? '\u00E1' : '\u00E1')
+                .replace(/[\u00E9èëê]/gi, match => match.toUpperCase() === match ? '\u00E9' : '\u00E9')
+                .replace(/[\u00EDìïî]/gi, match => match.toUpperCase() === match ? '\u00ED' : '\u00ED')
+                .replace(/[\u00F3òöôõø]/gi, match => match.toUpperCase() === match ? '\u00F3' : '\u00F3')
+                .replace(/[\u00FAù\u00FCû]/gi, match => match.toUpperCase() === match ? '\u00FA' : '\u00FA')
+                .replace(/[\u00F1]/g, '\u00F1')
+                .replace(/[\u00F1]/g, '\u00F1');
             
-            // Limpiar guiones especiales y símbolos ortográficos
+            // Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
             normalized = normalized
                 .replace(/[–—−]/g, '-')  // Diferentes tipos de guiones a guion simple
-                .replace(/[''´`]/g, "'") // Diferentes apóstrofes
+                .replace(/[''´`]/g, "'") // Diferentes ap\u00F3strofes
                 .replace(/[""]/g, '"')   // Diferentes comillas
-                .replace(/\s+/g, " ")    // Múltiples espacios a uno solo
+                .replace(/\s+/g, " ")    // M\u00FAltiples espacios a uno solo
                 .trim();
             
             return normalized;
@@ -171,7 +171,7 @@
             const pdf = await pdfjsLib.getDocument(url).promise;
             let fullText = "";
             for (let j = 1; j <= pdf.numPages; j++) {
-                state.loadingMessage = `Leyendo página ${j}/${pdf.numPages}...`;
+                state.loadingMessage = `Leyendo p\u00E1gina ${j}/${pdf.numPages}...`;
                 renderView();
                 const page = await pdf.getPage(j);
                 const tc = await page.getTextContent();
@@ -187,7 +187,7 @@
             let totalQuestions = questions.length;
             
             questions.forEach(q => {
-                // 1. Longitud de la pregunta (más larga = más difícil)
+                // 1. Longitud de la pregunta (m\u00E1s larga = m\u00E1s dif\u00EDcil)
                 if (q.q.length > 150) score += 2;
                 else if (q.q.length > 100) score += 1;
                 
@@ -202,21 +202,21 @@
                 if (longWords > 3) score += 2;
                 else if (longWords > 1) score += 1;
                 
-                // 4. Presencia de números o fórmulas
+                // 4. Presencia de n\u00FAmeros o f\u00F3rmulas
                 if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
                 
-                // 5. Preguntas con términos técnicos o conceptos avanzados
-                const technicalTerms = /(?:concepto|teoría|análisis|hipótesis|principio|fenómeno|estructura|proceso|sistema|característica|definición|relación|consecuencia)/i;
+                // 5. Preguntas con t\u00E9rminos t\u00E9cnicos o conceptos avanzados
+                const technicalTerms = /(?:concepto|teor\u00EDa|an\u00E1lisis|hip\u00F3tesis|principio|fen\u00F3meno|estructura|proceso|sistema|caracter\u00EDstica|definici\u00F3n|relaci\u00F3n|consecuencia)/i;
                 if (technicalTerms.test(q.q)) score += 1;
             });
             
-            // Calcular puntuación promedio por pregunta
+            // Calcular puntuaci\u00F3n promedio por pregunta
             const avgScore = score / totalQuestions;
             
-            // Clasificar según el puntaje promedio
-            if (avgScore >= 4) return "Difícil";
+            // Clasificar seg\u00FAn el puntaje promedio
+            if (avgScore >= 4) return "Dif\u00EDcil";
             else if (avgScore >= 2) return "Medio";
-            else return "Fácil";
+            else return "F\u00E1cil";
         }
 
         function getDifficultyBadge(difficulty) {
@@ -225,9 +225,9 @@
             }
             
             const styles = {
-                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
                 'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
+                'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
             
             const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
@@ -397,7 +397,7 @@
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
-                    // Detectar dificultad basándose en el contenido de las preguntas
+                    // Detectar dificultad bas\u00E1ndose en el contenido de las preguntas
                     state.quizDifficulty = detectDifficulty(questions);
                     
                     // Guardar la dificultad detectada en el quiz para uso futuro

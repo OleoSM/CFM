@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extractor de Descripciones</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #3e3e42;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            background: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+    </style>
+</head>
+<body>
+    <h1>📄 Extractor de Descripciones de Unidades</h1>
+    <button onclick="extractDescriptions()">Extraer Descripciones</button>
+    <div id="output">Esperando extracci\u00F3n...</div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        function normalizeText(text) {
+            if (!text) return "";
+            let normalized = text;
+            
+            normalized = normalized
+                .replace(/([a-zA-Z])\s*\u00B4\s*a/g, '$1\u00E1')
+                .replace(/([a-zA-Z])\s*\u00B4\s*A/g, '$1\u00E1')
+                .replace(/([a-zA-Z])\s*\u00B4\s*e/g, '$1\u00E9')
+                .replace(/([a-zA-Z])\s*\u00B4\s*E/g, '$1\u00E9')
+                .replace(/([a-zA-Z])\s*\u00B4\s*i/g, '$1\u00ED')
+                .replace(/([a-zA-Z])\s*\u00B4\s*I/g, '$1\u00ED')
+                .replace(/([a-zA-Z])\s*\u00B4\s*o/g, '$1\u00F3')
+                .replace(/([a-zA-Z])\s*\u00B4\s*O/g, '$1\u00F3')
+                .replace(/([a-zA-Z])\s*\u00B4\s*u/g, '$1\u00FA')
+                .replace(/([a-zA-Z])\s*\u00B4\s*U/g, '$1\u00FA')
+                .replace(/\s*\u00B4\s*a/g, '\u00E1')
+                .replace(/\s*\u00B4\s*A/g, '\u00E1')
+                .replace(/\s*\u00B4\s*e/g, '\u00E9')
+                .replace(/\s*\u00B4\s*E/g, '\u00E9')
+                .replace(/\s*\u00B4\s*i/g, '\u00ED')
+                .replace(/\s*\u00B4\s*I/g, '\u00ED')
+                .replace(/\s*\u00B4\s*o/g, '\u00F3')
+                .replace(/\s*\u00B4\s*O/g, '\u00F3')
+                .replace(/\s*\u00B4\s*u/g, '\u00FA')
+                .replace(/\s*\u00B4\s*U/g, '\u00FA')
+                .replace(/\u00B4/g, '');
+            
+            normalized = normalized.normalize("NFC");
+            normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+            normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
+            normalized = normalized
+                .replace(/[–—−]/g, '-')
+                .replace(/['']/g, "'")
+                .replace(/[""]/g, '"')
+                .replace(/\s+/g, " ")
+                .trim();
+            
+            return normalized;
+        }
+
+        async function extractTextFromPDF(url) {
+            const pdf = await pdfjsLib.getDocument(url).promise;
+            let fullText = "";
+            for (let j = 1; j <= pdf.numPages; j++) {
+                const page = await pdf.getPage(j);
+                const tc = await page.getTextContent();
+                fullText += tc.items.map(s => s.str).join(" ") + "\n";
+            }
+            return fullText;
+        }
+
+        function parseDescriptions(text) {
+            const normalized = normalizeText(text);
+            console.log("📄 Texto normalizado (primeros 1000 chars):\n", normalized.substring(0, 1000));
+            
+            // Buscar patr\u00F3n: "Unidad X: Titulo\nDescripcion"
+            // Intentar varios patrones
+            const patterns = [
+                /Unidad\s+(\d+)\s*[:\.]?\s*([^\n]+)\n([^U]+?)(?=Unidad\s+\d+|$)/gi,
+                /Unidad\s+(\d+)\s*[:\-]?\s*([^\n]+?)\s*\.?\s*([^\.]+\.)/gi,
+                /UNIDAD\s+(\d+)\s*[:\.]?\s*([^\n]+)\n([^U]+?)(?=UNIDAD\s+\d+|$)/gi
+            ];
+
+            let units = [];
+            
+            for (const pattern of patterns) {
+                const matches = [...normalized.matchAll(pattern)];
+                if (matches.length > 0) {
+                    console.log(`✅ Patr\u00F3n encontrado con ${matches.length} coincidencias`);
+                    
+                    units = matches.map(match => ({
+                        number: parseInt(match[1]),
+                        title: match[2].trim(),
+                        description: match[3].trim()
+                    }));
+                    
+                    break;
+                }
+            }
+
+            if (units.length === 0) {
+                console.warn("⚠️ No se encontraron unidades con los patrones predefinidos");
+                console.log("🔍 Mostrando todo el texto para an\u00E1lisis manual:");
+                return { raw: normalized, units: [] };
+            }
+
+            return { units, raw: normalized };
+        }
+
+        async function extractDescriptions() {
+            const output = document.getElementById('output');
+            output.textContent = '⏳ Extrayendo texto del PDF...\n\n';
+
+            try {
+                const pdfUrl = './Descripcion_Unidades/Descripcion_Historia_Mexico.pdf';
+                const text = await extractTextFromPDF(pdfUrl);
+                
+                output.textContent += '✅ Texto extra\u00EDdo\n\n';
+                output.textContent += '📊 Parseando descripciones...\n\n';
+
+                const result = parseDescriptions(text);
+                
+                if (result.units && result.units.length > 0) {
+                    output.textContent += `✅ Se encontraron ${result.units.length} unidades\n\n`;
+                    output.textContent += '═══════════════════════════════════════\n\n';
+                    
+                    result.units.forEach(unit => {
+                        output.textContent += `🔹 UNIDAD ${unit.number}\n`;
+                        output.textContent += `   T\u00EDtulo: ${unit.title}\n`;
+                        output.textContent += `   Descripci\u00F3n: ${unit.description.substring(0, 200)}...\n\n`;
+                    });
+
+                    output.textContent += '\n═══════════════════════════════════════\n';
+                    output.textContent += '📋 ESTRUCTURA JSON:\n\n';
+                    output.textContent += JSON.stringify(result.units, null, 2);
+                } else {
+                    output.textContent += '❌ No se encontraron unidades con el patr\u00F3n esperado\n\n';
+                    output.textContent += '📄 TEXTO COMPLETO (primeros 2000 caracteres):\n\n';
+                    output.textContent += result.raw.substring(0, 2000);
+                }
+
+            } catch (error) {
+                output.textContent += `❌ Error: ${error.message}\n`;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

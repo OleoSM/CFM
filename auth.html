@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CEFIMAT - Iniciar Sesión</title>
+    <title>CEFIMAT - Iniciar Sesi\u00F3n</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,7 +22,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        * { box-sizing: border-box; }
+        * { 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         
         body { 
             font-family: 'Inter', system-ui, sans-serif; 
@@ -47,21 +50,42 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .fade-in { animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        /* Optimizaci\u00F3n m\u00F3vil */
+        @media (min-width: 768px) {
+            .fade-in { animation: fadeIn 0.6s ease-out; }
+            @keyframes fadeIn { 
+                from { opacity: 0; transform: translateY(30px); } 
+                to { opacity: 1; transform: translateY(0); } 
+            }
+
+            .theme-toggle:hover {
+                transform: rotate(180deg);
+            }
+
+            .shake {
+                animation: shake 0.5s ease-in-out;
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-10px); }
+                75% { transform: translateX(10px); }
+            }
         }
 
-        .gradient-text {
-            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        @media (max-width: 767px) {
+            .fade-in, .shake {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            .glass-light, .glass-dark {
+                backdrop-filter: blur(10px);
+            }
         }
 
-        .theme-toggle:hover {
-            transform: rotate(180deg);
+        .theme-toggle {
+            transition: transform 0.3s;
         }
 
         .tab-btn.active {
@@ -78,24 +102,19 @@
             background: linear-gradient(135deg, #6366f1, #a855f7);
             border-radius: 2px;
         }
-
-        .shake {
-            animation: shake 0.5s ease-in-out;
-        }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
     </style>
 </head>
 <body id="body" class="min-h-screen flex items-center justify-center p-4">
     <div id="app" class="w-full max-w-md"></div>
 
     <script>
+        // Check URL parameters for default tab
+        const urlParams = new URLSearchParams(window.location.search);
+        const defaultTab = urlParams.get('tab') || 'login';
+
         const state = {
             darkMode: localStorage.getItem('darkMode') !== 'false',
-            mode: 'login', // 'login' or 'register'
+            mode: defaultTab, // 'login' or 'register'
         };
 
         function toggleDarkMode() {
@@ -147,7 +166,7 @@
                 return;
             }
 
-            // Simulación de login
+            // Simulaci\u00F3n de login
             const userData = {
                 email: email,
                 name: email.split('@')[0],
@@ -183,16 +202,16 @@
             }
 
             if (password !== confirmPassword) {
-                showToast('Las contraseñas no coinciden', 'error');
+                showToast('Las contrase\u00F1as no coinciden', 'error');
                 return;
             }
 
             if (password.length < 6) {
-                showToast('La contraseña debe tener al menos 6 caracteres', 'error');
+                showToast('La contrase\u00F1a debe tener al menos 6 caracteres', 'error');
                 return;
             }
 
-            // Simulación de registro
+            // Simulaci\u00F3n de registro
             const userData = {
                 email: email,
                 name: name,
@@ -224,6 +243,14 @@
 
             app.innerHTML = `
                 <div class="fade-in">
+                    <!-- Back Button -->
+                    <div class="mb-6">
+                        <a href="landing.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl ${glassClass} ${textSecondary} hover:text-indigo-500 transition-all shadow-md text-sm font-medium">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            Volver al inicio
+                        </a>
+                    </div>
+
                     <!-- Logo & Theme Toggle -->
                     <div class="flex items-center justify-between mb-8">
                         <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-12 w-auto object-contain">
@@ -242,7 +269,7 @@
                             <p class="text-sm ${textSecondary}">
                                 ${state.mode === 'login' 
                                     ? 'Ingresa a tu cuenta para continuar' 
-                                    : 'Regístrate para acceder a los cuestionarios'}
+                                    : 'Reg\u00EDstrate para acceder a los cuestionarios'}
                             </p>
                         </div>
 
@@ -252,7 +279,7 @@
                                 onclick="switchMode('login')" 
                                 class="tab-btn flex-1 py-3 text-sm font-bold transition-colors ${state.mode === 'login' ? 'text-indigo-500 active' : textMuted}"
                             >
-                                Iniciar Sesión
+                                Iniciar Sesi\u00F3n
                             </button>
                             <button 
                                 onclick="switchMode('register')" 
@@ -269,7 +296,7 @@
                                 <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
                                     <div>
                                         <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
-                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electrónico
+                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electr\u00F3nico
                                         </label>
                                         <input 
                                             type="email" 
@@ -282,7 +309,7 @@
 
                                     <div>
                                         <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
-                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contraseña
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contrase\u00F1a
                                         </label>
                                         <input 
                                             type="password" 
@@ -298,7 +325,7 @@
                                         class="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-sm hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
                                     >
                                         <i data-lucide="log-in" class="w-5 h-5"></i>
-                                        Iniciar Sesión
+                                        Iniciar Sesi\u00F3n
                                     </button>
                                 </form>
                             ` : `
@@ -319,7 +346,7 @@
 
                                     <div>
                                         <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
-                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electrónico
+                                            <i data-lucide="mail" class="w-3 h-3 inline mr-1"></i>Correo Electr\u00F3nico
                                         </label>
                                         <input 
                                             type="email" 
@@ -345,12 +372,12 @@
 
                                     <div>
                                         <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
-                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contraseña
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Contrase\u00F1a
                                         </label>
                                         <input 
                                             type="password" 
                                             id="registerPassword"
-                                            placeholder="Mínimo 6 caracteres"
+                                            placeholder="M\u00EDnimo 6 caracteres"
                                             class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
                                             required
                                         >
@@ -358,12 +385,12 @@
 
                                     <div>
                                         <label class="block text-xs ${textSecondary} mb-2 font-bold uppercase tracking-wider">
-                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Confirmar Contraseña
+                                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>Confirmar Contrase\u00F1a
                                         </label>
                                         <input 
                                             type="password" 
                                             id="registerConfirmPassword"
-                                            placeholder="Repite tu contraseña"
+                                            placeholder="Repite tu contrase\u00F1a"
                                             class="w-full px-5 py-4 rounded-xl ${inputBg} border ${borderColor} focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium shadow-sm"
                                             required
                                         >
@@ -383,7 +410,7 @@
                         <!-- Footer -->
                         <div class="p-6 border-t ${borderColor} text-center">
                             <p class="text-xs ${textMuted}">
-                                Al continuar, aceptas los términos y condiciones de CEFIMAT
+                                Al continuar, aceptas los t\u00E9rminos y condiciones de CEFIMAT
                             </p>
                         </div>
                     </div>
