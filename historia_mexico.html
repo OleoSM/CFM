@@ -434,14 +434,20 @@
             else return 'F\u00E1cil';
         }
 
-        function getDifficultyBadge(difficulty) {
-            const badges = {
-                'NA': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-slate-500/20 text-slate-400">NA</span>',
-                'F\u00E1cil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-green-500/20 text-green-400">F\u00E1cil</span>',
-                'Medio': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-yellow-500/20 text-yellow-400">Medio</span>',
-                'Dif\u00EDcil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400">Dif\u00EDcil</span>'
+       function getDifficultyBadge(difficulty) {
+            if (!difficulty || difficulty === 'NA') {
+                return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
+            }
+            
+            const styles = {
+                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'Intermedio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
-            return badges[difficulty] || badges['NA'];
+            
+            // Si la dificultad no coincide exactamente con las claves, usa un estilo gris por defecto pero MUESTRA el texto
+            const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+            return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
         function parseQuizText(text) {
@@ -545,7 +551,7 @@
             renderView();
 
             const units = {};
-            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
             
             for (let i = 1; i <= 20; i++) {
                 let foundUnit = false;
@@ -581,16 +587,18 @@
             const unit = state.units[unitKey];
             const quizzes = {};
             
-            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            // El orden es importante: busca primero los que tienen dificultad explicita
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; 
             
             for (let i = 1; i <= 20; i++) {
                 let foundQuiz = false;
                 
-                // Intentar cargar con cada sufijo de dificultad
                 for (const diff of difficulties) {
                     try {
                         const fileName = diff ? `Cuestionario_${i}_${diff}.pdf` : `Cuestionario_${i}.pdf`;
                         const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
+                        
+                        // Leemos solo la primera página para el título
                         const page = await pdf.getPage(1);
                         const tc = await page.getTextContent();
                         const txt = normalizeText(tc.items.map(s => s.str).join(" "));
@@ -602,11 +610,11 @@
                             if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
                         }
                         
-                        // Extraer dificultad del nombre del archivo
+                        // Asignar etiqueta bonita basada en el sufijo del archivo
                         let difficulty = 'NA';
-                        if (diff === 'Facil') difficulty = 'F\u00E1cil';
-                        else if (diff === 'Medio') difficulty = 'Medio';
-                        else if (diff === 'Dificil') difficulty = 'Dif\u00EDcil';
+                        if (diff === 'Facil') difficulty = 'Fácil';
+                        else if (diff === 'Intermedio') difficulty = 'Intermedio';
+                        else if (diff === 'Dificil') difficulty = 'Difícil';
                         
                         quizzes[`q${i}`] = { 
                             fileName: fileName, 
@@ -616,14 +624,12 @@
                         };
                         
                         foundQuiz = true;
-                        break; // Encontramos el archivo, salir del loop de dificultades
+                        break; // Importante: si encontramos una versión (ej. Facil), dejamos de buscar las otras para este número
                     } catch { 
-                        // Continuar probando con el siguiente sufijo
                         continue;
                     }
                 }
                 
-                // Si no encontramos ning\u00FAn archivo con este n\u00FAmero, terminar b\u00FAsqueda
                 if (!foundQuiz) break;
             }
             

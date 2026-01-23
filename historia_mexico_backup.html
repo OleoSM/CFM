@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Historia de Mexico - CEFIMAT</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * { 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+
+        body.dark { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-dark {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Optimizaci\u00F3n m\u00F3vil */
+        @media (min-width: 768px) {
+            .fade-in { animation: fadeIn 0.5s ease-out; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            .slide-up { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+            .card-hover { transition: all 0.3s; }
+            .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+
+            .progress-bar {
+                background: linear-gradient(90deg, #10b981, #059669, #047857);
+                background-size: 200% 100%;
+                animation: shimmer 2s linear infinite;
+            }
+            @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+            .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+            @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
+
+            .theme-toggle:hover { transform: rotate(180deg); }
+        }
+
+        @media (max-width: 767px) {
+            .fade-in, .slide-up, .card-hover, .progress-bar, .pulse-glow {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            .glass-light, .glass-dark {
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        .responsive-container {
+            width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
+            .responsive-container {
+                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
+                border-radius: 2rem; overflow: hidden;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+
+        .loader {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(16, 185, 129, 0.1);
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .theme-toggle {
+            transition: transform 0.3s;
+        }
+
+        /* User Profile Dropdown */
+        .user-dropdown {
+            position: relative;
+        }
+        .user-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .user-dropdown:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .user-dropdown.active .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Mobile menu styles */
+        .mobile-menu-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            transition: right 0.3s ease-in-out;
+            z-index: 200;
+            overflow-y: auto;
+        }
+        .mobile-menu-panel.active {
+            right: 0;
+        }
+        .menu-overlay-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 199;
+        }
+        .menu-overlay-panel.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        @media (min-width: 768px) {
+            .mobile-menu-button {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body id="body">
+    <div id="app" class="responsive-container"></div>
+
+    <script>
+        // Check authentication on page load
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (!isLoggedIn) {
+            window.location.href = 'auth.html';
+        }
+
+        // Get user data
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+        const SUBJECT = {
+            key: 'historia_mexico',
+            folderName: 'Historia_De_Mexico',
+            title: 'Historia de Mexico',
+            icon: 'scroll-text',
+            color: 'emerald'
+        };
+
+        const state = {
+            view: 'units',
+            unit: null,
+            quiz: null,
+            currentQuestion: 0,
+            score: 0,
+            isAnswered: false,
+            selectedOption: null,
+            showHint: false,
+            isLoading: true,
+            loadingMessage: 'Cargando unidades...',
+            loadedQuestions: [],
+            units: {},
+            scannedUnits: {},
+            quizDifficulty: 'NA',
+            darkMode: localStorage.getItem('darkMode') !== 'false',
+            unitDescriptions: {},
+            mobileMenuOpen: false
+        };
+
+        // Theme
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.getElementById('body');
+            if (state.darkMode) {
+                body.classList.add('dark');
+            } else {
+                body.classList.remove('dark');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userGroup');
+            window.location.href = 'landing.html';
+        }
+
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.querySelector('.user-dropdown');
+            if (dropdown) dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            const dropdown = document.querySelector('.user-dropdown');
+            if (dropdown && dropdown.classList.contains('active')) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        function getThemeClasses() {
+            const isDark = state.darkMode;
+            return {
+                glass: isDark ? 'glass-dark' : 'glass-light',
+                textPrimary: isDark ? 'text-white' : 'text-slate-900',
+                textSecondary: isDark ? 'text-slate-400' : 'text-slate-600',
+                textMuted: isDark ? 'text-slate-500' : 'text-slate-400',
+                border: isDark ? 'border-white/5' : 'border-black/5',
+                btnPrimary: `bg-gradient-to-r from-${SUBJECT.color}-500 to-${SUBJECT.color}-600 text-white`,
+                subjectBg: `bg-${SUBJECT.color}-500/10`,
+                subjectBorder: `border-${SUBJECT.color}-500/20`,
+                subjectText: `text-${SUBJECT.color}-500`,
+                gradientIcon: `from-${SUBJECT.color}-500 to-${SUBJECT.color}-600`
+            };
+        }
+
+        // --- PDF Functions ---
+        function normalizeText(text) {
+            if (!text) return "";
+            let normalized = text;
+            
+            // DEBUG: Mostrar el patr\u00F3n exacto con espacios
+            const debugPattern = text.match(/[a-z]\s*\u00B4\s*[aeiou]/gi);
+            if (debugPattern && debugPattern.length > 0) {
+                console.log('🔍 DEBUG - Patr\u00F3n encontrado:', debugPattern.slice(0, 10));
+                debugPattern.slice(0, 3).forEach(pattern => {
+                    console.log(`  "${pattern}" → C\u00F3digos:`, Array.from(pattern).map(c => 
+                        c === ' ' ? 'ESPACIO' : `${c} (U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')})`
+                    ).join(' + '));
+                });
+            }
+            
+            // PASO 1: Corregir acentos malformados
+            // El PDF puede tener espacios: "pa ´ i s" o "pa´is"
+            // Buscar: letra + (espacio opcional) + ´ + (espacio opcional) + vocal
+            
+            // Con espacios opcionales alrededor del acento
+            normalized = normalized
+                .replace(/([a-zA-Z])\s*\u00B4\s*a/g, '$1\u00E1')
+                .replace(/([a-zA-Z])\s*\u00B4\s*A/g, '$1\u00E1')
+                .replace(/([a-zA-Z])\s*\u00B4\s*e/g, '$1\u00E9')
+                .replace(/([a-zA-Z])\s*\u00B4\s*E/g, '$1\u00E9')
+                .replace(/([a-zA-Z])\s*\u00B4\s*i/g, '$1\u00ED')
+                .replace(/([a-zA-Z])\s*\u00B4\s*I/g, '$1\u00ED')
+                .replace(/([a-zA-Z])\s*\u00B4\s*o/g, '$1\u00F3')
+                .replace(/([a-zA-Z])\s*\u00B4\s*O/g, '$1\u00F3')
+                .replace(/([a-zA-Z])\s*\u00B4\s*u/g, '$1\u00FA')
+                .replace(/([a-zA-Z])\s*\u00B4\s*U/g, '$1\u00FA')
+                // Al inicio de palabra con espacios opcionales
+                .replace(/\s*\u00B4\s*a/g, '\u00E1')
+                .replace(/\s*\u00B4\s*A/g, '\u00E1')
+                .replace(/\s*\u00B4\s*e/g, '\u00E9')
+                .replace(/\s*\u00B4\s*E/g, '\u00E9')
+                .replace(/\s*\u00B4\s*i/g, '\u00ED')
+                .replace(/\s*\u00B4\s*I/g, '\u00ED')
+                .replace(/\s*\u00B4\s*o/g, '\u00F3')
+                .replace(/\s*\u00B4\s*O/g, '\u00F3')
+                .replace(/\s*\u00B4\s*u/g, '\u00FA')
+                .replace(/\s*\u00B4\s*U/g, '\u00FA')
+                // Limpiar cualquier ´ suelto que quede
+                .replace(/\u00B4/g, '');
+            
+            // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
+            // El PDF puede tener: "Espa˜ na" o "Espa˜na"
+            normalized = normalized
+                .replace(/([a-zA-Z]?)\s*\u02DC\s*n/g, '$1\u00F1')  // ˜ (SMALL TILDE U+02DC)
+                .replace(/([a-zA-Z]?)\s*\u02DC\s*N/g, '$1\u00D1')
+                .replace(/([a-zA-Z]?)\s*\u007E\s*n/g, '$1\u00F1')  // ~ (ASCII TILDE U+007E)
+                .replace(/([a-zA-Z]?)\s*\u007E\s*N/g, '$1\u00D1')
+                .replace(/([a-zA-Z]?)\s*\u0303\s*n/g, '$1\u00F1')  // ̃ (COMBINING TILDE U+0303)
+                .replace(/([a-zA-Z]?)\s*\u0303\s*N/g, '$1\u00D1')
+                .replace(/\s*\u02DC\s*n/g, '\u00F1')
+                .replace(/\s*\u02DC\s*N/g, '\u00D1')
+                .replace(/\s*\u007E\s*n/g, '\u00F1')
+                .replace(/\s*\u007E\s*N/g, '\u00D1');
+            
+            // PASO 2: Normalizar Unicode
+            normalized = normalized.normalize("NFC");
+            
+            // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
+            normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+            normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
+            
+            // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
+            normalized = normalized
+                .replace(/[–—−]/g, '-')
+                .replace(/['']/g, "'")
+                .replace(/[""]/g, '"')
+                .replace(/\s+/g, " ")
+                .trim();
+            
+            return normalized;
+        }
+
+        async function extractTextFromPDF(url) {
+            const pdf = await pdfjsLib.getDocument(url).promise;
+            let fullText = "";
+            for (let j = 1; j <= pdf.numPages; j++) {
+                state.loadingMessage = `Leyendo pagina ${j}/${pdf.numPages}...`;
+                renderView();
+                const page = await pdf.getPage(j);
+                const tc = await page.getTextContent();
+                fullText += tc.items.map(s => s.str).join(" ") + " ";
+            }
+            return fullText;
+        }
+
+        function detectDifficulty(questions) {
+            if (!questions || questions.length === 0) return 'NA';
+            
+            let totalScore = 0;
+            const factors = {
+                questionLength: 0,
+                optionLength: 0,
+                vocabulary: 0,
+                technical: 0
+            };
+            
+            questions.forEach(q => {
+                // 1. Longitud de la pregunta
+                const qLen = q.q.length;
+                if (qLen > 200) factors.questionLength += 3;
+                else if (qLen > 100) factors.questionLength += 2;
+                else factors.questionLength += 1;
+                
+                // 2. Longitud promedio de opciones
+                const avgOptLen = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
+                if (avgOptLen > 80) factors.optionLength += 3;
+                else if (avgOptLen > 40) factors.optionLength += 2;
+                else factors.optionLength += 1;
+                
+                // 3. Complejidad del vocabulario (palabras largas)
+                const allText = q.q + ' ' + q.a.join(' ');
+                const words = allText.split(/\s+/);
+                const longWords = words.filter(w => w.length > 8).length;
+                const longWordRatio = longWords / words.length;
+                if (longWordRatio > 0.3) factors.vocabulary += 3;
+                else if (longWordRatio > 0.15) factors.vocabulary += 2;
+                else factors.vocabulary += 1;
+                
+                // 4. Presencia de n\u00FAmeros, f\u00F3rmulas o t\u00E9rminos t\u00E9cnicos
+                const technicalPatterns = /\d+|[A-Z]{2,}|[α-ω]|[\+\-\*\/=<>≤≥→←↔]/;
+                const hasTechnical = technicalPatterns.test(allText);
+                if (hasTechnical) factors.technical += 2;
+                else factors.technical += 1;
+            });
+            
+            // Calcular puntuaci\u00F3n total
+            totalScore = (
+                factors.questionLength + 
+                factors.optionLength + 
+                factors.vocabulary + 
+                factors.technical
+            ) / questions.length;
+            
+            // Clasificar seg\u00FAn puntuaci\u00F3n
+            if (totalScore >= 9) return 'Dif\u00EDcil';
+            else if (totalScore >= 6) return 'Medio';
+            else return 'F\u00E1cil';
+        }
+
+        function getDifficultyBadge(difficulty) {
+            const badges = {
+                'NA': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-slate-500/20 text-slate-400">NA</span>',
+                'F\u00E1cil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-green-500/20 text-green-400">F\u00E1cil</span>',
+                'Intermedio': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-yellow-500/20 text-yellow-400">Medio</span>',
+                'Dif\u00EDcil': '<span class="px-2 py-1 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400">Dif\u00EDcil</span>'
+            };
+            return badges[difficulty] || badges['NA'];
+        }
+
+        function parseQuizText(text) {
+            const questions = [];
+            let cleanText = normalizeText(text);
+            let blocks = [];
+            
+            // Intentar m\u00FAltiples patrones de numeraci\u00F3n en orden de especificidad
+            // Patr\u00F3n 1: "1.- " (n\u00FAmero, punto, guion, espacio)
+            if (/\b\d+\.-/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
+            }
+            // Patr\u00F3n 2: "1. " seguido de may\u00FAscula (n\u00FAmero, punto, espacio, letra may\u00FAscula)
+            else if (/\b\d+\.\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1¿]/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            }
+            // Patr\u00F3n 3: "1) " (n\u00FAmero, par\u00E9ntesis, espacio)
+            else if (/\b\d+\)\s/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            }
+            // Patr\u00F3n 4: "1 ¿" (n\u00FAmero, espacio, signo de interrogaci\u00F3n)
+            else if (/\b\d+\s+¿/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
+            }
+            // Patr\u00F3n 5: "1 " seguido de may\u00FAscula (n\u00FAmero, espacio, letra may\u00FAscula)
+            else if (/\b\d+\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/.test(cleanText)) {
+                blocks = cleanText.split(/(?=\b\d+\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1])/g);
+            }
+
+            blocks.forEach(block => {
+                if (!block.includes("A)") && !block.includes("a)")) return;
+                try {
+                    const parts = block.split(/\s+[Aa][).\-]+\s+/);
+                    if (parts.length < 2) return;
+                    
+                    // Limpiar el n\u00FAmero de pregunta con m\u00E1s patrones flexibles
+                    let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
+                    if (!q || q.length < 5) return;
+
+                    const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
+                    if (optParts.length < 4) return;
+
+                    let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
+                    
+                    let hint = "Sin pista disponible.";
+                    const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
+                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
+                    const nq = opts[3].match(/\s+\d+[).\-]/);
+                    if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
+
+                    let correct = 0;
+                    // Detectar cual opcion tiene el check/palomita (diversas variantes)
+                    const checkPatterns = /[✓✔☑✅√▸►●•∙]/;
+                    opts = opts.map((o, i) => {
+                        // Buscar checks, palomitas o marcadores de respuesta correcta
+                        if (checkPatterns.test(o) || o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                            correct = i;
+                        }
+                        // Limpiar todos los simbolos de check y marcadores
+                        return o
+                            .replace(/[✓✔☑✅√▸►●•∙]/g, '')
+                            .replace(/\(correcta\)/gi, '')
+                            .replace(/\(correcto\)/gi, '')
+                            .replace(/^\s*[-_]\s*/, '')
+                            .trim();
+                    });
+
+                    if (opts.some(o => !o)) return;
+                    questions.push({ q, a: opts, c: correct, h: hint });
+                } catch (e) {}
+            });
+            return questions;
+        }
+
+        // --- Scan Functions ---
+        async function loadUnitDescriptions() {
+            try {
+                const response = await fetch('./unit_descriptions.json');
+                const data = await response.json();
+                
+                // Convertir el array de Historia_Mexico a un objeto indexado por n\u00FAmero de unidad
+                if (data.Historia_Mexico) {
+                    const descriptions = {};
+                    data.Historia_Mexico.forEach(unit => {
+                        descriptions[unit.unit] = {
+                            title: unit.title,
+                            description: unit.description
+                        };
+                    });
+                    state.unitDescriptions = descriptions;
+                }
+            } catch (error) {
+                console.warn('No se pudieron cargar las descripciones de unidades:', error);
+                state.unitDescriptions = {};
+            }
+        }
+
+        async function scanUnits() {
+            state.isLoading = true;
+            state.loadingMessage = 'Buscando unidades...';
+            renderView();
+
+            const units = {};
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
+            
+            for (let i = 1; i <= 20; i++) {
+                let foundUnit = false;
+                
+                // Intentar encontrar al menos un cuestionario con cualquier sufijo
+                for (const diff of difficulties) {
+                    try {
+                        const fileName = diff ? `Cuestionario_1_${diff}.pdf` : `Cuestionario_1.pdf`;
+                        await pdfjsLib.getDocument(`./${SUBJECT.folderName}/Unidad_${i}/${fileName}`).promise;
+                        units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
+                        foundUnit = true;
+                        break;
+                    } catch { 
+                        continue;
+                    }
+                }
+                
+                // Si no encontramos ning\u00FAn cuestionario 1 en esta unidad, terminar b\u00FAsqueda
+                if (!foundUnit) break;
+            }
+            state.units = units;
+            state.isLoading = false;
+            renderView();
+        }
+
+        async function scanQuizzes(unitKey) {
+            if (state.scannedUnits[unitKey]) return;
+            
+            state.isLoading = true;
+            state.loadingMessage = 'Buscando cuestionarios...';
+            renderView();
+
+            const unit = state.units[unitKey];
+            const quizzes = {};
+            
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
+            
+            for (let i = 1; i <= 20; i++) {
+                let foundQuiz = false;
+                
+                // Intentar cargar con cada sufijo de dificultad
+                for (const diff of difficulties) {
+                    try {
+                        const fileName = diff ? `Cuestionario_${i}_${diff}.pdf` : `Cuestionario_${i}.pdf`;
+                        const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
+                        const page = await pdf.getPage(1);
+                        const tc = await page.getTextContent();
+                        const txt = normalizeText(tc.items.map(s => s.str).join(" "));
+                        
+                        let title = `Cuestionario ${i}`;
+                        const idx = txt.search(/\b1\.-/);
+                        if (idx > 0) {
+                            const h = txt.substring(0, idx).trim();
+                            if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
+                        }
+                        
+                        // Extraer dificultad del nombre del archivo
+                        let difficulty = 'NA';
+                        if (diff === 'Facil') difficulty = 'F\u00E1cil';
+                        else if (diff === 'Intermedio') difficulty = 'Intermedio';
+                        else if (diff === 'Dificil') difficulty = 'Dif\u00EDcil';
+                        
+                        quizzes[`q${i}`] = { 
+                            fileName: fileName, 
+                            label: title, 
+                            number: i,
+                            difficulty: difficulty
+                        };
+                        
+                        foundQuiz = true;
+                        break; // Encontramos el archivo, salir del loop de dificultades
+                    } catch { 
+                        // Continuar probando con el siguiente sufijo
+                        continue;
+                    }
+                }
+                
+                // Si no encontramos ning\u00FAn archivo con este n\u00FAmero, terminar b\u00FAsqueda
+                if (!foundQuiz) break;
+            }
+            
+            state.units[unitKey].quizzes = quizzes;
+            state.scannedUnits[unitKey] = true;
+            state.isLoading = false;
+            renderView();
+        }
+
+        // --- URL Hash Functions ---
+        function updateHash() {
+            let hash = '';
+            if (state.unit) hash = state.unit;
+            if (state.unit && state.quiz) hash = `${state.unit}/${state.quiz}`;
+            window.location.hash = hash;
+        }
+
+        function getShareLink() {
+            return window.location.href;
+        }
+
+        function getMateriaLink() {
+            return window.location.origin + window.location.pathname;
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(getShareLink()).then(() => {
+                showToast('Enlace copiado!');
+            });
+        }
+
+        function copyMateriaLink() {
+            navigator.clipboard.writeText(getMateriaLink()).then(() => {
+                showToast('Enlace de materia copiado!');
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium shadow-lg z-50';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        async function handleHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return;
+
+            const parts = hash.split('/');
+            const unitKey = parts[0];
+            const quizKey = parts[1];
+
+            if (unitKey && unitKey.startsWith('u')) {
+                if (Object.keys(state.units).length === 0) {
+                    await scanUnits();
+                }
+
+                if (state.units[unitKey]) {
+                    state.unit = unitKey;
+                    await scanQuizzes(unitKey);
+                    
+                    if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
+                        state.view = 'quizzes';
+                        await actions.startQuiz(quizKey);
+                    } else {
+                        state.view = 'quizzes';
+                        renderView();
+                    }
+                }
+            }
+        }
+
+        // --- Actions ---
+        window.actions = {
+            setUnit: async (key) => { 
+                state.unit = key; 
+                await scanQuizzes(key); 
+                state.view = 'quizzes'; 
+                updateHash();
+                renderView(); 
+            },
+            startQuiz: async (key) => {
+                state.quiz = key;
+                state.isLoading = true;
+                state.loadingMessage = 'Cargando cuestionario...';
+                renderView();
+
+                const unit = state.units[state.unit];
+                const quiz = unit.quizzes[key];
+                
+                try {
+                    const text = await extractTextFromPDF(`./${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
+                    const questions = parseQuizText(text);
+                    if (questions.length === 0) throw new Error("No se encontraron preguntas");
+
+                    // Usar la dificultad ya detectada del nombre del archivo
+                    state.quizDifficulty = quiz.difficulty || 'NA';
+
+                    state.loadedQuestions = questions;
+                    state.currentQuestion = 0;
+                    state.score = 0;
+                    state.isAnswered = false;
+                    state.showHint = false;
+                    state.isLoading = false;
+                    state.view = 'quiz';
+                    updateHash();
+                    renderView();
+                } catch (e) {
+                    alert('Error: ' + e.message);
+                    state.isLoading = false;
+                    state.view = 'quizzes';
+                    renderView();
+                }
+            },
+            answer: (idx) => {
+                if (state.isAnswered) return;
+                state.selectedOption = idx;
+                state.isAnswered = true;
+                if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
+                renderView();
+            },
+            next: () => {
+                if (state.currentQuestion + 1 < state.loadedQuestions.length) {
+                    state.currentQuestion++;
+                    state.isAnswered = false;
+                    state.showHint = false;
+                    renderView();
+                } else {
+                    state.view = 'finished';
+                    renderView();
+                }
+            },
+            hint: () => { state.showHint = !state.showHint; renderView(); },
+            goBack: () => {
+                // Navegaci\u00F3n tipo "cd .." - regresar a la vista anterior
+                if (state.view === 'quiz' || state.view === 'finished') {
+                    // Si estamos en quiz o terminado, regresar a lista de quizzes
+                    state.quiz = null;
+                    state.view = 'quizzes';
+                    updateHash();
+                } else if (state.view === 'quizzes') {
+                    // Si estamos en lista de quizzes, regresar a unidades
+                    state.unit = null;
+                    state.quiz = null;
+                    state.view = 'units';
+                    window.location.hash = '';
+                } else {
+                    // Si estamos en unidades, ir a index.html
+                    window.location.href = 'index.html';
+                }
+                renderView();
+            },
+            goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
+            goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
+            restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
+            copyLink: () => { copyLink(); },
+            toggleMobileMenu: () => {
+                state.mobileMenuOpen = !state.mobileMenuOpen;
+                if (state.mobileMenuOpen) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+                renderView();
+            }
+        };
+
+        // --- Render ---
+        function renderView() {
+            const app = document.getElementById('app');
+            const t = getThemeClasses();
+            
+            app.className = `responsive-container ${t.glass}`;
+
+            const header = `
+                <div class="px-6 py-4 border-b ${t.border} flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="actions.goBack()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        </button>
+                        <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-10 w-auto object-contain">
+                        <div>
+                            <h1 class="text-sm font-bold ${t.textPrimary}">${SUBJECT.title}</h1>
+                            <p class="text-[10px] ${t.textMuted}">CEFIMAT</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Desktop buttons -->
+                    <div class="hidden md:flex items-center gap-2">
+                        <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
+                            <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                        </button>
+                        <div class="user-dropdown">
+                            <button onclick="toggleUserDropdown(event)" class="${t.glass} px-3 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-emerald-500/50 transition-all">
+                                <div class="user-avatar">${userData.name ? userData.name.charAt(0) : 'U'}</div>
+                                <i data-lucide="chevron-down" class="w-3 h-3 ${t.textMuted}"></i>
+                            </button>
+                            <div class="user-dropdown-menu ${t.glass} rounded-2xl shadow-2xl overflow-hidden">
+                                <div class="p-4 border-b ${t.border}">
+                                    <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
+                                    <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
+                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
+                                        <i data-lucide="users" class="w-3 h-3"></i>
+                                        Grupo ${userData.group || 'N/A'}
+                                    </div>
+                                </div>
+                                <button onclick="logout()" class="w-full px-4 py-3 text-left flex items-center gap-3 ${t.textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-colors">
+                                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                                    <span class="text-sm font-medium">Cerrar sesi\u00F3n</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile hamburger button -->
+                    <button onclick="actions.toggleMobileMenu()" class="md:hidden mobile-menu-button w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary}">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile menu overlay -->
+                <div class="menu-overlay-panel ${state.mobileMenuOpen ? 'active' : ''}" onclick="actions.toggleMobileMenu()"></div>
+
+                <!-- Mobile menu -->
+                <div class="mobile-menu-panel ${t.glass} shadow-2xl ${state.mobileMenuOpen ? 'active' : ''}">
+                    <div class="p-6 border-b ${t.border}">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold ${t.textPrimary}">Men\u00FA</h3>
+                            <button onclick="actions.toggleMobileMenu()" class="w-10 h-10 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary}">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3 p-4 rounded-xl ${t.glass}">
+                            <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">${userData.name ? userData.name.charAt(0) : 'U'}</div>
+                            <div>
+                                <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
+                                <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
+                                <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
+                                    <i data-lucide="users" class="w-3 h-3"></i>
+                                    Grupo ${userData.group || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <button onclick="toggleDarkMode()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:text-emerald-500 transition-all">
+                            <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-5 h-5"></i>
+                            <span class="text-sm font-medium">${state.darkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                        </button>
+                        <button onclick="logout()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-all">
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
+                            <span class="text-sm font-medium">Cerrar sesi\u00F3n</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const footer = `
+                <div class="px-6 py-4 border-t ${t.border} ${t.glass}">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                            <div class="flex items-center gap-2">
+                                <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-8 w-auto object-contain opacity-50">
+                                <p class="text-xs ${t.textMuted}">© 2026 CEFIMAT Asesor\u00EDas</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-blue-500 transition-colors">
+                                    <i data-lucide="facebook" class="w-4 h-4"></i>
+                                </a>
+                                <a href="https://www.instagram.com/cefimat" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-pink-500 transition-colors">
+                                    <i data-lucide="instagram" class="w-4 h-4"></i>
+                                </a>
+                                <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-slate-800 dark:hover:text-white transition-colors">
+                                    <i data-lucide="video" class="w-4 h-4"></i>
+                                </a>
+                                <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-green-500 transition-colors">
+                                    <i data-lucide="music" class="w-4 h-4"></i>
+                                </a>
+                                <a href="https://www.cefimat.com/" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-emerald-500 transition-colors">
+                                    <i data-lucide="globe" class="w-4 h-4"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let content = '';
+
+            if (state.isLoading) {
+                content = `${header}
+                    <div class="flex-1 flex flex-col items-center justify-center gap-6 p-8">
+                        <div class="loader"></div>
+                        <p class="${t.textPrimary} font-medium">${state.loadingMessage}</p>
+                    </div>
+                    ${footer}`;
+            }
+            else if (state.view === 'units') {
+                const units = Object.entries(state.units);
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in pb-6">
+                            <div class="text-center space-y-2">
+                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${t.subjectBg} ${t.subjectBorder} border">
+                                    <i data-lucide="${SUBJECT.icon}" class="w-4 h-4 ${t.subjectText}"></i>
+                                    <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${SUBJECT.title}</span>
+                                </div>
+                                <h2 class="text-3xl font-black ${t.textPrimary}">Selecciona una Unidad</h2>
+                                <p class="${t.textSecondary} text-sm">${units.length} unidades disponibles</p>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8 col-span-2">No se encontraron unidades</p>` :
+                                units.map(([k, u]) => {
+                                    const unitNum = parseInt(k.replace('u',''));
+                                    const desc = state.unitDescriptions[unitNum] || {};
+                                    return `
+                                    <button onclick="actions.setUnit('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
+                                        <div class="flex items-start gap-4">
+                                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
+                                                <span class="text-white font-black text-xl">${unitNum}</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="${t.textPrimary} font-bold text-lg mb-1 group-hover:${t.subjectText} transition-colors">${u.label}</h3>
+                                                ${desc.title ? `<p class="${t.textSecondary} text-sm mb-2 line-clamp-2">${desc.title}</p>` : `<p class="${t.textSecondary} text-sm">Cuestionarios de ${SUBJECT.title}</p>`}
+                                            </div>
+                                            <i data-lucide="chevron-right" class="w-5 h-5 ${t.textMuted} group-hover:${t.subjectText} transition-colors flex-shrink-0"></i>
+                                        </div>
+                                    </button>
+                                `}).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    ${footer}`;
+            }
+            else if (state.view === 'quizzes') {
+                const unit = state.units[state.unit];
+                const quizzes = Object.entries(unit.quizzes);
+                const unitNum = parseInt(state.unit.replace('u',''));
+                const desc = state.unitDescriptions[unitNum] || {};
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in pb-6">
+                            <div class="text-center space-y-2">
+                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${t.subjectBg} ${t.subjectBorder} border">
+                                    <i data-lucide="book-open" class="w-4 h-4 ${t.subjectText}"></i>
+                                    <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${unit.label}</span>
+                                </div>
+                                <h2 class="text-3xl font-black ${t.textPrimary}">${desc.title || unit.label}</h2>
+                                ${desc.description ? `<p class="${t.textSecondary} text-sm max-w-xl mx-auto">${desc.description}</p>` : ''}
+                                <p class="${t.textMuted} text-xs pt-2">${quizzes.length} cuestionarios disponibles</p>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                ${quizzes.map(([k, q]) => `
+                                    <button onclick="actions.startQuiz('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-16 h-16 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
+                                                <span class="text-white font-black text-2xl">${q.number}</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h3 class="${t.textPrimary} font-bold text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
+                                                    ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
+                                                </div>
+                                                <p class="${t.textSecondary} text-sm">${q.fileName}</p>
+                                            </div>
+                                            <div class="flex items-center justify-center w-10 h-10 rounded-xl ${t.subjectBg} ${t.subjectText} group-hover:scale-110 transition-transform">
+                                                <i data-lucide="play" class="w-5 h-5"></i>
+                                            </div>
+                                        </div>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    ${footer}`;
+            }
+            else if (state.view === 'quiz') {
+                const q = state.loadedQuestions[state.currentQuestion];
+                const total = state.loadedQuestions.length;
+                const progress = ((state.currentQuestion + 1) / total) * 100;
+                
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
+                            <div class="flex items-center justify-between">
+                                <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                                </button>
+                                ${getDifficultyBadge(state.quizDifficulty)}
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs ${t.textSecondary}">Pregunta ${state.currentQuestion + 1}/${total}</span>
+                                        <span class="text-xs font-bold ${t.subjectText}">${state.score} pts</span>
+                                    </div>
+                                    <div class="h-2 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                        <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
+                                <h3 class="text-lg font-bold ${t.textPrimary} leading-relaxed">${q.q}</h3>
+                                ${state.showHint ? `
+                                    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                        <p class="text-sm text-amber-600 dark:text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
+                                    </div>
+                                ` : `<button onclick="actions.hint()" class="text-xs text-amber-500 hover:text-amber-400"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
+                            </div>
+                            <div class="space-y-3">
+                                ${q.a.map((opt, i) => {
+                                    let cls = `${t.glass} ${t.border}`;
+                                    let icon = '';
+                                    if (state.isAnswered) {
+                                        if (i === q.c) { cls = 'bg-emerald-500/20 border-emerald-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>'; }
+                                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-500"></i>'; }
+                                    }
+                                    return `
+                                        <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-${SUBJECT.color}-500/50 transition-all">
+                                            <span class="w-8 h-8 rounded-lg ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} flex items-center justify-center text-sm font-bold ${t.textSecondary}">${String.fromCharCode(65+i)}</span>
+                                            <span class="flex-1 text-sm ${t.textPrimary}">${opt}</span>
+                                            ${icon}
+                                        </button>`;
+                                }).join('')}
+                            </div>
+                            ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Ver Resultados'}</button>` : ''}
+                        </div>
+                    </div>
+                    ${footer}`;
+            }
+            else if (state.view === 'finished') {
+                const total = state.loadedQuestions.length;
+                const perc = Math.round((state.score / total) * 100);
+                const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
+                
+                content = `${header}
+                    <div class="flex-1 flex items-center justify-center p-6">
+                        <div class="text-center space-y-8 fade-in max-w-md">
+                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
+                                <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-3xl font-black ${t.textPrimary}">${msg}</h2>
+                            </div>
+                            <div class="${t.glass} rounded-3xl p-8 space-y-6 border ${t.border}">
+                                <div class="flex items-end justify-center gap-2">
+                                    <span class="text-6xl font-black ${t.subjectText}">${state.score}</span>
+                                    <span class="text-2xl ${t.textMuted} mb-2">/ ${total}</span>
+                                </div>
+                                <div class="h-3 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                    <div class="h-full progress-bar rounded-full" style="width:${perc}%"></div>
+                                </div>
+                                <p class="${t.textSecondary}">${perc}% de efectividad</p>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl ${t.glass} ${t.textPrimary} font-bold hover:opacity-80 border ${t.border}">Otro Quiz</button>
+                                <a href="index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
+                            </div>
+                        </div>
+                    </div>
+                    ${footer}`;
+            }
+
+            app.innerHTML = content;
+            lucide.createIcons();
+        }
+
+        // Init
+        async function init() {
+            applyTheme();
+            await loadUnitDescriptions(); // Cargar descripciones primero
+            const hash = window.location.hash.slice(1);
+            if (hash) {
+                await handleHash();
+            } else {
+                await scanUnits();
+            }
+        }
+        init();
+    </script>
+</body>
+</html>
