@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Matematicas - CEFIMAT</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -22,11 +23,13 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        * { box-sizing: border-box; }
-        
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             min-height: 100vh;
         }
@@ -37,62 +40,147 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .slide-up { animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .responsive-container {
-            width: 100%; min-height: 100vh;
-            display: flex; flex-direction: column;
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
         }
 
-        @media (min-width: 768px) {
-            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
-            .responsive-container {
-                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
-                border-radius: 2rem; overflow: hidden;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
 
-        .card-hover { transition: all 0.3s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .responsive-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+            }
+
+            .responsive-container {
+                max-width: 900px;
+                min-height: auto;
+                height: 90vh;
+                max-height: 750px;
+                border-radius: 2rem;
+                overflow: hidden;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+        }
+
+        .card-hover {
+            transition: all 0.3s;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+        }
 
         .btn-primary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             transition: all 0.3s;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5); }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5);
+        }
 
         .progress-bar {
             background: linear-gradient(90deg, #10b981, #059669, #047857);
             background-size: 200% 100%;
             animation: shimmer 2s linear infinite;
         }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
 
         .loader {
-            width: 50px; height: 50px;
+            width: 50px;
+            height: 50px;
             border: 3px solid rgba(16, 185, 129, 0.1);
             border-top-color: #10b981;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .gradient-text {
             background: linear-gradient(135deg, #10b981, #059669);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+            }
+        }
     </style>
 </head>
+
 <body>
     <div id="app" class="responsive-container glass"></div>
 
@@ -134,15 +222,15 @@
                 if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
-            } catch (e) {}
-            
+            } catch (e) { }
+
             // Normalizar y limpiar caracteres especiales
             normalized = normalized.normalize("NFKC");
-            
+
             // CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
             normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
             normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-            
+
             // Preservar acentos y caracteres especiales del espa\u00F1ol
             normalized = normalized
                 .replace(/[\u00E1àäâãå]/gi, match => match.toUpperCase() === match ? '\u00E1' : '\u00E1')
@@ -152,7 +240,7 @@
                 .replace(/[\u00FAù\u00FCû]/gi, match => match.toUpperCase() === match ? '\u00FA' : '\u00FA')
                 .replace(/[\u00F1]/g, '\u00F1')
                 .replace(/[\u00F1]/g, '\u00F1');
-            
+
             // Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
             normalized = normalized
                 .replace(/[–—−]/g, '-')
@@ -160,7 +248,7 @@
                 .replace(/[""]/g, '"')
                 .replace(/\s+/g, " ")
                 .trim();
-            
+
             return normalized;
         }
 
@@ -179,31 +267,31 @@
 
         function detectDifficulty(questions) {
             if (!questions || questions.length === 0) return "NA";
-            
+
             let score = 0;
             let totalQuestions = questions.length;
-            
+
             questions.forEach(q => {
                 if (q.q.length > 150) score += 2;
                 else if (q.q.length > 100) score += 1;
-                
+
                 const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
                 if (avgOptionLength > 80) score += 2;
                 else if (avgOptionLength > 50) score += 1;
-                
+
                 const words = q.q.split(/\s+/);
                 const longWords = words.filter(w => w.length > 12).length;
                 if (longWords > 3) score += 2;
                 else if (longWords > 1) score += 1;
-                
+
                 if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
-                
+
                 const technicalTerms = /(?:concepto|teor\u00EDa|an\u00E1lisis|hip\u00F3tesis|principio|fen\u00F3meno|estructura|proceso|sistema|caracter\u00EDstica|definici\u00F3n|relaci\u00F3n|consecuencia)/i;
                 if (technicalTerms.test(q.q)) score += 1;
             });
-            
+
             const avgScore = score / totalQuestions;
-            
+
             if (avgScore >= 4) return "Dif\u00EDcil";
             else if (avgScore >= 2) return "Medio";
             else return "F\u00E1cil";
@@ -213,13 +301,13 @@
             if (!difficulty || difficulty === 'NA') {
                 return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
             }
-            
+
             const styles = {
                 'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
                 'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
                 'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
-            
+
             const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
@@ -228,7 +316,7 @@
             const questions = [];
             let cleanText = normalizeText(text);
             let blocks = [];
-            
+
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
             else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
             else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
@@ -238,7 +326,7 @@
                 try {
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
-                    
+
                     let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
                     if (!q || q.length < 5) return;
 
@@ -246,7 +334,7 @@
                     if (optParts.length < 4) return;
 
                     let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
-                    
+
                     let hint = "Sin pista disponible.";
                     const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
                     if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
@@ -261,7 +349,7 @@
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
-                } catch (e) {}
+                } catch (e) { }
             });
             return questions;
         }
@@ -286,21 +374,21 @@
 
         async function scanQuizzes(unitKey) {
             if (state.scannedUnits[unitKey]) return;
-            
+
             state.isLoading = true;
             state.loadingMessage = 'Buscando cuestionarios...';
             renderView();
 
             const unit = state.units[unitKey];
             const quizzes = {};
-            
+
             for (let i = 1; i <= 20; i++) {
                 try {
                     const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
                     const page = await pdf.getPage(1);
                     const tc = await page.getTextContent();
                     const txt = normalizeText(tc.items.map(s => s.str).join(" "));
-                    
+
                     let title = `Cuestionario ${i}`;
                     const idx = txt.search(/\b1\.-/);
                     if (idx > 0) {
@@ -310,7 +398,7 @@
                     quizzes[`q${i}`] = { fileName: `Cuestionario_${i}.pdf`, label: title, number: i };
                 } catch { break; }
             }
-            
+
             state.units[unitKey].quizzes = quizzes;
             state.scannedUnits[unitKey] = true;
             state.isLoading = false;
@@ -352,7 +440,7 @@
                 if (state.units[unitKey]) {
                     state.unit = unitKey;
                     await scanQuizzes(unitKey);
-                    
+
                     if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
                         state.view = 'quizzes';
                         await actions.startQuiz(quizKey);
@@ -366,12 +454,12 @@
 
         // --- Actions ---
         window.actions = {
-            setUnit: async (key) => { 
-                state.unit = key; 
-                await scanQuizzes(key); 
-                state.view = 'quizzes'; 
+            setUnit: async (key) => {
+                state.unit = key;
+                await scanQuizzes(key);
+                state.view = 'quizzes';
                 updateHash();
-                renderView(); 
+                renderView();
             },
             startQuiz: async (key) => {
                 state.quiz = key;
@@ -381,7 +469,7 @@
 
                 const unit = state.units[state.unit];
                 const quiz = unit.quizzes[key];
-                
+
                 try {
                     const text = await extractTextFromPDF(`./${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
                     const questions = parseQuizText(text);
@@ -435,7 +523,7 @@
         // --- Render ---
         function renderView() {
             const app = document.getElementById('app');
-            
+
             const header = `
                 <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -478,10 +566,10 @@
                             </div>
                             <div class="space-y-3">
                                 ${units.length === 0 ? `<p class="text-center text-slate-400 py-8">No se encontraron unidades</p>` :
-                                units.map(([k, u]) => `
+                        units.map(([k, u]) => `
                                     <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
                                         <div class="w-12 h-12 rounded-xl ${SUBJECT.bg} ${SUBJECT.border} border flex items-center justify-center">
-                                            <span class="${SUBJECT.text} font-black text-lg">${k.replace('u','')}</span>
+                                            <span class="${SUBJECT.text} font-black text-lg">${k.replace('u', '')}</span>
                                         </div>
                                         <div class="flex-1">
                                             <h3 class="text-white font-bold">${u.label}</h3>
@@ -518,7 +606,6 @@
                                                 <h3 class="text-white font-bold truncate">${q.label}</h3>
                                                 ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
                                             </div>
-                                            <p class="text-slate-400 text-xs">${q.fileName}</p>
                                         </div>
                                         <i data-lucide="play" class="w-5 h-5 ${SUBJECT.text}"></i>
                                     </button>
@@ -531,7 +618,7 @@
                 const q = state.loadedQuestions[state.currentQuestion];
                 const total = state.loadedQuestions.length;
                 const progress = ((state.currentQuestion + 1) / total) * 100;
-                
+
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 slide-up">
@@ -562,19 +649,19 @@
                             </div>
                             <div class="space-y-3">
                                 ${q.a.map((opt, i) => {
-                                    let cls = 'glass border-white/5';
-                                    let icon = '';
-                                    if (state.isAnswered) {
-                                        if (i === q.c) { cls = 'bg-blue-500/20 border-blue-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-blue-400"></i>'; }
-                                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
-                                    }
-                                    return `
+                    let cls = 'glass border-white/5';
+                    let icon = '';
+                    if (state.isAnswered) {
+                        if (i === q.c) { cls = 'bg-blue-500/20 border-blue-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-blue-400"></i>'; }
+                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
+                    }
+                    return `
                                         <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-blue-500/50 transition-all">
-                                            <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65+i)}</span>
+                                            <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65 + i)}</span>
                                             <span class="flex-1 text-sm text-white">${opt}</span>
                                             ${icon}
                                         </button>`;
-                                }).join('')}
+                }).join('')}
                             </div>
                             ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl btn-primary text-white font-bold">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Ver Resultados'}</button>` : ''}
                         </div>
@@ -584,7 +671,7 @@
                 const total = state.loadedQuestions.length;
                 const perc = Math.round((state.score / total) * 100);
                 const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
-                
+
                 content = `${header}
                     <div class="flex-1 flex items-center justify-center p-6">
                         <div class="text-center space-y-8 fade-in max-w-md">
@@ -628,5 +715,5 @@
         init();
     </script>
 </body>
-</html>
 
+</html>
