@@ -157,6 +157,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         @media (min-width: 768px) {
@@ -697,34 +698,6 @@
                         const txt = normalizeText(tc.items.map(s => s.str).join(" "));
 
                         let title = `Cuestionario ${i}`;
-                        let description = '';
-                        const idx = txt.search(/\b1\.-/);
-                        if (idx > 0) {
-                            const h = txt.substring(0, idx).trim();
-                            if (h.length > 5 && h.length < 150) {
-                                // Extraer la descripción después de los dos puntos
-                                const colonMatch = h.match(/[:.-]\s*(.+)/);
-                                if (colonMatch && colonMatch[1]) {
-                                    description = colonMatch[1].trim();
-
-                                    // Truncar en: punto, CEFIMAT, o dos puntos (lo que aparezca primero)
-                                    const periodIndex = description.indexOf('.');
-                                    const cefimatIndex = description.search(/CEFIMAT/i);
-                                    const colonIndex = description.indexOf(':');
-
-                                    const indices = [periodIndex, cefimatIndex, colonIndex].filter(i => i !== -1);
-                                    if (indices.length > 0) {
-                                        const minIndex = Math.min(...indices);
-                                        description = description.substring(0, minIndex).trim();
-                                    }
-
-                                    // Si la descripción es muy larga, truncarla
-                                    if (description.length > 80) {
-                                        description = description.substring(0, 77) + '...';
-                                    }
-                                }
-                            }
-                        }
 
                         // Asignar etiqueta bonita basada en el sufijo del archivo
                         let difficulty = 'NA';
@@ -735,7 +708,6 @@
                         quizzes[`q${i}`] = {
                             fileName: fileName,
                             label: title,
-                            description: description,
                             number: i,
                             difficulty: difficulty
                         };

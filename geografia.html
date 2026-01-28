@@ -157,6 +157,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         @media (min-width: 768px) {
@@ -858,7 +859,8 @@
             goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
             goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
             restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
-            copyLink: () => { copyLink(); }
+            copyLink: () => { copyLink(); },
+            toggleMobileMenu: () => { state.mobileMenuOpen = !state.mobileMenuOpen; renderView(); }
         };
 
         // --- Render ---
