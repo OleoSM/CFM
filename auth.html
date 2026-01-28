@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
 
     <script>
         tailwind.config = {
@@ -153,7 +154,7 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
@@ -166,26 +167,24 @@
                 return;
             }
 
-            // Simulaci\u00F3n de login
-            const userData = {
-                email: email,
-                name: email.split('@')[0],
-                group: 'A1',
-                avatar: email[0].toUpperCase()
-            };
-
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userData', JSON.stringify(userData));
-            localStorage.setItem('userName', userData.name);
-            localStorage.setItem('userGroup', userData.group);
-
-            showToast(`¡Bienvenido, ${userData.name}!`);
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            try {
+                // Real API call to backend
+                const data = await api.login(email, password);
+                
+                showToast(`¡Bienvenido, ${data.user.name}!`);
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Login error:', error);
+                const form = document.getElementById('loginForm');
+                form.classList.add('shake');
+                setTimeout(() => form.classList.remove('shake'), 500);
+                showToast(error.message || 'Error al iniciar sesión', 'error');
+            }
         }
 
-        function handleRegister(event) {
+        async function handleRegister(event) {
             event.preventDefault();
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
@@ -202,32 +201,35 @@
             }
 
             if (password !== confirmPassword) {
-                showToast('Las contrase\u00F1as no coinciden', 'error');
+                showToast('Las contraseñas no coinciden', 'error');
                 return;
             }
 
             if (password.length < 6) {
-                showToast('La contrase\u00F1a debe tener al menos 6 caracteres', 'error');
+                showToast('La contraseña debe tener al menos 6 caracteres', 'error');
                 return;
             }
 
-            // Simulaci\u00F3n de registro
-            const userData = {
-                email: email,
-                name: name,
-                group: group,
-                avatar: name[0].toUpperCase()
-            };
-
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userData', JSON.stringify(userData));
-            localStorage.setItem('userName', userData.name);
-            localStorage.setItem('userGroup', userData.group);
-
-            showToast(`¡Cuenta creada! Bienvenido, ${userData.name}!`);
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            try {
+                // Real API call to backend
+                const data = await api.register({
+                    email,
+                    name,
+                    group,
+                    password
+                });
+                
+                showToast(`¡Cuenta creada! Bienvenido, ${data.user.name}!`);
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Register error:', error);
+                const form = document.getElementById('registerForm');
+                form.classList.add('shake');
+                setTimeout(() => form.classList.remove('shake'), 500);
+                showToast(error.message || 'Error al crear cuenta', 'error');
+            }
         }
 
         function render() {

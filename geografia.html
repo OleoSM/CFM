@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Geografia - CEFIMAT</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="js/api.js"></script>
 
     <script>
         tailwind.config = {
@@ -23,20 +25,20 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        * { 
+
+        * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
             min-height: 100vh;
             transition: background 0.3s;
         }
 
-        body.dark { 
+        body.dark {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         }
 
@@ -54,64 +56,150 @@
 
         /* Optimizaci\u00F3n m\u00F3vil */
         @media (min-width: 768px) {
-            .fade-in { animation: fadeIn 0.5s ease-out; }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            .fade-in {
+                animation: fadeIn 0.5s ease-out;
+            }
 
-            .slide-up { animation: slideUp 0.4s ease-out; }
-            @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
 
-            .card-hover { transition: all 0.3s; }
-            .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .slide-up {
+                animation: slideUp 0.4s ease-out;
+            }
+
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .card-hover {
+                transition: all 0.3s;
+            }
+
+            .card-hover:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+            }
 
             .progress-bar {
                 background: linear-gradient(90deg, #10b981, #059669, #047857);
                 background-size: 200% 100%;
                 animation: shimmer 2s linear infinite;
             }
-            @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-            .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-            @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
+            @keyframes shimmer {
+                0% {
+                    background-position: -200% 0;
+                }
 
-            .theme-toggle:hover { transform: rotate(180deg); }
+                100% {
+                    background-position: 200% 0;
+                }
+            }
+
+            .pulse-glow {
+                animation: pulseGlow 2s ease-in-out infinite;
+            }
+
+            @keyframes pulseGlow {
+
+                0%,
+                100% {
+                    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+                }
+
+                50% {
+                    box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+                }
+            }
+
+            .theme-toggle:hover {
+                transform: rotate(180deg);
+            }
         }
 
         @media (max-width: 767px) {
-            .fade-in, .slide-up, .card-hover, .progress-bar, .pulse-glow {
+
+            .fade-in,
+            .slide-up,
+            .card-hover,
+            .progress-bar,
+            .pulse-glow {
                 animation: none !important;
                 opacity: 1 !important;
                 transform: none !important;
             }
 
-            .glass-light, .glass-dark {
+            .glass-light,
+            .glass-dark {
                 backdrop-filter: blur(10px);
             }
         }
 
         .responsive-container {
-            width: 100%; min-height: 100vh;
-            display: flex; flex-direction: column;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         @media (min-width: 768px) {
-            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+            }
+
             .responsive-container {
-                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
-                border-radius: 2rem; overflow: hidden;
+                max-width: 900px;
+                min-height: auto;
+                height: 90vh;
+                max-height: 750px;
+                border-radius: 2rem;
+                overflow: hidden;
             }
         }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+        }
 
         .loader {
-            width: 50px; height: 50px;
+            width: 50px;
+            height: 50px;
             border: 3px solid rgba(16, 185, 129, 0.1);
             border-top-color: #10b981;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .theme-toggle {
             transition: transform 0.3s;
@@ -121,6 +209,7 @@
         .user-dropdown {
             position: relative;
         }
+
         .user-dropdown-menu {
             position: absolute;
             top: calc(100% + 8px);
@@ -132,11 +221,13 @@
             transition: all 0.3s ease;
             z-index: 100;
         }
+
         .user-dropdown.active .user-dropdown-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
+
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -151,6 +242,7 @@
             color: white;
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
         }
+
         /* Mobile menu styles */
         .mobile-menu-panel {
             position: fixed;
@@ -162,9 +254,11 @@
             z-index: 200;
             overflow-y: auto;
         }
+
         .mobile-menu-panel.active {
             right: 0;
         }
+
         .menu-overlay-panel {
             position: fixed;
             top: 0;
@@ -177,10 +271,12 @@
             transition: all 0.3s;
             z-index: 199;
         }
+
         .menu-overlay-panel.active {
             opacity: 1;
             visibility: visible;
         }
+
         @media (min-width: 768px) {
             .mobile-menu-button {
                 display: none !important;
@@ -188,6 +284,7 @@
         }
     </style>
 </head>
+
 <body id="body">
     <div id="app" class="responsive-container"></div>
 
@@ -246,11 +343,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userData');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userGroup');
-            window.location.href = 'landing.html';
+            api.logout();
         }
 
         function toggleUserDropdown(event) {
@@ -260,7 +353,7 @@
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function () {
             const dropdown = document.querySelector('.user-dropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
@@ -287,13 +380,13 @@
             if (!difficulty || difficulty === 'NA') {
                 return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
             }
-            
+
             const styles = {
                 'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
                 'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
                 'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
-            
+
             const styleClass = styles[difficulty] || styles['NA'];
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
@@ -302,22 +395,22 @@
         function normalizeText(text) {
             if (!text) return "";
             let normalized = text;
-            
+
             // DEBUG: Mostrar el patr\u00F3n exacto con espacios
             const debugPattern = text.match(/[a-z]\s*\u00B4\s*[aeiou]/gi);
             if (debugPattern && debugPattern.length > 0) {
                 console.log('🔍 DEBUG - Patr\u00F3n encontrado:', debugPattern.slice(0, 10));
                 debugPattern.slice(0, 3).forEach(pattern => {
-                    console.log(`  "${pattern}" → C\u00F3digos:`, Array.from(pattern).map(c => 
+                    console.log(`  "${pattern}" → C\u00F3digos:`, Array.from(pattern).map(c =>
                         c === ' ' ? 'ESPACIO' : `${c} (U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')})`
                     ).join(' + '));
                 });
             }
-            
+
             // PASO 1: Corregir acentos malformados
             // El PDF puede tener espacios: "pa ´ i s" o "pa´is"
             // Buscar: letra + (espacio opcional) + ´ + (espacio opcional) + vocal
-            
+
             // Con espacios opcionales alrededor del acento
             normalized = normalized
                 .replace(/([a-zA-Z])\s*\u00B4\s*a/g, '$1\u00E1')
@@ -343,7 +436,7 @@
                 .replace(/\s*\u00B4\s*U/g, '\u00FA')
                 // Limpiar cualquier ´ suelto que quede
                 .replace(/\u00B4/g, '');
-            
+
             // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
             // El PDF puede tener: "Espa˜ na" o "Espa˜na"
             normalized = normalized
@@ -357,15 +450,15 @@
                 .replace(/s*u02DCs*N/g, 'u00D1')
                 .replace(/s*u007Es*n/g, 'u00F1')
                 .replace(/s*u007Es*N/g, 'u00D1');
-            
+
 
             // PASO 2: Normalizar Unicode
             normalized = normalized.normalize("NFC");
-            
+
             // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
             normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
             normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-            
+
             // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
             normalized = normalized
                 .replace(/[–—−]/g, '-')
@@ -373,67 +466,67 @@
                 .replace(/[""]/g, '"')
                 .replace(/\s+/g, " ")
                 .trim();
-            
+
             return normalized;
         }
-            
-            // PASO 1: Corregir acentos malformados usando REGEX m\u00E1s amplio
-            // Detectar cualquier letra seguida de s\u00EDmbolos de acento com\u00FAn
-            normalized = normalized
-                // Acento agudo separado: U+00B4, U+02CA, U+0301, U+2019, U+02B9
-                .replace(/a[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
-                .replace(/e[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
-                .replace(/i[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
-                .replace(/o[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
-                .replace(/u[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
-                // Acento grave separado: U+0060, U+02CB, U+0300
-                .replace(/a[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
-                .replace(/e[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
-                .replace(/i[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
-                .replace(/o[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
-                .replace(/u[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
-                // Ap\u00F3strofe como acento: U+0027, U+2032
-                .replace(/a[\u0027\u2032']/g, '\u00E1')
-                .replace(/A[\u0027\u2032']/g, '\u00E1')
-                .replace(/e[\u0027\u2032']/g, '\u00E9')
-                .replace(/E[\u0027\u2032']/g, '\u00E9')
-                .replace(/i[\u0027\u2032']/g, '\u00ED')
-                .replace(/I[\u0027\u2032']/g, '\u00ED')
-                .replace(/o[\u0027\u2032']/g, '\u00F3')
-                .replace(/O[\u0027\u2032']/g, '\u00F3')
-                .replace(/u[\u0027\u2032']/g, '\u00FA')
-                .replace(/U[\u0027\u2032']/g, '\u00FA');
-            
-            // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
-            // El PDF puede tener: "Espa˜ na" o "Espa˜na"
-            normalized = normalized
-                .replace(/([a-zA-Z]?)s*u02DCs*n/g, '$1u00F1')  // ˜ (SMALL TILDE U+02DC)
-                .replace(/([a-zA-Z]?)s*u02DCs*N/g, '$1u00D1')
-                .replace(/([a-zA-Z]?)s*u007Es*n/g, '$1u00F1')  // ~ (ASCII TILDE U+007E)
-                .replace(/([a-zA-Z]?)s*u007Es*N/g, '$1u00D1')
-                .replace(/([a-zA-Z]?)s*u0303s*n/g, '$1u00F1')  // ̃ (COMBINING TILDE U+0303)
-                .replace(/([a-zA-Z]?)s*u0303s*N/g, '$1u00D1')
-                .replace(/s*u02DCs*n/g, 'u00F1')
-                .replace(/s*u02DCs*N/g, 'u00D1')
-                .replace(/s*u007Es*n/g, 'u00F1')
-                .replace(/s*u007Es*N/g, 'u00D1');
-            
 
-            // PASO 2: Normalizar Unicode
-            normalized = normalized.normalize("NFC");
-            
-            // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
-            normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
-            normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-            
-            // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
-            normalized = normalized
-                .replace(/[–—−]/g, '-')
-                .replace(/[""]/g, '"')
-                .replace(/\s+/g, " ")
-                .trim();
-            
-            return normalized;
+        // PASO 1: Corregir acentos malformados usando REGEX m\u00E1s amplio
+        // Detectar cualquier letra seguida de s\u00EDmbolos de acento com\u00FAn
+        normalized = normalized
+            // Acento agudo separado: U+00B4, U+02CA, U+0301, U+2019, U+02B9
+            .replace(/a[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
+            .replace(/e[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
+            .replace(/i[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
+            .replace(/o[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
+            .replace(/u[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
+            // Acento grave separado: U+0060, U+02CB, U+0300
+            .replace(/a[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
+            .replace(/e[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
+            .replace(/i[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
+            .replace(/o[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
+            .replace(/u[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
+            // Ap\u00F3strofe como acento: U+0027, U+2032
+            .replace(/a[\u0027\u2032']/g, '\u00E1')
+            .replace(/A[\u0027\u2032']/g, '\u00E1')
+            .replace(/e[\u0027\u2032']/g, '\u00E9')
+            .replace(/E[\u0027\u2032']/g, '\u00E9')
+            .replace(/i[\u0027\u2032']/g, '\u00ED')
+            .replace(/I[\u0027\u2032']/g, '\u00ED')
+            .replace(/o[\u0027\u2032']/g, '\u00F3')
+            .replace(/O[\u0027\u2032']/g, '\u00F3')
+            .replace(/u[\u0027\u2032']/g, '\u00FA')
+            .replace(/U[\u0027\u2032']/g, '\u00FA');
+
+        // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
+        // El PDF puede tener: "Espa˜ na" o "Espa˜na"
+        normalized = normalized
+            .replace(/([a-zA-Z]?)s*u02DCs*n/g, '$1u00F1')  // ˜ (SMALL TILDE U+02DC)
+            .replace(/([a-zA-Z]?)s*u02DCs*N/g, '$1u00D1')
+            .replace(/([a-zA-Z]?)s*u007Es*n/g, '$1u00F1')  // ~ (ASCII TILDE U+007E)
+            .replace(/([a-zA-Z]?)s*u007Es*N/g, '$1u00D1')
+            .replace(/([a-zA-Z]?)s*u0303s*n/g, '$1u00F1')  // ̃ (COMBINING TILDE U+0303)
+            .replace(/([a-zA-Z]?)s*u0303s*N/g, '$1u00D1')
+            .replace(/s*u02DCs*n/g, 'u00F1')
+            .replace(/s*u02DCs*N/g, 'u00D1')
+            .replace(/s*u007Es*n/g, 'u00F1')
+            .replace(/s*u007Es*N/g, 'u00D1');
+
+
+        // PASO 2: Normalizar Unicode
+        normalized = normalized.normalize("NFC");
+
+        // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
+        normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
+        normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
+
+        // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
+        normalized = normalized
+            .replace(/[–—−]/g, '-')
+            .replace(/[""]/g, '"')
+            .replace(/\s+/g, " ")
+            .trim();
+
+        return normalized;
         }
 
         async function extractTextFromPDF(url) {
@@ -451,37 +544,37 @@
 
         function detectDifficulty(questions) {
             if (!questions || questions.length === 0) return "NA";
-            
+
             let score = 0;
             let totalQuestions = questions.length;
-            
+
             questions.forEach(q => {
                 // 1. Longitud de la pregunta (m\u00E1s larga = m\u00E1s dif\u00EDcil)
                 if (q.q.length > 150) score += 2;
                 else if (q.q.length > 100) score += 1;
-                
+
                 // 2. Longitud promedio de las opciones
                 const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
                 if (avgOptionLength > 80) score += 2;
                 else if (avgOptionLength > 50) score += 1;
-                
+
                 // 3. Complejidad de vocabulario (palabras largas)
                 const words = q.q.split(/\s+/);
                 const longWords = words.filter(w => w.length > 12).length;
                 if (longWords > 3) score += 2;
                 else if (longWords > 1) score += 1;
-                
+
                 // 4. Presencia de n\u00FAmeros o f\u00F3rmulas
                 if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
-                
+
                 // 5. Preguntas con t\u00E9rminos t\u00E9cnicos o conceptos avanzados
                 const technicalTerms = /(?:concepto|teor\u00EDa|an\u00E1lisis|hip\u00F3tesis|principio|fen\u00F3meno|estructura|proceso|sistema|caracter\u00EDstica|definici\u00F3n|relaci\u00F3n|consecuencia)/i;
                 if (technicalTerms.test(q.q)) score += 1;
             });
-            
+
             // Calcular puntuaci\u00F3n promedio por pregunta
             const avgScore = score / totalQuestions;
-            
+
             // Clasificar seg\u00FAn el puntaje promedio
             if (avgScore >= 4) return "Dif\u00EDcil";
             else if (avgScore >= 2) return "Medio";
@@ -492,7 +585,7 @@
             const questions = [];
             let cleanText = normalizeText(text);
             let blocks = [];
-            
+
             // Intentar m\u00FAltiples patrones de numeraci\u00F3n en orden de especificidad
             // Patr\u00F3n 1: "1.- " (n\u00FAmero, punto, guion, espacio)
             if (/\b\d+\.-/.test(cleanText)) {
@@ -520,7 +613,7 @@
                 try {
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
-                    
+
                     // Limpiar el n\u00FAmero de pregunta con m\u00E1s patrones flexibles
                     let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
                     if (!q || q.length < 5) return;
@@ -529,7 +622,7 @@
                     if (optParts.length < 4) return;
 
                     let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
-                    
+
                     let hint = "Sin pista disponible.";
                     const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
                     if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
@@ -555,7 +648,7 @@
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
-                } catch (e) {}
+                } catch (e) { }
             });
             return questions;
         }
@@ -565,7 +658,7 @@
             try {
                 const response = await fetch('./unit_descriptions.json');
                 const data = await response.json();
-                
+
                 // Convertir el array de Geografia a un objeto indexado por n\u00FAmero de unidad
                 if (data.Geografia) {
                     const descriptions = {};
@@ -590,10 +683,10 @@
 
             const units = {};
             const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
-            
+
             for (let i = 1; i <= 20; i++) {
                 let foundUnit = false;
-                
+
                 // Intentar encontrar al menos un cuestionario con cualquier sufijo
                 for (const diff of difficulties) {
                     try {
@@ -602,11 +695,11 @@
                         units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
                         foundUnit = true;
                         break;
-                    } catch { 
+                    } catch {
                         continue;
                     }
                 }
-                
+
                 // Si no encontramos ning\u00FAn cuestionario 1 en esta unidad, terminar b\u00FAsqueda
                 if (!foundUnit) break;
             }
@@ -617,19 +710,19 @@
 
         async function scanQuizzes(unitKey) {
             if (state.scannedUnits[unitKey]) return;
-            
+
             state.isLoading = true;
             state.loadingMessage = 'Buscando cuestionarios...';
             renderView();
 
             const unit = state.units[unitKey];
             const quizzes = {};
-            
+
             const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
-            
+
             for (let i = 1; i <= 20; i++) {
                 let foundQuiz = false;
-                
+
                 // Intentar cargar con cada sufijo de dificultad
                 for (const diff of difficulties) {
                     try {
@@ -638,39 +731,39 @@
                         const page = await pdf.getPage(1);
                         const tc = await page.getTextContent();
                         const txt = normalizeText(tc.items.map(s => s.str).join(" "));
-                        
+
                         let title = `Cuestionario ${i}`;
                         const idx = txt.search(/\b1\.-/);
                         if (idx > 0) {
                             const h = txt.substring(0, idx).trim();
                             if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
                         }
-                        
+
                         // Extraer dificultad del nombre del archivo
                         let difficulty = 'NA';
                         if (diff === 'Facil') difficulty = 'F\u00E1cil';
                         else if (diff === 'Medio') difficulty = 'Medio';
                         else if (diff === 'Dificil') difficulty = 'Dif\u00EDcil';
-                        
-                        quizzes[`q${i}`] = { 
-                            fileName: fileName, 
-                            label: title, 
+
+                        quizzes[`q${i}`] = {
+                            fileName: fileName,
+                            label: title,
                             number: i,
                             difficulty: difficulty
                         };
-                        
+
                         foundQuiz = true;
                         break; // Encontramos el archivo, salir del loop de dificultades
-                    } catch { 
+                    } catch {
                         // Continuar probando con el siguiente sufijo
                         continue;
                     }
                 }
-                
+
                 // Si no encontramos ning\u00FAn archivo con este n\u00FAmero, terminar b\u00FAsqueda
                 if (!foundQuiz) break;
             }
-            
+
             state.units[unitKey].quizzes = quizzes;
             state.scannedUnits[unitKey] = true;
             state.isLoading = false;
@@ -729,7 +822,7 @@
                 if (state.units[unitKey]) {
                     state.unit = unitKey;
                     await scanQuizzes(unitKey);
-                    
+
                     if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
                         state.view = 'quizzes';
                         await actions.startQuiz(quizKey);
@@ -743,12 +836,12 @@
 
         // --- Actions ---
         window.actions = {
-            setUnit: async (key) => { 
-                state.unit = key; 
-                await scanQuizzes(key); 
-                state.view = 'quizzes'; 
+            setUnit: async (key) => {
+                state.unit = key;
+                await scanQuizzes(key);
+                state.view = 'quizzes';
                 updateHash();
-                renderView(); 
+                renderView();
             },
             startQuiz: async (key) => {
                 state.quiz = key;
@@ -758,7 +851,7 @@
 
                 const unit = state.units[state.unit];
                 const quiz = unit.quizzes[key];
-                
+
                 try {
                     const text = await extractTextFromPDF(`./${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
                     const questions = parseQuizText(text);
@@ -831,7 +924,7 @@
         function renderView() {
             const app = document.getElementById('app');
             const t = getThemeClasses();
-            
+
             app.className = `responsive-container ${t.glass}`;
 
             const header = `
@@ -972,10 +1065,10 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8 col-span-2">No se encontraron unidades</p>` :
-                                units.map(([k, u]) => {
-                                    const unitNum = parseInt(k.replace('u',''));
-                                    const desc = state.unitDescriptions[unitNum] || {};
-                                    return `
+                        units.map(([k, u]) => {
+                            const unitNum = parseInt(k.replace('u', ''));
+                            const desc = state.unitDescriptions[unitNum] || {};
+                            return `
                                     <button onclick="actions.setUnit('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
                                         <div class="flex items-start gap-4">
                                             <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
@@ -997,7 +1090,7 @@
             else if (state.view === 'quizzes') {
                 const unit = state.units[state.unit];
                 const quizzes = Object.entries(unit.quizzes);
-                const unitNum = parseInt(state.unit.replace('u',''));
+                const unitNum = parseInt(state.unit.replace('u', ''));
                 const desc = state.unitDescriptions[unitNum] || {};
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
@@ -1040,7 +1133,7 @@
                 const q = state.loadedQuestions[state.currentQuestion];
                 const total = state.loadedQuestions.length;
                 const progress = ((state.currentQuestion + 1) / total) * 100;
-                
+
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
@@ -1071,19 +1164,19 @@
                             </div>
                             <div class="space-y-3">
                                 ${q.a.map((opt, i) => {
-                                    let cls = `${t.glass} ${t.border}`;
-                                    let icon = '';
-                                    if (state.isAnswered) {
-                                        if (i === q.c) { cls = 'bg-emerald-500/20 border-emerald-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>'; }
-                                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-500"></i>'; }
-                                    }
-                                    return `
+                    let cls = `${t.glass} ${t.border}`;
+                    let icon = '';
+                    if (state.isAnswered) {
+                        if (i === q.c) { cls = 'bg-emerald-500/20 border-emerald-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-emerald-500"></i>'; }
+                        else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-500"></i>'; }
+                    }
+                    return `
                                         <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-${SUBJECT.color}-500/50 transition-all">
-                                            <span class="w-8 h-8 rounded-lg ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} flex items-center justify-center text-sm font-bold ${t.textSecondary}">${String.fromCharCode(65+i)}</span>
+                                            <span class="w-8 h-8 rounded-lg ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} flex items-center justify-center text-sm font-bold ${t.textSecondary}">${String.fromCharCode(65 + i)}</span>
                                             <span class="flex-1 text-sm ${t.textPrimary}">${opt}</span>
                                             ${icon}
                                         </button>`;
-                                }).join('')}
+                }).join('')}
                             </div>
                             ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Ver Resultados'}</button>` : ''}
                         </div>
@@ -1094,7 +1187,7 @@
                 const total = state.loadedQuestions.length;
                 const perc = Math.round((state.score / total) * 100);
                 const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
-                
+
                 content = `${header}
                     <div class="flex-1 flex items-center justify-center p-6">
                         <div class="text-center space-y-8 fade-in max-w-md">
@@ -1141,5 +1234,5 @@
         init();
     </script>
 </body>
-</html>
 
+</html>

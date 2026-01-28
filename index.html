@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CEFIMAT Asesor\u00EDas - Plataforma de Cuestionarios</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/api.js"></script>
 
     <script>
         tailwind.config = {
@@ -21,20 +23,26 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        * { 
+
+        * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
+
+        html {
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             min-height: 100vh;
+            overflow-x: hidden;
             transition: background 0.3s;
         }
 
-        body.dark { 
+        body.dark {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
 
@@ -52,10 +60,20 @@
 
         /* Optimizaci\u00F3n m\u00F3vil: desactivar animaciones costosas */
         @media (min-width: 768px) {
-            .fade-in { animation: fadeIn 0.6s ease-out; }
-            @keyframes fadeIn { 
-                from { opacity: 0; transform: translateY(30px); } 
-                to { opacity: 1; transform: translateY(0); } 
+            .fade-in {
+                animation: fadeIn 0.6s ease-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             .subject-card {
@@ -67,16 +85,21 @@
             .subject-card::before {
                 content: '';
                 position: absolute;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
                 opacity: 0;
                 transition: opacity 0.4s;
             }
 
-            .subject-card:not(.locked):hover::before { opacity: 1; }
-            
-            .subject-card:not(.locked):hover { 
-                transform: translateY(-12px) scale(1.03); 
+            .subject-card:not(.locked):hover::before {
+                opacity: 1;
+            }
+
+            .subject-card:not(.locked):hover {
+                transform: translateY(-12px) scale(1.03);
                 box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
             }
 
@@ -93,13 +116,21 @@
             }
 
             @keyframes float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
+
+                0%,
+                100% {
+                    transform: translateY(0px);
+                }
+
+                50% {
+                    transform: translateY(-10px);
+                }
             }
 
             .social-link {
                 transition: all 0.3s;
             }
+
             .social-link:hover {
                 transform: translateY(-3px);
             }
@@ -109,14 +140,26 @@
             }
 
             /* Animaci\u00F3n de entrada para las cards */
-            .card-1 { animation-delay: 0.1s; }
-            .card-2 { animation-delay: 0.2s; }
-            .card-3 { animation-delay: 0.3s; }
+            .card-1 {
+                animation-delay: 0.1s;
+            }
+
+            .card-2 {
+                animation-delay: 0.2s;
+            }
+
+            .card-3 {
+                animation-delay: 0.3s;
+            }
         }
 
         /* M\u00F3vil: sin animaciones */
         @media (max-width: 767px) {
-            .fade-in, .hero-badge, .subject-card, .social-link {
+
+            .fade-in,
+            .hero-badge,
+            .subject-card,
+            .social-link {
                 animation: none !important;
                 opacity: 1 !important;
                 transform: none !important;
@@ -126,7 +169,8 @@
                 display: none;
             }
 
-            .glass-light, .glass-dark {
+            .glass-light,
+            .glass-dark {
                 backdrop-filter: blur(10px);
             }
         }
@@ -224,7 +268,8 @@
         }
     </style>
 </head>
-<body id="body" class="min-h-screen">
+
+<body id="body">
     <!-- Navigation -->
     <nav id="nav" class="nav-blur sticky top-0 z-50"></nav>
 
@@ -266,11 +311,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userData');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userGroup');
-            window.location.href = 'landing.html';
+            api.logout();
         }
 
         function toggleUserDropdown(event) {
@@ -284,7 +325,7 @@
             state.mobileMenuOpen = !state.mobileMenuOpen;
             const menu = document.querySelector('.mobile-menu');
             const overlay = document.querySelector('.menu-overlay');
-            
+
             if (state.mobileMenuOpen) {
                 menu.classList.add('active');
                 overlay.classList.add('active');
@@ -297,7 +338,7 @@
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function () {
             const dropdown = document.querySelector('.user-dropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
@@ -323,7 +364,7 @@
 
         function render() {
             const isDark = state.darkMode;
-            
+
             const glassClass = isDark ? 'glass-dark' : 'glass-light';
             const textPrimary = isDark ? 'text-white' : 'text-slate-900';
             const textSecondary = isDark ? 'text-slate-400' : 'text-slate-600';
@@ -497,8 +538,8 @@
                     </p>
                     <div class="flex flex-wrap items-center justify-center gap-3">
                                          ${['Literatura', 'Filosof\u00EDa', 'Matem\u00E1ticas', 'F\u00EDsica', 'Qu\u00EDmica', 'Biolog\u00EDa', 'Espa\u00F1ol'].map(materia =>
-                            `<span class="px-4 py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${materia}</span>`
-                        ).join('')}
+                `<span class="px-4 py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${materia}</span>`
+            ).join('')}
                     </div>
                 </div>
             `;
@@ -568,7 +609,6 @@
 
                         <div class="border-t ${borderColor} pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
                                              <p class="text-xs ${textMuted} uppercase tracking-widest">© 2026 CEFIMAT Asesor\u00EDas. Todos los derechos reservados.</p>
-                            <p class="text-xs ${textMuted}">Hecho con <span class="text-red-500">❤</span> para nuestros estudiantes</p>
                         </div>
                     </div>
                 </div>
@@ -581,4 +621,5 @@
         applyTheme();
     </script>
 </body>
+
 </html>
