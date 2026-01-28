@@ -1073,14 +1073,14 @@
                             </div>
                             <div class="grid grid-cols-1 gap-4">
                                 ${quizzes.map(([k, q]) => `
-                                    <button onclick="actions.startQuiz('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-16 h-16 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
-                                                <span class="text-white font-black text-2xl">${q.number}</span>
+                                    <button onclick="actions.startQuiz('${k}')" class="p-4 md:p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
+                                        <div class="flex items-center gap-3 md:gap-4">
+                                            <div class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
+                                                <span class="text-white font-black text-xl md:text-2xl">${q.number}</span>
                                             </div>
                                             <div class="flex-1 min-w-0">
-                                                <div class="flex items-center gap-2 mb-1">
-                                                    <h3 class="${t.textPrimary} font-bold text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
+                                                <div class="flex items-start md:items-center gap-2 mb-1 flex-wrap">
+                                                    <h3 class="${t.textPrimary} font-bold text-base md:text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
                                                     ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
                                                 </div>
                                                 ${q.description ? `<p class="${t.textSecondary} text-sm">${q.description}</p>` : ''}
