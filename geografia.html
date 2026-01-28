@@ -470,65 +470,6 @@
             return normalized;
         }
 
-        // PASO 1: Corregir acentos malformados usando REGEX m\u00E1s amplio
-        // Detectar cualquier letra seguida de s\u00EDmbolos de acento com\u00FAn
-        normalized = normalized
-            // Acento agudo separado: U+00B4, U+02CA, U+0301, U+2019, U+02B9
-            .replace(/a[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
-            .replace(/e[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
-            .replace(/i[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
-            .replace(/o[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
-            .replace(/u[\u00B4\u02CA\u0301\u2019\u02B9´]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
-            // Acento grave separado: U+0060, U+02CB, U+0300
-            .replace(/a[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'A' ? '\u00E1' : '\u00E1')
-            .replace(/e[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'E' ? '\u00E9' : '\u00E9')
-            .replace(/i[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'I' ? '\u00ED' : '\u00ED')
-            .replace(/o[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'O' ? '\u00F3' : '\u00F3')
-            .replace(/u[\u0060\u02CB\u0300`]/gi, (match) => match[0] === 'U' ? '\u00FA' : '\u00FA')
-            // Ap\u00F3strofe como acento: U+0027, U+2032
-            .replace(/a[\u0027\u2032']/g, '\u00E1')
-            .replace(/A[\u0027\u2032']/g, '\u00E1')
-            .replace(/e[\u0027\u2032']/g, '\u00E9')
-            .replace(/E[\u0027\u2032']/g, '\u00E9')
-            .replace(/i[\u0027\u2032']/g, '\u00ED')
-            .replace(/I[\u0027\u2032']/g, '\u00ED')
-            .replace(/o[\u0027\u2032']/g, '\u00F3')
-            .replace(/O[\u0027\u2032']/g, '\u00F3')
-            .replace(/u[\u0027\u2032']/g, '\u00FA')
-            .replace(/U[\u0027\u2032']/g, '\u00FA');
-
-        // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
-        // El PDF puede tener: "Espa˜ na" o "Espa˜na"
-        normalized = normalized
-            .replace(/([a-zA-Z]?)s*u02DCs*n/g, '$1u00F1')  // ˜ (SMALL TILDE U+02DC)
-            .replace(/([a-zA-Z]?)s*u02DCs*N/g, '$1u00D1')
-            .replace(/([a-zA-Z]?)s*u007Es*n/g, '$1u00F1')  // ~ (ASCII TILDE U+007E)
-            .replace(/([a-zA-Z]?)s*u007Es*N/g, '$1u00D1')
-            .replace(/([a-zA-Z]?)s*u0303s*n/g, '$1u00F1')  // ̃ (COMBINING TILDE U+0303)
-            .replace(/([a-zA-Z]?)s*u0303s*N/g, '$1u00D1')
-            .replace(/s*u02DCs*n/g, 'u00F1')
-            .replace(/s*u02DCs*N/g, 'u00D1')
-            .replace(/s*u007Es*n/g, 'u00F1')
-            .replace(/s*u007Es*N/g, 'u00D1');
-
-
-        // PASO 2: Normalizar Unicode
-        normalized = normalized.normalize("NFC");
-
-        // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
-        normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
-        normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-
-        // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
-        normalized = normalized
-            .replace(/[–—−]/g, '-')
-            .replace(/[""]/g, '"')
-            .replace(/\s+/g, " ")
-            .trim();
-
-        return normalized;
-        }
-
         async function extractTextFromPDF(url) {
             const pdf = await pdfjsLib.getDocument(url).promise;
             let fullText = "";
