@@ -1100,7 +1100,7 @@
                                     <i data-lucide="book-open" class="w-4 h-4 ${t.subjectText}"></i>
                                     <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${unit.label}</span>
                                 </div>
-                                <h2 class="text-3xl font-black ${t.textPrimary}">${desc.title || unit.label}</h2>
+                                ${desc.title ? `<h2 class="text-3xl font-black ${t.textPrimary}">${desc.title}</h2>` : ''}
                                 ${desc.description ? `<p class="${t.textSecondary} text-sm max-w-xl mx-auto">${desc.description}</p>` : ''}
                                 <p class="${t.textMuted} text-xs pt-2">${quizzes.length} cuestionarios disponibles</p>
                             </div>
