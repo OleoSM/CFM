@@ -1059,6 +1059,17 @@
                                                     <h3 class="${t.textPrimary} font-bold text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
                                                     ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
                                                 </div>
+                                                ${q.description ? `<p class="${t.textSecondary} text-sm">${(() => {
+                        let desc = q.description;
+                        const periodIdx = desc.indexOf('.');
+                        const cefimatIdx = desc.search(/CEFIMAT/i);
+                        const colonIdx = desc.indexOf(':');
+                        const indices = [periodIdx, cefimatIdx, colonIdx].filter(i => i !== -1);
+                        if (indices.length > 0) {
+                            desc = desc.substring(0, Math.min(...indices)).trim();
+                        }
+                        return desc;
+                    })()}</p>` : ''}
                                             </div>
                                             <div class="flex items-center justify-center w-10 h-10 rounded-xl ${t.subjectBg} ${t.subjectText} group-hover:scale-110 transition-transform">
                                                 <i data-lucide="play" class="w-5 h-5"></i>
