@@ -468,6 +468,16 @@
                 .replace(/\s+/g, " ")
                 .trim();
 
+            // PASO 5: Eliminar números de página
+            // Patrones comunes: "Página 5", "Pág. 5", "5 de 10", "- 5 -"
+            normalized = normalized
+                .replace(/\bP[áa]gina\s+\d+\b/gi, '')
+                .replace(/\bP[áa]g\.\s*\d+\b/gi, '')
+                .replace(/\b\d+\s+de\s+\d+\b/gi, '')
+                .replace(/[-–—]\s*\d+\s*[-–—]/g, '')
+                .replace(/\s+/g, " ")
+                .trim();
+
             return normalized;
         }
 
@@ -558,6 +568,14 @@
 
                     // Limpiar el n\u00FAmero de pregunta con m\u00E1s patrones flexibles
                     let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
+                    
+                    // Si hay un punto seguido de números u otro contenido no deseado, truncar ahí
+                    // Esto captura casos como "pregunta. 15" o "pregunta. Página 3"
+                    const unwantedAfterPeriod = q.match(/\.\s+(?:\d+|P[áa]g)/i);
+                    if (unwantedAfterPeriod) {
+                        q = q.substring(0, unwantedAfterPeriod.index + 1).trim();
+                    }
+                    
                     if (!q || q.length < 5) return;
 
                     const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
@@ -572,21 +590,35 @@
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
+                    let hasCheckmark = false;
                     // Detectar cual opcion tiene el check/palomita (diversas variantes)
                     const checkPatterns = /[✓✔☑✅√▸►●•∙]/;
                     opts = opts.map((o, i) => {
                         // Buscar checks, palomitas o marcadores de respuesta correcta
                         if (checkPatterns.test(o) || o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
                             correct = i;
+                            hasCheckmark = true;
                         }
                         // Limpiar todos los simbolos de check y marcadores
-                        return o
+                        let cleaned = o
                             .replace(/[✓✔☑✅√▸►●•∙]/g, '')
                             .replace(/\(correcta\)/gi, '')
                             .replace(/\(correcto\)/gi, '')
                             .replace(/^\s*[-_]\s*/, '')
                             .trim();
+                        
+                        // Quitar punto final si existe
+                        if (cleaned.endsWith('.')) {
+                            cleaned = cleaned.slice(0, -1).trim();
+                        }
+                        
+                        return cleaned;
                     });
+
+                    // Si la pregunta termina en punto Y tiene una respuesta correcta marcada, quitar el punto final
+                    if (hasCheckmark && q.endsWith('.')) {
+                        q = q.slice(0, -1).trim();
+                    }
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
