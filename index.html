@@ -677,10 +677,77 @@
                     </div>
                     
                     <div class="p-6 space-y-3">
-                        <button onclick="toggleLeaderboard(); toggleMobileMenu();" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-amber-500 transition-all">
-                            <i data-lucide="trophy" class="w-5 h-5"></i>
-                            <span class="text-sm font-medium">High Scores</span>
-                        </button>
+                        <!-- High Scores Section in Mobile -->
+                        <div class="${glassClass} rounded-xl p-4 max-h-[400px] overflow-y-auto">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                                <h4 class="text-sm font-bold ${textPrimary}">High Scores - Top 3 por Unidad</h4>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                ${['historia_mexico', 'historia_universal', 'geografia'].map((subject) => {
+                const names = {
+                    'historia_mexico': 'Historia de México',
+                    'historia_universal': 'Historia Universal',
+                    'geografia': 'Geografía'
+                };
+                const colors = {
+                    'historia_mexico': 'emerald',
+                    'historia_universal': 'indigo',
+                    'geografia': 'amber'
+                };
+                const icons = {
+                    'historia_mexico': 'scroll-text',
+                    'historia_universal': 'globe-2',
+                    'geografia': 'map'
+                };
+                const unitLeaderboards = state.leaderboards[subject] || {};
+                const hasAnyScores = Object.keys(unitLeaderboards).length > 0;
+
+                return `
+                                        <div class="${glassClass} rounded-xl p-3">
+                                            <h5 class="text-xs font-bold text-${colors[subject]}-600 mb-3 flex items-center gap-2">
+                                                <i data-lucide="${icons[subject]}" class="w-4 h-4"></i>
+                                                ${names[subject]}
+                                            </h5>
+                                            ${hasAnyScores ? `
+                                                <div class="space-y-3">
+                                                    ${Object.keys(unitLeaderboards).sort((a, b) => {
+                    const numA = parseInt(a.replace('u', ''));
+                    const numB = parseInt(b.replace('u', ''));
+                    return numA - numB;
+                }).map(unitKey => {
+                    const unitNum = unitKey.replace('u', '');
+                    const scores = unitLeaderboards[unitKey] || [];
+
+                    return `
+                                                            <div class="border-l-2 border-${colors[subject]}-500/30 pl-2">
+                                                                <p class="text-[10px] font-bold ${textMuted} uppercase tracking-wider mb-1">Unidad ${unitNum}</p>
+                                                                <div class="space-y-1">
+                                                                    ${scores.slice(0, 3).map((entry, index) => `
+                                                                        <div class="flex items-center justify-between text-xs py-1">
+                                                                            <div class="flex items-center gap-2">
+                                                                                <span class="w-5 h-5 rounded-full ${index === 0 ? 'bg-amber-500 text-white' : index === 1 ? 'bg-slate-400 text-white' : 'bg-orange-600 text-white'} flex items-center justify-center text-[10px] font-bold">
+                                                                                    ${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                                                </span>
+                                                                                <span class="${textPrimary} ${index === 0 ? 'font-bold' : ''}">${entry.usuarios?.nombre || 'Usuario'}</span>
+                                                                            </div>
+                                                                            <span class="text-${colors[subject]}-600 font-bold">${entry.score}/${entry.total_questions}</span>
+                                                                        </div>
+                                                                    `).join('')}
+                                                                </div>
+                                                            </div>
+                                                        `;
+                }).join('')}
+                                                </div>
+                                            ` : `
+                                                <p class="text-xs ${textMuted} italic">No hay puntuaciones aún</p>
+                                            `}
+                                        </div>
+                                    `;
+            }).join('')}
+                            </div>
+                        </div>
                         
                         <button onclick="toggleDarkMode()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-indigo-500 transition-all">
                             <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
@@ -689,7 +756,7 @@
                         
                         <button onclick="logout()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-all">
                             <i data-lucide="log-out" class="w-5 h-5"></i>
-                            <span class="text-sm font-medium">Cerrar sesi\u00F3n</span>
+                            <span class="text-sm font-medium">Cerrar sesión</span>
                         </button>
                     </div>
                 </div>

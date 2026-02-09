@@ -396,17 +396,6 @@
             if (!text) return "";
             let normalized = text;
 
-            // DEBUG: Mostrar el patr\u00F3n exacto con espacios
-            const debugPattern = text.match(/[a-z]\s*\u00B4\s*[aeiou]/gi);
-            if (debugPattern && debugPattern.length > 0) {
-                console.log('🔍 DEBUG - Patr\u00F3n encontrado:', debugPattern.slice(0, 10));
-                debugPattern.slice(0, 3).forEach(pattern => {
-                    console.log(`  "${pattern}" → C\u00F3digos:`, Array.from(pattern).map(c =>
-                        c === ' ' ? 'ESPACIO' : `${c} (U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')})`
-                    ).join(' + '));
-                });
-            }
-
             // PASO 1: Corregir acentos malformados
             // El PDF puede tener espacios: "pa ´ i s" o "pa´is"
             // Buscar: letra + (espacio opcional) + ´ + (espacio opcional) + vocal
@@ -876,12 +865,7 @@
 
                     // Guardar score en Supabase
                     const totalQuestions = state.loadedQuestions.length;
-                    saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, totalQuestions)
-                        .then(success => {
-                            if (success) {
-                                console.log('✅ Score guardado en leaderboard');
-                            }
-                        });
+                    saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, totalQuestions);
 
                     renderView();
                 }
