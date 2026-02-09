@@ -9,6 +9,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="js/api.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
 
     <script>
         tailwind.config = {
@@ -266,6 +269,84 @@
                 display: none;
             }
         }
+
+        /* Trophy Button Animation */
+        .trophy-button {
+            position: relative;
+            overflow: hidden;
+            animation: trophy-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes trophy-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 10px rgba(251, 191, 36, 0);
+            }
+        }
+
+        .trophy-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent);
+            animation: trophy-shine 3s linear infinite;
+        }
+
+        @keyframes trophy-shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .trophy-icon {
+            animation: trophy-bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes trophy-bounce {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-3px) rotate(-5deg);
+            }
+
+            75% {
+                transform: translateY(-3px) rotate(5deg);
+            }
+        }
+
+        /* Mobile: disable trophy animations */
+        @media (max-width: 767px) {
+
+            .trophy-button,
+            .trophy-icon {
+                animation: none !important;
+            }
+
+            .trophy-button::before {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -303,8 +384,66 @@
             darkMode: localStorage.getItem('darkMode') !== 'false',
             userName: userData.name || '',
             userGroup: userData.group || '',
-            mobileMenuOpen: false
+            mobileMenuOpen: false,
+            leaderboards: {
+                historia_mexico: [],
+                historia_universal: [],
+                geografia: []
+            },
+            showLeaderboard: false
         };
+
+        // Fetch leaderboards
+        async function fetchLeaderboards() {
+            const subjects = [
+                { key: 'historia_mexico', name: 'Historia de México', units: 8 },
+                { key: 'historia_universal', name: 'Historia Universal', units: 8 },
+                { key: 'geografia', name: 'Geografía', units: 2 }
+            ];
+
+            for (const subject of subjects) {
+                try {
+                    const unitLeaderboards = {};
+
+                    // Fetch scores for each unit
+                    for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
+                        const unitKey = `u${unitNum}`;
+
+                        const { data, error } = await supabaseClient
+                            .from('high_scores')
+                            .select(`
+                                score,
+                                total_questions,
+                                percentage,
+                                quiz_key,
+                                completed_at,
+                                usuarios (
+                                    nombre
+                                )
+                            `)
+                            .eq('subject', subject.key)
+                            .eq('unit_key', unitKey)
+                            .order('score', { ascending: false })
+                            .order('completed_at', { ascending: true })
+                            .limit(3);
+
+                        if (!error && data && data.length > 0) {
+                            unitLeaderboards[unitKey] = data;
+                        }
+                    }
+
+                    state.leaderboards[subject.key] = unitLeaderboards;
+                } catch (err) {
+                    console.error(`Error fetching leaderboard for ${subject.key}:`, err);
+                }
+            }
+            render();
+        }
+
+        function toggleLeaderboard() {
+            state.showLeaderboard = !state.showLeaderboard;
+            render();
+        }
 
         function isUnlocked() {
             return isLoggedIn && state.userName.trim().length > 0 && state.userGroup.trim().length > 0;
@@ -338,10 +477,16 @@
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function () {
+        document.addEventListener('click', function (event) {
             const dropdown = document.querySelector('.user-dropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
+            }
+
+            // Close leaderboard if clicking outside
+            if (state.showLeaderboard && !event.target.closest('.relative')) {
+                state.showLeaderboard = false;
+                render();
             }
         });
 
@@ -386,6 +531,89 @@
                             
                             <!-- Desktop menu -->
                             <div class="hidden md:flex items-center gap-3">
+                                <!-- High Scores Button -->
+                                <div class="relative">
+                                    <button onclick="toggleLeaderboard()" class="${glassClass} px-4 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-indigo-500/50 transition-all shadow-md">
+                                        <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                                        <span class="text-sm font-bold ${textPrimary}">High Scores</span>
+                                    </button>
+                                    
+                                    ${state.showLeaderboard ? `
+                                    <div class="${glassClass} absolute top-full right-0 mt-2 w-[500px] rounded-2xl shadow-2xl overflow-hidden z-50">
+                                        <div class="p-4 border-b ${borderColor} bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+                                            <div class="flex items-center gap-2">
+                                                <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                                                <h3 class="text-lg font-black ${textPrimary}">Top 3 por Unidad</h3>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="max-h-[500px] overflow-y-auto p-4 space-y-4">
+                                            ${['historia_mexico', 'historia_universal', 'geografia'].map((subject) => {
+                const names = {
+                    'historia_mexico': 'Historia de México',
+                    'historia_universal': 'Historia Universal',
+                    'geografia': 'Geografía'
+                };
+                const colors = {
+                    'historia_mexico': 'emerald',
+                    'historia_universal': 'indigo',
+                    'geografia': 'amber'
+                };
+                const icons = {
+                    'historia_mexico': 'scroll-text',
+                    'historia_universal': 'globe-2',
+                    'geografia': 'map'
+                };
+                const unitLeaderboards = state.leaderboards[subject] || {};
+                const hasAnyScores = Object.keys(unitLeaderboards).length > 0;
+
+                return `
+                                                <div class="${glassClass} rounded-xl p-3">
+                                                    <h4 class="text-sm font-bold text-${colors[subject]}-600 mb-3 flex items-center gap-2">
+                                                        <i data-lucide="${icons[subject]}" class="w-4 h-4"></i>
+                                                        ${names[subject]}
+                                                    </h4>
+                                                    ${hasAnyScores ? `
+                                                        <div class="space-y-3">
+                                                            ${Object.keys(unitLeaderboards).sort((a, b) => {
+                    const numA = parseInt(a.replace('u', ''));
+                    const numB = parseInt(b.replace('u', ''));
+                    return numA - numB;
+                }).map(unitKey => {
+                    const unitNum = unitKey.replace('u', '');
+                    const scores = unitLeaderboards[unitKey] || [];
+
+                    return `
+                                                                    <div class="border-l-2 border-${colors[subject]}-500/30 pl-2">
+                                                                        <p class="text-[10px] font-bold ${textMuted} uppercase tracking-wider mb-1">Unidad ${unitNum}</p>
+                                                                        <div class="space-y-1">
+                                                                            ${scores.slice(0, 3).map((entry, index) => `
+                                                                                <div class="flex items-center justify-between text-xs py-1">
+                                                                                    <div class="flex items-center gap-2">
+                                                                                        <span class="w-5 h-5 rounded-full ${index === 0 ? 'bg-amber-500 text-white' : index === 1 ? 'bg-slate-400 text-white' : 'bg-orange-600 text-white'} flex items-center justify-center text-[10px] font-bold">
+                                                                                            ${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                                                        </span>
+                                                                                        <span class="${textPrimary} ${index === 0 ? 'font-bold' : ''}">${entry.usuarios?.nombre || 'Usuario'}</span>
+                                                                                    </div>
+                                                                                    <span class="text-${colors[subject]}-600 font-bold">${entry.score}/${entry.total_questions}</span>
+                                                                                </div>
+                                                                            `).join('')}
+                                                                        </div>
+                                                                    </div>
+                                                                `;
+                }).join('')}
+                                                        </div>
+                                                    ` : `
+                                                        <p class="text-xs ${textMuted} italic">No hay puntuaciones aún</p>
+                                                    `}
+                                                </div>
+                                                `;
+            }).join('')}
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                                
                                 <button onclick="toggleDarkMode()" class="theme-toggle w-11 h-11 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all shadow-md">
                                     <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
                                 </button>
@@ -449,6 +677,11 @@
                     </div>
                     
                     <div class="p-6 space-y-3">
+                        <button onclick="toggleLeaderboard(); toggleMobileMenu();" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-amber-500 transition-all">
+                            <i data-lucide="trophy" class="w-5 h-5"></i>
+                            <span class="text-sm font-medium">High Scores</span>
+                        </button>
+                        
                         <button onclick="toggleDarkMode()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-indigo-500 transition-all">
                             <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
                             <span class="text-sm font-medium">${isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
@@ -619,6 +852,7 @@
 
         // Init
         applyTheme();
+        fetchLeaderboards();
     </script>
 </body>
 

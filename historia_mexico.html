@@ -10,6 +10,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="js/api.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/quiz-score-integration.js"></script>
 
     <script>
         tailwind.config = {
@@ -589,14 +593,14 @@
 
                     // Limpiar el n\u00FAmero de pregunta con m\u00E1s patrones flexibles
                     let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
-                    
+
                     // Si hay un punto seguido de números u otro contenido no deseado, truncar ahí
                     // Esto captura casos como "pregunta. 15" o "pregunta. Página 3"
                     const unwantedAfterPeriod = q.match(/\.\s+(?:\d+|P[áa]g)/i);
                     if (unwantedAfterPeriod) {
                         q = q.substring(0, unwantedAfterPeriod.index + 1).trim();
                     }
-                    
+
                     if (!q || q.length < 5) return;
 
                     const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
@@ -627,12 +631,12 @@
                             .replace(/\(correcto\)/gi, '')
                             .replace(/^\s*[-_]\s*/, '')
                             .trim();
-                        
+
                         // Quitar punto final si existe
                         if (cleaned.endsWith('.')) {
                             cleaned = cleaned.slice(0, -1).trim();
                         }
-                        
+
                         return cleaned;
                     });
 
@@ -880,7 +884,18 @@
                     state.showHint = false;
                     renderView();
                 } else {
+                    // Quiz terminado - guardar score
                     state.view = 'finished';
+
+                    // Guardar score en Supabase
+                    const totalQuestions = state.loadedQuestions.length;
+                    saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, totalQuestions)
+                        .then(success => {
+                            if (success) {
+                                console.log('✅ Score guardado en leaderboard');
+                            }
+                        });
+
                     renderView();
                 }
             },
