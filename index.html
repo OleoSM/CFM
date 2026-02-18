@@ -347,6 +347,64 @@
                 display: none;
             }
         }
+
+        /* Premium Highscores Button */
+        .premium-highscores-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+            border: 2px solid #fbbf24;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+            position: relative;
+            overflow: hidden;
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 30px rgba(251, 191, 36, 0.8), 0 0 50px rgba(251, 191, 36, 0.4);
+            }
+        }
+
+        .premium-highscores-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: shine-sweep 3s linear infinite;
+        }
+
+        @keyframes shine-sweep {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .premium-highscores-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.6), 0 0 60px rgba(251, 191, 36, 0.5);
+        }
+
+        .premium-highscores-btn .trophy-icon {
+            animation: trophy-bounce 1s ease-in-out infinite;
+        }
+
+        /* Mobile: disable premium button animations */
+        @media (max-width: 767px) {
+            .premium-highscores-btn {
+                animation: none !important;
+            }
+            .premium-highscores-btn::before {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -613,6 +671,12 @@
                                     </div>
                                     ` : ''}
                                 </div>
+
+                                <!-- BOTÓN PREMIUM HIGHSCORES -->
+                                <a href="highscores.html" class="premium-highscores-btn px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg text-white font-bold text-sm no-underline">
+                                    <span class="trophy-icon text-lg">🏆</span>
+                                    <span>Ver Hall of Fame</span>
+                                </a>
                                 
                                 <button onclick="toggleDarkMode()" class="theme-toggle w-11 h-11 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all shadow-md">
                                     <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
@@ -748,6 +812,12 @@
             }).join('')}
                             </div>
                         </div>
+
+                        <!-- BOTÓN PREMIUM HIGHSCORES (Mobile) -->
+                        <a href="highscores.html" class="premium-highscores-btn px-5 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg text-white font-bold text-base no-underline mb-3">
+                            <span class="trophy-icon text-xl">🏆</span>
+                            <span>Ver Hall of Fame</span>
+                        </a>
                         
                         <button onclick="toggleDarkMode()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-indigo-500 transition-all">
                             <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 CEFIMAT High Scores - Rankings & Analytics</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body.light {
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            color: #0f172a;
+        }
+
+        /* Animated Floating Particles */
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: float 20s infinite;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.6;
+            }
+            25% {
+                transform: translate(100px, -100px) scale(1.2);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(-50px, -200px) scale(0.8);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translate(-150px, -100px) scale(1.1);
+                opacity: 0.7;
+            }
+        }
+
+        /* Hero Section */
+        .hero-container {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .trophy-icon {
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(-5deg); }
+            75% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        /* Podium Cards */
+        .podium-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light .podium-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .podium-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .podium-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shine 4s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            50%, 100% { left: 100%; }
+        }
+
+        .medal {
+            font-size: 4rem;
+            animation: rotate-medal 3s ease-in-out infinite;
+        }
+
+        @keyframes rotate-medal {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+        }
+
+        /* First Place - Larger */
+        .first-place {
+            transform: scale(1.1);
+            border-color: #fbbf24;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+        }
+
+        .second-place {
+            border-color: #94a3b8;
+        }
+
+        .third-place {
+            border-color: #f97316;
+        }
+
+        /* Rankings Table */
+        .rankings-table {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light .rankings-table {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        body.light .table-row {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .table-row:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body.light .progress-bar-container {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+            border-radius: 10px;
+            position: relative;
+            transition: width 1s ease;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Charts Container */
+        .chart-container {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+        }
+
+        body.light .chart-container {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sync Indicator */
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.light .sync-indicator {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sync-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .sync-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .sync-dot.syncing {
+            background: #fbbf24;
+            box-shadow: 0 0 10px #fbbf24;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Filter Buttons */
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            color: #94a3b8;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        body.light .filter-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            color: #475569;
+        }
+
+        .filter-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-color: #6366f1;
+            color: white;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        /* Back Button */
+        .back-btn {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        body.light .back-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            border-color: #6366f1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .medal { font-size: 3rem; }
+            .first-place { transform: scale(1); }
+            .theme-toggle { bottom: 1rem; right: 1rem; width: 48px; height: 48px; }
+        }
+    </style>
+</head>
+
+<body id="body">
+    <!-- Floating Particles -->
+    <div id="particles"></div>
+
+    <!-- Container -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <button onclick="goBack()" class="back-btn">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span class="font-bold">Volver</span>
+            </button>
+
+            <!-- Sync Indicator -->
+            <div class="sync-indicator">
+                <div class="sync-dot active" id="syncDot"></div>
+                <span class="text-sm font-medium" id="syncStatus">Sincronizado</span>
+                <button onclick="syncNow()" class="ml-2 px-3 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-600 transition-colors text-white text-xs font-bold">
+                    <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero-container p-8 md:p-12 mb-12">
+            <div class="text-center space-y-4">
+                <div class="trophy-icon inline-block text-7xl mb-4">🏆</div>
+                <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
+                    CEFIMAT High Scores
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto">
+                    Rankings y estadísticas de los mejores estudiantes
+                </p>
+
+                <!-- Live Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-3xl mx-auto">
+                    <div class="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-xl p-4 border border-emerald-500/30">
+                        <div class="text-3xl font-black text-emerald-400" id="totalStudents">0</div>
+                        <div class="text-sm text-slate-400 font-medium">Estudiantes Activos</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-xl p-4 border border-indigo-500/30">
+                        <div class="text-3xl font-black text-indigo-400" id="avgScore">0%</div>
+                        <div class="text-sm text-slate-400 font-medium">Promedio Global</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl p-4 border border-amber-500/30">
+                        <div class="text-3xl font-black text-amber-400" id="topScore">0%</div>
+                        <div class="text-sm text-slate-400 font-medium">Mejor Puntuación</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button class="filter-btn active" onclick="filterSubject('all')" data-filter="all">
+                    <i data-lucide="trophy" class="w-4 h-4 inline"></i>
+                    Todos
+                </button>
+                <button class="filter-btn" onclick="filterSubject('historia_mexico')" data-filter="historia_mexico">
+                    <i data-lucide="scroll-text" class="w-4 h-4 inline"></i>
+                    Historia de México
+                </button>
+                <button class="filter-btn" onclick="filterSubject('historia_universal')" data-filter="historia_universal">
+                    <i data-lucide="globe-2" class="w-4 h-4 inline"></i>
+                    Historia Universal
+                </button>
+                <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
+                    <i data-lucide="map" class="w-4 h-4 inline"></i>
+                    Geografía
+                </button>
+            </div>
+        </div>
+
+        <!-- TOP 3 Podium -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-black text-center mb-8 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                🏅 TOP 3 - Hall of Fame
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto" id="podium">
+                <!-- Podium cards will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-black text-center mb-8">📊 Analytics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="chart-container">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-400"></i>
+                        <span>Puntuaciones por Materia</span>
+                    </h3>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-purple-400"></i>
+                        <span>Top 5 Estudiantes</span>
+                    </h3>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="topStudentsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Rankings -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-black text-center mb-8">📋 Rankings Completos</h2>
+            <div id="rankingsBySubject">
+                <!-- Rankings will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle">
+        <i data-lucide="sun" class="w-6 h-6 text-white"></i>
+    </button>
+
+    <script>
+        // Check authentication (IGUAL QUE INDEX.HTML)
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (!isLoggedIn) {
+            window.location.href = 'auth.html';
+        }
+
+        // Verificar que supabaseClient esté disponible
+        console.log('🔍 Verificando supabaseClient...', typeof supabaseClient !== 'undefined' ? '✅ Disponible' : '❌ No disponible');
+
+        // State (MISMA ESTRUCTURA QUE INDEX.HTML)
+        let state = {
+            darkMode: localStorage.getItem('darkMode') !== 'false', // Respetar preferencia del usuario
+            currentFilter: 'all',
+            leaderboards: {
+                historia_mexico: {},
+                historia_universal: {},
+                geografia: {}
+            },
+            charts: {}
+        };
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Go back
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            state.darkMode = !state.darkMode;
+            document.getElementById('body').classList.toggle('light');
+            
+            // Save preference
+            localStorage.setItem('darkMode', state.darkMode);
+            
+            const icon = document.querySelector('#themeToggle i');
+            icon.setAttribute('data-lucide', state.darkMode ? 'sun' : 'moon');
+            lucide.createIcons();
+
+            // Update charts
+            if (state.charts.subject) updateChartTheme(state.charts.subject);
+            if (state.charts.topStudents) updateChartTheme(state.charts.topStudents);
+        }
+
+        // Update chart theme
+        function updateChartTheme(chart) {
+            const textColor = state.darkMode ? '#e2e8f0' : '#0f172a';
+            const gridColor = state.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            chart.options.scales.y.ticks.color = textColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.scales.x.ticks.color = textColor;
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.plugins.legend.labels.color = textColor;
+            
+            chart.update();
+        }
+
+        // Sync data
+        async function syncNow() {
+            const dot = document.getElementById('syncDot');
+            const status = document.getElementById('syncStatus');
+            
+            dot.classList.remove('active');
+            dot.classList.add('syncing');
+            status.textContent = 'Sincronizando...';
+
+            try {
+                await fetchHighScores();
+                
+                dot.classList.remove('syncing');
+                dot.classList.add('active');
+                status.textContent = 'Sincronizado - ' + new Date().toLocaleTimeString();
+                
+                // Save to localStorage
+                localStorage.setItem('highscores_leaderboards', JSON.stringify(state.leaderboards));
+                localStorage.setItem('highscores_timestamp', Date.now().toString());
+            } catch (error) {
+                console.error('Error syncing:', error);
+                dot.classList.remove('syncing');
+                status.textContent = 'Error de sincronización';
+            }
+        }
+
+        // Fetch high scores from Supabase (MISMA LÓGICA QUE INDEX.HTML)
+        async function fetchHighScores() {
+            console.log('🔄 Iniciando fetchHighScores...');
+            
+            // Verificar que supabaseClient existe
+            if (typeof supabaseClient === 'undefined') {
+                console.error('❌ supabaseClient no está definido. Verifica que js/supabase-client.js se haya cargado correctamente.');
+                loadFromCache(); // Intenta cargar del caché
+                return;
+            }
+            
+            const subjects = [
+                { key: 'historia_mexico', name: 'Historia de México', units: 8 },
+                { key: 'historia_universal', name: 'Historia Universal', units: 8 },
+                { key: 'geografia', name: 'Geografía', units: 2 }
+            ];
+
+            const leaderboards = {
+                historia_mexico: {},
+                historia_universal: {},
+                geografia: {}
+            };
+
+            try {
+                for (const subject of subjects) {
+                    const unitLeaderboards = {};
+                    console.log(`📚 Procesando materia: ${subject.name}`);
+
+                    // Fetch scores for each unit (TOP 10 en lugar de 3)
+                    for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
+                        const unitKey = `u${unitNum}`;
+
+                        const { data, error } = await supabaseClient
+                            .from('high_scores')
+                            .select(`
+                                score,
+                                total_questions,
+                                percentage,
+                                quiz_key,
+                                completed_at,
+                                usuarios (
+                                    nombre
+                                )
+                            `)
+                            .eq('subject', subject.key)
+                            .eq('unit_key', unitKey)
+                            .order('score', { ascending: false })
+                            .order('completed_at', { ascending: true })
+                            .limit(10); // Top 10 para mostrar más en la página
+
+                        if (error) {
+                            console.error(`❌ Error en ${subject.key} - ${unitKey}:`, error);
+                        } else if (data && data.length > 0) {
+                            unitLeaderboards[unitKey] = data;
+                            console.log(`✅ ${subject.key} - ${unitKey}: ${data.length} registros`);
+                        } else {
+                            console.log(`⚠️ ${subject.key} - ${unitKey}: Sin datos`);
+                        }
+                    }
+
+                    leaderboards[subject.key] = unitLeaderboards;
+                }
+
+                console.log('📊 Leaderboards completos:', leaderboards);
+                state.leaderboards = leaderboards;
+                renderAll();
+            } catch (error) {
+                console.error('❌ Error general en fetchHighScores:', error);
+                // Try to load from cache
+                loadFromCache();
+            }
+        }
+
+        // Load from cache
+        function loadFromCache() {
+            const cached = localStorage.getItem('highscores_leaderboards');
+            if (cached) {
+                state.leaderboards = JSON.parse(cached);
+                renderAll();
+            }
+        }
+
+        // Filter by subject
+        function filterSubject(subject) {
+            state.currentFilter = subject;
+            
+            // Update buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${subject}"]`).classList.add('active');
+            
+            renderAll();
+        }
+
+        // Get filtered data (convertir estructura a array plano)
+        function getFilteredData() {
+            const subjects = state.currentFilter === 'all'
+                ? ['historia_mexico', 'historia_universal', 'geografia']
+                : [state.currentFilter];
+            
+            const flatData = [];
+            subjects.forEach(subject => {
+                const unitLeaderboards = state.leaderboards[subject] || {};
+                Object.keys(unitLeaderboards).forEach(unitKey => {
+                    const scores = unitLeaderboards[unitKey] || [];
+                    scores.forEach(score => {
+                        flatData.push({
+                            ...score,
+                            subject: subject,
+                            unit_key: unitKey
+                        });
+                    });
+                });
+            });
+            
+            console.log('📋 Filtered data:', flatData.length, 'registros');
+            return flatData;
+        }
+
+        // Render all
+        function renderAll() {
+            renderStats();
+            renderPodium();
+            renderCharts();
+            renderRankings();
+            lucide.createIcons();
+        }
+
+        // Render stats
+        function renderStats() {
+            const filteredData = getFilteredData();
+            
+            // Unique students
+            const uniqueStudents = new Set(filteredData.map(item => item.usuarios?.nombre)).size;
+            document.getElementById('totalStudents').textContent = uniqueStudents;
+            
+            // Average score
+            const avgPercentage = filteredData.length > 0
+                ? (filteredData.reduce((sum, item) => sum + item.percentage, 0) / filteredData.length).toFixed(1)
+                : 0;
+            document.getElementById('avgScore').textContent = avgPercentage + '%';
+            
+            // Top score
+            const topPercentage = filteredData.length > 0
+                ? Math.max(...filteredData.map(item => item.percentage)).toFixed(1)
+                : 0;
+            document.getElementById('topScore').textContent = topPercentage + '%';
+        }
+
+        // Render podium
+        function renderPodium() {
+            const filteredData = getFilteredData();
+            
+            // Group by student and get their best score
+            const studentScores = {};
+            filteredData.forEach(item => {
+                const name = item.usuarios?.nombre || 'Usuario';
+                if (!studentScores[name] || item.score > studentScores[name].score) {
+                    studentScores[name] = item;
+                }
+            });
+            
+            // Sort by score
+            const topStudents = Object.values(studentScores)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            const positions = ['first-place', 'second-place', 'third-place'];
+            const colors = ['amber', 'slate', 'orange'];
+            
+            const podiumHTML = topStudents.map((student, index) => `
+                <div class="podium-card ${positions[index]} p-6 text-center">
+                    <div class="medal mb-4">${medals[index]}</div>
+                                    <h3 class="text-2xl font-black text-${colors[index]}-400 mb-2">
+                        ${student.usuarios?.nombre || 'Usuario'}
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-${colors[index]}-500/10 rounded-lg p-3 border border-${colors[index]}-500/30">
+                            <div class="text-3xl font-black text-${colors[index]}-400">${student.score}/${student.total_questions}</div>
+                            <div class="text-xs text-slate-400 font-medium">Puntuación</div>
+                        </div>
+                        <div class="bg-${colors[index]}-500/10 rounded-lg p-3 border border-${colors[index]}-500/30">
+                            <div class="text-2xl font-black text-${colors[index]}-400">${student.percentage.toFixed(1)}%</div>
+                            <div class="text-xs text-slate-400 font-medium">Porcentaje</div>
+                        </div>
+                        <div class="text-xs text-slate-500">
+                            ${getSubjectName(student.subject)} - ${student.unit_key.toUpperCase()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('podium').innerHTML = podiumHTML;
+        }
+
+        // Get subject name
+        function getSubjectName(key) {
+            const names = {
+                'historia_mexico': 'Historia de México',
+                'historia_universal': 'Historia Universal',
+                'geografia': 'Geografía'
+            };
+            return names[key] || key;
+        }
+
+        // Render charts
+        function renderCharts() {
+            const filteredData = getFilteredData();
+            
+            // Destroy existing charts
+            if (state.charts.subject) state.charts.subject.destroy();
+            if (state.charts.topStudents) state.charts.topStudents.destroy();
+            
+            const textColor = state.darkMode ? '#e2e8f0' : '#0f172a';
+            const gridColor = state.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            // Si no hay datos, mostrar charts vacíos
+            if (filteredData.length === 0) {
+                console.log('No hay datos para mostrar en los charts');
+                return;
+            }
+            
+            // Subject Chart
+            const subjectScores = {};
+            filteredData.forEach(item => {
+                if (!subjectScores[item.subject]) {
+                    subjectScores[item.subject] = [];
+                }
+                subjectScores[item.subject].push(item.percentage);
+            });
+            
+            const subjectAvgs = Object.keys(subjectScores).map(subject => ({
+                subject,
+                avg: subjectScores[subject].reduce((a, b) => a + b, 0) / subjectScores[subject].length
+            }));
+            
+            console.log('Subject averages:', subjectAvgs); // Debug
+            
+            state.charts.subject = new Chart(document.getElementById('subjectChart'), {
+                type: 'bar',
+                data: {
+                    labels: subjectAvgs.map(s => getSubjectName(s.subject)),
+                    datasets: [{
+                        label: 'Promedio (%)',
+                        data: subjectAvgs.map(s => s.avg),
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.6)',
+                            'rgba(99, 102, 241, 0.6)',
+                            'rgba(251, 191, 36, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(99, 102, 241, 1)',
+                            'rgba(251, 191, 36, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { 
+                                color: textColor,
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { 
+                                color: textColor,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: { 
+                                color: gridColor,
+                                display: true
+                            }
+                        },
+                        x: {
+                            ticks: { 
+                                color: textColor
+                            },
+                            grid: { 
+                                color: gridColor,
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Top Students Chart
+            const studentScores = {};
+            filteredData.forEach(item => {
+                const name = item.usuarios?.nombre || 'Usuario';
+                if (!studentScores[name]) {
+                    studentScores[name] = [];
+                }
+                studentScores[name].push(item.percentage);
+            });
+            
+            const topStudents = Object.keys(studentScores)
+                .map(name => ({
+                    name,
+                    avg: studentScores[name].reduce((a, b) => a + b, 0) / studentScores[name].length
+                }))
+                .sort((a, b) => b.avg - a.avg)
+                .slice(0, 5);
+            
+            state.charts.topStudents = new Chart(document.getElementById('topStudentsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: topStudents.map(s => s.name),
+                    datasets: [{
+                        data: topStudents.map(s => s.avg),
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.8)',
+                            'rgba(148, 163, 184, 0.8)',
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(99, 102, 241, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render rankings
+        function renderRankings() {
+            const subjects = state.currentFilter === 'all'
+                ? ['historia_mexico', 'historia_universal', 'geografia']
+                : [state.currentFilter];
+            
+            const colors = {
+                'historia_mexico': 'emerald',
+                'historia_universal': 'indigo',
+                'geografia': 'amber'
+            };
+            
+            const icons = {
+                'historia_mexico': 'scroll-text',
+                'historia_universal': 'globe-2',
+                'geografia': 'map'
+            };
+            
+            const html = subjects.map(subject => {
+                const unitLeaderboards = state.leaderboards[subject] || {};
+                
+                return `
+                    <div class="rankings-table mb-8">
+                        <div class="table-header p-4">
+                            <h3 class="text-xl font-black text-${colors[subject]}-400 flex items-center gap-2">
+                                <i data-lucide="${icons[subject]}" class="w-5 h-5"></i>
+                                ${getSubjectName(subject)}
+                            </h3>
+                        </div>
+                        <div class="p-4 space-y-6">
+                            ${Object.keys(unitLeaderboards).sort((a, b) => {
+                                const numA = parseInt(a.replace('u', ''));
+                                const numB = parseInt(b.replace('u', ''));
+                                return numA - numB;
+                            }).map(unitKey => {
+                                const unitScores = unitLeaderboards[unitKey] || [];
+                                return `
+                                    <div>
+                                        <h4 class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">
+                                            ${unitKey.toUpperCase()}
+                                        </h4>
+                                        <div class="space-y-2">
+                                            ${unitScores.map((score, index) => {
+                                                const percentage = score.percentage;
+                                                return `
+                                                    <div class="table-row p-3 rounded-lg flex items-center gap-4">
+                                                        <div class="flex-shrink-0 w-8 h-8 rounded-full ${index < 3 ? `bg-${colors[subject]}-500` : 'bg-slate-600'} flex items-center justify-center text-white font-bold text-sm">
+                                                            ${index + 1}
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <div class="font-bold text-sm ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
+                                                                ${score.usuarios?.nombre || 'Usuario'}
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex-shrink-0 text-right">
+                                                            <div class="text-lg font-black text-${colors[subject]}-400">
+                                                                ${score.score}/${score.total_questions}
+                                                            </div>
+                                                            <div class="w-24">
+                                                                <div class="progress-bar-container">
+                                                                    <div class="progress-bar" style="width: ${percentage}%"></div>
+                                                                </div>
+                                                                <div class="text-xs text-slate-500 mt-1">${percentage.toFixed(1)}%</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('rankingsBySubject').innerHTML = html;
+        }
+
+        // Initialize
+        async function init() {
+            createParticles();
+            
+            // Apply saved theme
+            if (!state.darkMode) {
+                document.getElementById('body').classList.add('light');
+                const icon = document.querySelector('#themeToggle i');
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            
+            // Try to load from cache first
+            loadFromCache();
+            
+            // Then fetch fresh data
+            await syncNow();
+            
+            // Auto-sync every 5 minutes
+            setInterval(syncNow, 5 * 60 * 1000);
+            
+            lucide.createIcons();
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+
+</html>
