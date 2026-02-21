@@ -510,7 +510,7 @@
             const avgScore = score / totalQuestions;
 
             if (avgScore >= 4) return "Dif\u00EDcil";
-            else if (avgScore >= 2) return "Medio";
+            else if (avgScore >= 2) return "Intermedio";
             else return "F\u00E1cil";
         }
 
@@ -520,9 +520,9 @@
             }
 
             const styles = {
-                'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
-                'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-                'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
+                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'Intermedio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
 
             const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
@@ -652,7 +652,7 @@
             renderView();
 
             const units = {};
-            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
 
             for (let i = 1; i <= 20; i++) {
                 let foundUnit = false;
@@ -688,7 +688,7 @@
             const unit = state.units[unitKey];
             const quizzes = {};
 
-            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
+            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
 
             for (let i = 1; i <= 20; i++) {
                 let foundQuiz = false;
@@ -712,7 +712,7 @@
                         // Extraer dificultad del nombre del archivo
                         let difficulty = 'NA';
                         if (diff === 'Facil') difficulty = 'F\u00E1cil';
-                        else if (diff === 'Medio') difficulty = 'Medio';
+                        else if (diff === 'Intermedio') difficulty = 'Intermedio';
                         else if (diff === 'Dificil') difficulty = 'Dif\u00EDcil';
 
                         quizzes[`q${i}`] = {
