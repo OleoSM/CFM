@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 CEFIMAT High Scores - Rankings & Analytics</title>
+    <title>High Scores - CEFIMAT Rankings & Analytics</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
 
     <script>
@@ -414,9 +415,11 @@
         </div>
 
         <!-- Hero Section -->
-        <div class="hero-container p-8 md:p-12 mb-12">
-            <div class="text-center space-y-4">
-                <div class="trophy-icon inline-block text-7xl mb-4">🏆</div>
+         <div class="hero-container p-8 md:p-12 mb-12">
+             <div class="text-center space-y-4">
+                 <div class="trophy-icon inline-block text-7xl mb-4">
+                     <svg class="w-16 h-16 mx-auto text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+                 </div>
                 <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
                     CEFIMAT High Scores
                 </h1>
@@ -457,26 +460,30 @@
                     <i data-lucide="globe-2" class="w-4 h-4 inline"></i>
                     Historia Universal
                 </button>
-                <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
-                    <i data-lucide="map" class="w-4 h-4 inline"></i>
-                    Geografía
-                </button>
-            </div>
+                 <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
+                     <i data-lucide="map" class="w-4 h-4 inline"></i>
+                     Geografía
+                 </button>
+                 <button class="filter-btn" onclick="filterSubject('fisica')" data-filter="fisica">
+                     <i data-lucide="atom" class="w-4 h-4 inline"></i>
+                     Física
+                 </button>
+             </div>
         </div>
 
-        <!-- TOP 3 Podium -->
-        <div class="mb-16">
-            <h2 class="text-3xl font-black text-center mb-8 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                🏅 TOP 3 - Hall of Fame
-            </h2>
+         <!-- TOP 3 Podium -->
+         <div class="mb-16">
+             <h2 class="text-3xl font-black text-center mb-8 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                 TOP 3 - High Scores
+             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto" id="podium">
                 <!-- Podium cards will be inserted here -->
             </div>
         </div>
 
-        <!-- Analytics Charts -->
-        <div class="mb-16">
-            <h2 class="text-3xl font-black text-center mb-8">📊 Analytics</h2>
+         <!-- Analytics Charts -->
+         <div class="mb-16">
+             <h2 class="text-3xl font-black text-center mb-8">Analytics</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="chart-container">
                     <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
@@ -622,22 +629,24 @@
                 return;
             }
             
-            const subjects = [
-                { key: 'historia_mexico', name: 'Historia de México', units: 8 },
-                { key: 'historia_universal', name: 'Historia Universal', units: 8 },
-                { key: 'geografia', name: 'Geografía', units: 2 }
-            ];
+             const subjects = [
+                 { key: 'historia_mexico', name: 'Historia de México', units: 8 },
+                 { key: 'historia_universal', name: 'Historia Universal', units: 8 },
+                 { key: 'geografia', name: 'Geografía', units: 2 },
+                 { key: 'fisica', name: 'Física', units: 4 }
+             ];
 
-            const leaderboards = {
-                historia_mexico: {},
-                historia_universal: {},
-                geografia: {}
-            };
+             const leaderboards = {
+                 historia_mexico: {},
+                 historia_universal: {},
+                 geografia: {},
+                 fisica: {}
+             };
 
-            try {
-                for (const subject of subjects) {
-                    const unitLeaderboards = {};
-                    console.log(`📚 Procesando materia: ${subject.name}`);
+             try {
+                 for (const subject of subjects) {
+                     const unitLeaderboards = {};
+                     console.log(`Procesando materia: ${subject.name}`);
 
                     // Fetch scores for each unit (TOP 10 en lugar de 3)
                     for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
@@ -671,14 +680,14 @@
                         }
                     }
 
-                    leaderboards[subject.key] = unitLeaderboards;
-                }
+                     leaderboards[subject.key] = unitLeaderboards;
+                 }
 
-                console.log('📊 Leaderboards completos:', leaderboards);
-                state.leaderboards = leaderboards;
-                renderAll();
-            } catch (error) {
-                console.error('❌ Error general en fetchHighScores:', error);
+                 console.log('Leaderboards completos:', leaderboards);
+                 state.leaderboards = leaderboards;
+                 renderAll();
+             } catch (error) {
+                 console.error('Error general en fetchHighScores:', error);
                 // Try to load from cache
                 loadFromCache();
             }
@@ -706,11 +715,11 @@
             renderAll();
         }
 
-        // Get filtered data (convertir estructura a array plano)
-        function getFilteredData() {
-            const subjects = state.currentFilter === 'all'
-                ? ['historia_mexico', 'historia_universal', 'geografia']
-                : [state.currentFilter];
+         // Get filtered data (convertir estructura a array plano)
+         function getFilteredData() {
+             const subjects = state.currentFilter === 'all'
+                 ? ['historia_mexico', 'historia_universal', 'geografia', 'fisica']
+                 : [state.currentFilter];
             
             const flatData = [];
             subjects.forEach(subject => {
@@ -779,13 +788,13 @@
                 .sort((a, b) => b.score - a.score)
                 .slice(0, 3);
             
-            const medals = ['🥇', '🥈', '🥉'];
-            const positions = ['first-place', 'second-place', 'third-place'];
-            const colors = ['amber', 'slate', 'orange'];
-            
-            const podiumHTML = topStudents.map((student, index) => `
-                <div class="podium-card ${positions[index]} p-6 text-center">
-                    <div class="medal mb-4">${medals[index]}</div>
+             const medals = ['1', '2', '3'];
+             const positions = ['first-place', 'second-place', 'third-place'];
+             const colors = ['amber', 'slate', 'orange'];
+             
+             const podiumHTML = topStudents.map((student, index) => `
+                 <div class="podium-card ${positions[index]} p-6 text-center">
+                     <div class="medal mb-4 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl font-black text-white" style="background: ${index === 0 ? 'linear-gradient(135deg, #FCD34D, #F59E0B)' : index === 1 ? 'linear-gradient(135deg, #E5E7EB, #9CA3AF)' : 'linear-gradient(135deg, #FED7AA, #FB923C)'};">${medals[index]}</div>
                                     <h3 class="text-2xl font-black text-${colors[index]}-400 mb-2">
                         ${student.usuarios?.nombre || 'Usuario'}
                     </h3>
@@ -808,15 +817,16 @@
             document.getElementById('podium').innerHTML = podiumHTML;
         }
 
-        // Get subject name
-        function getSubjectName(key) {
-            const names = {
-                'historia_mexico': 'Historia de México',
-                'historia_universal': 'Historia Universal',
-                'geografia': 'Geografía'
-            };
-            return names[key] || key;
-        }
+         // Get subject name
+         function getSubjectName(key) {
+             const names = {
+                 'historia_mexico': 'Historia de México',
+                 'historia_universal': 'Historia Universal',
+                 'geografia': 'Geografía',
+                 'fisica': 'Física'
+             };
+             return names[key] || key;
+         }
 
         // Render charts
         function renderCharts() {
@@ -959,70 +969,88 @@
             });
         }
 
-        // Render rankings
-        function renderRankings() {
-            const subjects = state.currentFilter === 'all'
-                ? ['historia_mexico', 'historia_universal', 'geografia']
-                : [state.currentFilter];
-            
-            const colors = {
-                'historia_mexico': 'emerald',
-                'historia_universal': 'indigo',
-                'geografia': 'amber'
-            };
-            
-            const icons = {
-                'historia_mexico': 'scroll-text',
-                'historia_universal': 'globe-2',
-                'geografia': 'map'
+         // Render rankings
+         function renderRankings() {
+             const subjects = state.currentFilter === 'all'
+                 ? ['historia_mexico', 'historia_universal', 'geografia', 'fisica']
+                 : [state.currentFilter];
+             
+             const colors = {
+                 'historia_mexico': 'emerald',
+                 'historia_universal': 'indigo',
+                 'geografia': 'amber',
+                 'fisica': 'red'
+             };
+             
+             const icons = {
+                 'historia_mexico': 'scroll-text',
+                 'historia_universal': 'globe-2',
+                 'geografia': 'map',
+                 'fisica': 'atom'
             };
             
             const html = subjects.map(subject => {
                 const unitLeaderboards = state.leaderboards[subject] || {};
+                const units = Object.keys(unitLeaderboards).sort((a, b) => {
+                    const numA = parseInt(a.replace('u', ''));
+                    const numB = parseInt(b.replace('u', ''));
+                    return numA - numB;
+                });
                 
                 return `
-                    <div class="rankings-table mb-8">
-                        <div class="table-header p-4">
-                            <h3 class="text-xl font-black text-${colors[subject]}-400 flex items-center gap-2">
-                                <i data-lucide="${icons[subject]}" class="w-5 h-5"></i>
+                    <div class="rankings-table mb-12">
+                        <div class="table-header p-4 mb-6">
+                            <h3 class="text-2xl font-black text-${colors[subject]}-400 flex items-center gap-2">
+                                <i data-lucide="${icons[subject]}" class="w-6 h-6"></i>
                                 ${getSubjectName(subject)}
                             </h3>
                         </div>
-                        <div class="p-4 space-y-6">
-                            ${Object.keys(unitLeaderboards).sort((a, b) => {
-                                const numA = parseInt(a.replace('u', ''));
-                                const numB = parseInt(b.replace('u', ''));
-                                return numA - numB;
-                            }).map(unitKey => {
+                        
+                        <!-- Grid de Unidades -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
+                            ${units.map(unitKey => {
                                 const unitScores = unitLeaderboards[unitKey] || [];
                                 return `
-                                    <div>
-                                        <h4 class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">
-                                            ${unitKey.toUpperCase()}
-                                        </h4>
-                                        <div class="space-y-2">
-                                            ${unitScores.map((score, index) => {
+                                    <div class="unit-column rounded-xl border border-slate-700 overflow-hidden ${state.darkMode ? 'bg-slate-800/50' : 'bg-white/50'}">
+                                        <!-- Unit Header -->
+                                        <div class="bg-${colors[subject]}-500/20 border-b border-slate-700 px-4 py-3">
+                                            <h4 class="text-sm font-bold text-${colors[subject]}-400 uppercase tracking-widest">
+                                                Unidad ${unitKey.replace('u', '')}
+                                            </h4>
+                                            <p class="text-xs ${state.darkMode ? 'text-slate-400' : 'text-slate-600'} mt-1">
+                                                ${unitScores.length} estudiante${unitScores.length !== 1 ? 's' : ''}
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- Rankings Lista -->
+                                        <div class="divide-y divide-slate-700/50">
+                                            ${unitScores.length === 0 ? `
+                                                <div class="p-4 text-center text-slate-500 text-sm">
+                                                    Sin registros
+                                                </div>
+                                            ` : unitScores.map((score, index) => {
                                                 const percentage = score.percentage;
+                                                const isTop = index < 3;
                                                 return `
-                                                    <div class="table-row p-3 rounded-lg flex items-center gap-4">
-                                                        <div class="flex-shrink-0 w-8 h-8 rounded-full ${index < 3 ? `bg-${colors[subject]}-500` : 'bg-slate-600'} flex items-center justify-center text-white font-bold text-sm">
-                                                            ${index + 1}
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="font-bold text-sm ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
-                                                                ${score.usuarios?.nombre || 'Usuario'}
+                                                    <div class="p-3 ${isTop ? `bg-${colors[subject]}-500/10` : ''} hover:${state.darkMode ? 'bg-slate-700/50' : 'bg-slate-100/50'} transition-colors">
+                                                        <div class="flex items-start gap-2 mb-2">
+                                                            <div class="flex-shrink-0 w-6 h-6 rounded-full ${isTop ? `bg-${colors[subject]}-500` : 'bg-slate-600'} flex items-center justify-center text-white font-bold text-xs">
+                                                                ${index + 1}
                                                             </div>
-                                                        </div>
-                                                        <div class="flex-shrink-0 text-right">
-                                                            <div class="text-lg font-black text-${colors[subject]}-400">
-                                                                ${score.score}/${score.total_questions}
-                                                            </div>
-                                                            <div class="w-24">
-                                                                <div class="progress-bar-container">
-                                                                    <div class="progress-bar" style="width: ${percentage}%"></div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="font-semibold text-xs ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
+                                                                    ${score.usuarios?.nombre || 'Usuario'}
                                                                 </div>
-                                                                <div class="text-xs text-slate-500 mt-1">${percentage.toFixed(1)}%</div>
+                                                                <div class="text-xs ${state.darkMode ? 'text-slate-400' : 'text-slate-600'} mt-0.5">
+                                                                    ${score.score}/${score.total_questions}
+                                                                </div>
                                                             </div>
+                                                        </div>
+                                                        <div class="progress-bar-container h-1.5 rounded bg-slate-700/30">
+                                                            <div class="progress-bar h-full rounded bg-${colors[subject]}-500 transition-all" style="width: ${percentage}%"></div>
+                                                        </div>
+                                                        <div class="text-xs ${state.darkMode ? 'text-slate-500' : 'text-slate-600'} mt-1 text-right">
+                                                            ${percentage.toFixed(0)}%
                                                         </div>
                                                     </div>
                                                 `;
@@ -1037,6 +1065,7 @@
             }).join('');
             
             document.getElementById('rankingsBySubject').innerHTML = html;
+            lucide.createIcons();
         }
 
         // Initialize

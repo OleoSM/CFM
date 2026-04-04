@@ -1,0 +1,141 @@
+====================================================================
+BUTTON BEHAVIOR FLOWCHART
+====================================================================
+
+Starting a Quiz:
+├─ Question 1/10 answered → "Siguiente" (enabled, shows next)
+├─ Question 2/10 answered → "Siguiente" (enabled, shows next)
+│
+├─ ...questions 3-8 follow same pattern...
+│
+├─ Question 9/10 answered → "Siguiente" (enabled, shows last question)
+│
+└─ Question 10/10 answered (LAST QUESTION)
+   │
+   ├─ If user hasn't answered Q1-Q9 (i.e., 1 question missing):
+   │  └─ "Completa todas las preguntas" (DISABLED, grayed out)
+   │
+   └─ If all 10 questions answered:
+      └─ "Revisar Respuestas" (ENABLED, colored with subject theme)
+         │
+         └─ Clicking "Revisar Respuestas" opens Review View:
+            ├─ Shows "Has respondido 10/10 preguntas" header
+            ├─ Lists all 10 questions with answers
+            ├─ Shows ✓ or ✗ for each answer
+            ├─ Shows correct answer for wrong answers
+            │
+            └─ "Confirmar y Enviar" button at bottom:
+               └─ Saves quiz to database
+               └─ Displays results screen with score
+
+====================================================================
+CODE LOGIC BREAKDOWN
+====================================================================
+
+CONDITION 1: Not at last question
+  state.currentQuestion + 1 < total
+  Result: Show "Siguiente" button and call actions.next()
+
+CONDITION 2: At last question AND all answered
+  state.currentQuestion + 1 >= total AND allAnswered() === true
+  Result: Show "Revisar Respuestas" button and call actions.showReview()
+
+CONDITION 3: At last question but NOT all answered
+  state.currentQuestion + 1 >= total AND allAnswered() === false
+  Result: Show "Completa todas las preguntas" (disabled)
+          Button is grayed out and doesn't respond to clicks
+
+STYLING CLASSES:
+  Active/Enabled:   class="btn-primary"  (subject color gradient)
+  Disabled:         class="bg-slate-600/50 cursor-not-allowed"  (gray)
+
+====================================================================
+VISUAL EXAMPLES
+====================================================================
+
+SCENARIO 1: User on Question 5 of 10, all previous answered
+┌─────────────────────────────────────┐
+│ Pregunta 5/10                   5pts │
+├─────────────────────────────────────┤
+│ [Question text...]                  │
+│ ☐ Option A                          │
+│ ☑ Option B (selected)               │
+│ ☐ Option C                          │
+│ ☐ Option D                          │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │        [Siguiente]              │ │  ← Orange/Green button
+│ └─────────────────────────────────┘ │     (enabled, clickable)
+└─────────────────────────────────────┘
+
+SCENARIO 2: User on Question 10 of 10, but Q7 unanswered
+┌─────────────────────────────────────┐
+│ Pregunta 10/10                  8pts │
+├─────────────────────────────────────┤
+│ [Question text...]                  │
+│ ☐ Option A                          │
+│ ☑ Option B (selected)               │
+│ ☐ Option C                          │
+│ ☐ Option D                          │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │  Completa todas las preguntas   │ │  ← Gray button
+│ └─────────────────────────────────┘ │     (disabled, not clickable)
+│     (Go back and answer Q7)         │
+└─────────────────────────────────────┘
+
+SCENARIO 3: User on Question 10 of 10, ALL answered ✓
+┌─────────────────────────────────────┐
+│ Pregunta 10/10                  9pts │
+├─────────────────────────────────────┤
+│ [Question text...]                  │
+│ ☐ Option A                          │
+│ ☑ Option B (selected)               │
+│ ☐ Option C                          │
+│ ☐ Option D                          │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │      Revisar Respuestas         │ │  ← Orange/Green button
+│ └─────────────────────────────────┘ │     (enabled, clickable)
+│   → Opens Review View with all      │
+│     answers and "Confirmar y Enviar"│
+└─────────────────────────────────────┘
+
+====================================================================
+USER EXPERIENCE FLOW
+====================================================================
+
+1. START QUIZ
+   ↓
+2. ANSWER QUESTIONS ONE BY ONE
+   - Each answer triggers "Siguiente" button
+   - Can navigate back using question selector at bottom
+   ↓
+3. REACH LAST QUESTION
+   ↓
+4a. NOT ALL ANSWERED?
+    - See "Completa todas las preguntas" (disabled)
+    - Must use question selector to go back
+    - Complete missing answer(s)
+    - Return to last question
+    ↓
+4b. ALL ANSWERED?
+    - See "Revisar Respuestas" (enabled)
+    ↓
+5. CLICK "REVISAR RESPUESTAS"
+   ↓
+6. REVIEW ALL ANSWERS
+   - See summary: "Has respondido 10/10"
+   - See all Q&A with scores
+   - See which are correct/wrong
+   ↓
+7. CLICK "CONFIRMAR Y ENVIAR"
+   ↓
+8. DATABASE SAVES SCORE
+   ↓
+9. DISPLAY RESULTS SCREEN
+   - Final score
+   - Percentage
+   - Performance message
+
+====================================================================

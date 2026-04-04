@@ -1,223 +1,127 @@
 # ================================
-# CEFIMAT - Archivo .gitignore
+# CEFIMAT - .gitignore
 # ================================
 
 # ================================
-# ARCHIVOS CONFIDENCIALES (CRÍTICO)
+# ARCHIVOS CONFIDENCIALES
 # ================================
 
-# Credenciales de base de datos
-back-end/.env
+# Variables de entorno (credenciales de BD, API keys, etc.)
 .env
-*.env
 .env.*
+*.env
+back-end/.env
 
-# Archivos de configuración con credenciales
-**/credentials.json
-**/config.secret.*
-**/*secret*
-**/*password*
+# Configuracion con credenciales de Supabase
+js/config.js
 
-# Claves y tokens
+# Claves y certificados
 *.key
 *.pem
 *.p12
 *.pfx
-*-key.json
+**/credentials.json
+**/*secret*
 
 # ================================
-# NODE MODULES Y DEPENDENCIAS
+# DEPENDENCIAS
 # ================================
 
-# Dependencias de Node.js
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
-
-# Directorios de caché
-.npm
-.yarn
+.npm/
+.yarn/
 .pnp
 .pnp.js
 
 # ================================
-# ARCHIVOS DEL SISTEMA OPERATIVO
+# SISTEMA OPERATIVO
 # ================================
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
 
 # Windows
 Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
+Desktop.ini
 $RECYCLE.BIN/
 *.lnk
 
+# macOS
+.DS_Store
+._*
+
 # Linux
 *~
-.directory
 .Trash-*
 
 # ================================
 # IDEs Y EDITORES
 # ================================
 
-# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.code-workspace
-.history/
-
-# JetBrains IDEs (WebStorm, IntelliJ, etc.)
 .idea/
-*.iml
-*.iws
-*.ipr
-out/
-
-# Sublime Text
 *.sublime-project
 *.sublime-workspace
+*.code-workspace
 
 # ================================
 # ARCHIVOS TEMPORALES Y LOGS
 # ================================
 
-# Logs
-logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# Archivos temporales
 *.tmp
 *.temp
 *.swp
 *.swo
-*~
 .cache/
-.temp/
 tmp/
 
 # ================================
-# ARCHIVOS DE RESPALDO Y BACKUP
+# BUILD Y DIST
 # ================================
 
-# Respaldos automáticos
-*.backup
-*.bak
-*.old
-*_backup.*
-*_old.*
-backup/
-
-# Copias de seguridad de editores
-*~
-*.orig
-
-# ================================
-# ARCHIVOS DE BUILD Y DIST
-# ================================
-
-# Directorios de distribución
 dist/
 build/
 out/
 .output/
 
-# Archivos compilados
-*.compiled.*
-*.bundle.*
-
 # ================================
-# ARCHIVOS DE PRUEBA
+# SCRIPTS DE UTILIDAD (no son parte del sitio)
 # ================================
 
-# Cobertura de tests
+scripts/
+
+# ================================
+# ARCHIVOS DE RESPALDO
+# ================================
+
+*.backup
+*.bak
+*.old
+*_backup.*
+
+# ================================
+# TESTS Y COBERTURA
+# ================================
+
 coverage/
 *.lcov
 .nyc_output/
-
-# Archivos de test temporales
 test-results/
-.test-cache/
 
 # ================================
-# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# MANTENER ESTOS ARCHIVOS
 # ================================
 
-# Archivos de desarrollo/debug
-DEBUG-*.md
-INTEGRATION_TESTING.md
-
-# Archivos grandes de recursos (opcional)
-# Descomenta si tienes archivos PDF muy grandes
-# *.pdf
-
-# Archivos de extracción temporal
-extract_descriptions.html
-extract_descriptions.js
-extract_descriptions_v2.js
-extract_final.js
-extract_pdf_info.js
-
-# ================================
-# ARCHIVOS DE DOCUMENTACIÓN SENSIBLE
-# ================================
-
-# Documentación que contenga información sensible
-# (descomenta si aplica)
-# docs/credentials.md
-# docs/setup-private.md
-
-# ================================
-# OTROS
-# ================================
-
-# Archivos de lock de IDEs
-*.lock
-
-# Archivos de análisis
-.eslintcache
-.stylelintcache
-
-# Variables de entorno locales
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# ================================
-# MANTENER ARCHIVOS IMPORTANTES
-# ================================
-
-# NO ignorar estos archivos (override)
 !.gitignore
 !README.md
 !package.json
+!js/config.example.js
+!back-end/.env.example
 !back-end/README.md
 !back-end/supabase-schema.sql
 !back-end/access-codes-setup.sql

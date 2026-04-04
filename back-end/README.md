@@ -27,7 +27,18 @@ Esto creará:
 - ✅ Índices para mejor rendimiento
 - ✅ Función `get_best_scores()` para obtener mejores puntuaciones
 
-### 2. Verificar las Credenciales
+### 2. Ejecutar los Scripts de Códigos de Acceso y Datos de Ejemplo
+
+1. **Códigos de Acceso** (`access-codes-setup.sql`):
+   - Copia y pega el contenido en el SQL Editor de Supabase
+   - Esto crea códigos de acceso para el registro de usuarios
+
+2. **Datos de Ejemplo** (`seed-high-scores.sql`):
+   - Copia y pega el contenido en el SQL Editor de Supabase
+   - Inserta usuarios de prueba y puntuaciones de ejemplo para todas las materias
+   - **Importante**: Reemplaza los UUIDs ficticios con IDs reales si necesitas integración con usuarios verdaderos
+
+### 3. Verificar las Credenciales
 
 Las credenciales ya están configuradas en `.env`:
 ```
@@ -36,6 +47,23 @@ SUPABASE_ANON_KEY=sb_publishable_ukLKn5rw5gDB_No_oJ9lWQ_fwd54uYt
 ```
 
 > ⚠️ **IMPORTANTE**: El archivo `.env` está en `.gitignore` para proteger tus credenciales.
+
+## 📄 Scripts SQL Disponibles
+
+| Script | Descripción |
+|--------|-------------|
+| `supabase-schema.sql` | Schema principal: tablas, índices, RLS policies y triggers |
+| `access-codes-setup.sql` | Sistema de códigos de acceso para registro de usuarios |
+| `seed-high-scores.sql` | Datos de ejemplo: usuarios de prueba y puntuaciones para todas las materias |
+| `fix-rls-complete.sql` | Fixes para políticas RLS (si hay problemas) |
+| `fix-rls-policies.sql` | Ajustes adicionales de seguridad RLS |
+| `fix-rls-leaderboard.sql` | Fixes específicos para el leaderboard |
+
+**Orden de ejecución recomendado:**
+1. `supabase-schema.sql`
+2. `access-codes-setup.sql`
+3. `seed-high-scores.sql`
+4. (Opcional) Fixes de RLS si es necesario
 
 ## 📊 Estructura de la Base de Datos
 
@@ -62,6 +90,26 @@ SUPABASE_ANON_KEY=sb_publishable_ukLKn5rw5gDB_No_oJ9lWQ_fwd54uYt
 | `total_questions` | INTEGER | Total de preguntas |
 | `percentage` | DECIMAL | Porcentaje (0-100) |
 | `completed_at` | TIMESTAMP | Fecha de completado |
+
+### Materias en el Sistema
+
+| Materia | Key BD | Unidades | Estado |
+|---------|--------|----------|--------|
+| Historia de México | `historia_mexico` | 4 | Implementada |
+| Historia Universal | `historia_universal` | 4 | Implementada |
+| Geografía | `geografia` | 4 | Implementada + Datos de ejemplo |
+| Física | `fisica` | 4 | Implementada + Datos de ejemplo |
+| Biología | `biologia` | 4 | Datos de ejemplo (seed) |
+| Química | `quimica` | 4 | Datos de ejemplo (seed) |
+| Español | `espanol` | 4 | Datos de ejemplo (seed) |
+| Literatura | `literatura` | 4 | Datos de ejemplo (seed) |
+
+**Usuarios de prueba en seed-high-scores.sql:**
+- estudiante1@cefimat.com (Juan Pérez)
+- estudiante2@cefimat.com (María García)
+- estudiante3@cefimat.com (Carlos López)
+- estudiante4@cefimat.com (Ana Martínez)
+- estudiante5@cefimat.com (Pedro Rodríguez)
 
 ## 💻 Uso del Cliente
 

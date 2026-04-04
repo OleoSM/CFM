@@ -3,6 +3,9 @@
  * Centralized service for all backend API communication
  */
 
+// Detectar si estamos en un subdirectorio para resolver rutas correctamente
+const BASE_PATH = window.location.pathname.includes('/materias/') ? '../' : '';
+
 const API_CONFIG = {
     // Backend URL - change this for production
     BASE_URL: 'http://localhost:3000',
@@ -76,7 +79,7 @@ class APIService {
                 this.removeToken();
                 localStorage.removeItem('isLoggedIn');
                 localStorage.removeItem('userData');
-                window.location.href = 'auth.html';
+                window.location.href = BASE_PATH + 'auth.html';
                 throw new Error('Unauthorized - redirecting to login');
             }
 
@@ -166,7 +169,7 @@ class APIService {
         localStorage.removeItem('userData');
         localStorage.removeItem('userName');
         localStorage.removeItem('userGroup');
-        window.location.href = 'landing.html';
+        window.location.href = BASE_PATH + 'landing.html';
     }
 
     // ==========================================
@@ -245,7 +248,7 @@ class APIService {
      */
     async validateAuth() {
         if (!this.isAuthenticated()) {
-            window.location.href = 'auth.html';
+            window.location.href = BASE_PATH + 'auth.html';
             return false;
         }
 
@@ -254,7 +257,7 @@ class APIService {
             return true;
         } catch (error) {
             console.error('Auth validation failed:', error);
-            window.location.href = 'auth.html';
+            window.location.href = BASE_PATH + 'auth.html';
             return false;
         }
     }

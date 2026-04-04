@@ -1,9 +1,9 @@
 // ================================
 // CEFIMAT - Supabase Client
 // ================================
-
-const SUPABASE_URL = 'https://wnugjusrpbgadljibmka.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_ukLKn5rw5gDB_No_oJ9lWQ_fwd54uYt';
+// Las credenciales SUPABASE_URL y SUPABASE_ANON_KEY
+// se cargan desde js/config.js (no incluido en git).
+// Ver js/config.example.js para referencia.
 
 // Importar Supabase desde CDN
 const { createClient } = supabase;
