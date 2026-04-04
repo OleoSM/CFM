@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Historia de Mexico - CEFIMAT</title>
+    <title>Geografia - CEFIMAT</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="js/api.js"></script>
+    <script src="../js/api.js"></script>
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/quiz-score-integration.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/quiz-score-integration.js"></script>
 
     <script>
         tailwind.config = {
@@ -227,12 +228,6 @@
             z-index: 100;
         }
 
-        .user-dropdown:hover .user-dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
         .user-dropdown.active .user-dropdown-menu {
             opacity: 1;
             visibility: visible;
@@ -249,9 +244,9 @@
             font-weight: 800;
             font-size: 14px;
             text-transform: uppercase;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
         }
 
         /* Mobile menu styles */
@@ -303,39 +298,40 @@
         // Check authentication on page load
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
         if (!isLoggedIn) {
-            window.location.href = 'auth.html';
+            window.location.href = '../auth.html';
         }
 
         // Get user data
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
         const SUBJECT = {
-            key: 'historia_mexico',
-            folderName: 'Historia_De_Mexico',
-            title: 'Historia de Mexico',
-            icon: 'scroll-text',
-            color: 'emerald'
+            key: 'geografia',
+            folderName: 'Geografia',
+            title: 'Geografia',
+            icon: 'map',
+            color: 'amber'
         };
 
-        const state = {
-            view: 'units',
-            unit: null,
-            quiz: null,
-            currentQuestion: 0,
-            score: 0,
-            isAnswered: false,
-            selectedOption: null,
-            showHint: false,
-            isLoading: true,
-            loadingMessage: 'Cargando unidades...',
-            loadedQuestions: [],
-            units: {},
-            scannedUnits: {},
-            quizDifficulty: 'NA',
-            darkMode: localStorage.getItem('darkMode') !== 'false',
-            unitDescriptions: {},
-            mobileMenuOpen: false
-        };
+         const state = {
+             view: 'units',
+             unit: null,
+             quiz: null,
+             currentQuestion: 0,
+             score: 0,
+             isAnswered: false,
+             selectedOption: null,
+             showHint: false,
+             isLoading: true,
+             loadingMessage: 'Cargando unidades...',
+             loadedQuestions: [],
+             units: {},
+             scannedUnits: {},
+             quizDifficulty: 'NA',
+             darkMode: localStorage.getItem('darkMode') !== 'false',
+             unitDescriptions: {},
+             mobileMenuOpen: false,
+             answers: {}
+         };
 
         // Theme
         function toggleDarkMode() {
@@ -387,6 +383,21 @@
             };
         }
 
+        function getDifficultyBadge(difficulty) {
+            if (!difficulty || difficulty === 'NA') {
+                return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
+            }
+
+            const styles = {
+                'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+                'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
+            };
+
+            const styleClass = styles[difficulty] || styles['NA'];
+            return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
+        }
+
         // --- PDF Functions ---
         function normalizeText(text) {
             if (!text) return "";
@@ -425,16 +436,17 @@
             // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
             // El PDF puede tener: "Espa˜ na" o "Espa˜na"
             normalized = normalized
-                .replace(/([a-zA-Z]?)\s*\u02DC\s*n/g, '$1\u00F1')  // ˜ (SMALL TILDE U+02DC)
-                .replace(/([a-zA-Z]?)\s*\u02DC\s*N/g, '$1\u00D1')
-                .replace(/([a-zA-Z]?)\s*\u007E\s*n/g, '$1\u00F1')  // ~ (ASCII TILDE U+007E)
-                .replace(/([a-zA-Z]?)\s*\u007E\s*N/g, '$1\u00D1')
-                .replace(/([a-zA-Z]?)\s*\u0303\s*n/g, '$1\u00F1')  // ̃ (COMBINING TILDE U+0303)
-                .replace(/([a-zA-Z]?)\s*\u0303\s*N/g, '$1\u00D1')
-                .replace(/\s*\u02DC\s*n/g, '\u00F1')
-                .replace(/\s*\u02DC\s*N/g, '\u00D1')
-                .replace(/\s*\u007E\s*n/g, '\u00F1')
-                .replace(/\s*\u007E\s*N/g, '\u00D1');
+                .replace(/([a-zA-Z]?)s*u02DCs*n/g, '$1u00F1')  // ˜ (SMALL TILDE U+02DC)
+                .replace(/([a-zA-Z]?)s*u02DCs*N/g, '$1u00D1')
+                .replace(/([a-zA-Z]?)s*u007Es*n/g, '$1u00F1')  // ~ (ASCII TILDE U+007E)
+                .replace(/([a-zA-Z]?)s*u007Es*N/g, '$1u00D1')
+                .replace(/([a-zA-Z]?)s*u0303s*n/g, '$1u00F1')  // ̃ (COMBINING TILDE U+0303)
+                .replace(/([a-zA-Z]?)s*u0303s*N/g, '$1u00D1')
+                .replace(/s*u02DCs*n/g, 'u00F1')
+                .replace(/s*u02DCs*N/g, 'u00D1')
+                .replace(/s*u007Es*n/g, 'u00F1')
+                .replace(/s*u007Es*N/g, 'u00D1');
+
 
             // PASO 2: Normalizar Unicode
             normalized = normalized.normalize("NFC");
@@ -468,7 +480,7 @@
             const pdf = await pdfjsLib.getDocument(url).promise;
             let fullText = "";
             for (let j = 1; j <= pdf.numPages; j++) {
-                state.loadingMessage = `Leyendo pagina ${j}/${pdf.numPages}...`;
+                state.loadingMessage = `Leyendo p\u00E1gina ${j}/${pdf.numPages}...`;
                 renderView();
                 const page = await pdf.getPage(j);
                 const tc = await page.getTextContent();
@@ -478,73 +490,42 @@
         }
 
         function detectDifficulty(questions) {
-            if (!questions || questions.length === 0) return 'NA';
+            if (!questions || questions.length === 0) return "NA";
 
-            let totalScore = 0;
-            const factors = {
-                questionLength: 0,
-                optionLength: 0,
-                vocabulary: 0,
-                technical: 0
-            };
+            let score = 0;
+            let totalQuestions = questions.length;
 
             questions.forEach(q => {
-                // 1. Longitud de la pregunta
-                const qLen = q.q.length;
-                if (qLen > 200) factors.questionLength += 3;
-                else if (qLen > 100) factors.questionLength += 2;
-                else factors.questionLength += 1;
+                // 1. Longitud de la pregunta (m\u00E1s larga = m\u00E1s dif\u00EDcil)
+                if (q.q.length > 150) score += 2;
+                else if (q.q.length > 100) score += 1;
 
-                // 2. Longitud promedio de opciones
-                const avgOptLen = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
-                if (avgOptLen > 80) factors.optionLength += 3;
-                else if (avgOptLen > 40) factors.optionLength += 2;
-                else factors.optionLength += 1;
+                // 2. Longitud promedio de las opciones
+                const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
+                if (avgOptionLength > 80) score += 2;
+                else if (avgOptionLength > 50) score += 1;
 
-                // 3. Complejidad del vocabulario (palabras largas)
-                const allText = q.q + ' ' + q.a.join(' ');
-                const words = allText.split(/\s+/);
-                const longWords = words.filter(w => w.length > 8).length;
-                const longWordRatio = longWords / words.length;
-                if (longWordRatio > 0.3) factors.vocabulary += 3;
-                else if (longWordRatio > 0.15) factors.vocabulary += 2;
-                else factors.vocabulary += 1;
+                // 3. Complejidad de vocabulario (palabras largas)
+                const words = q.q.split(/\s+/);
+                const longWords = words.filter(w => w.length > 12).length;
+                if (longWords > 3) score += 2;
+                else if (longWords > 1) score += 1;
 
-                // 4. Presencia de n\u00FAmeros, f\u00F3rmulas o t\u00E9rminos t\u00E9cnicos
-                const technicalPatterns = /\d+|[A-Z]{2,}|[α-ω]|[\+\-\*\/=<>≤≥→←↔]/;
-                const hasTechnical = technicalPatterns.test(allText);
-                if (hasTechnical) factors.technical += 2;
-                else factors.technical += 1;
+                // 4. Presencia de n\u00FAmeros o f\u00F3rmulas
+                if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
+
+                // 5. Preguntas con t\u00E9rminos t\u00E9cnicos o conceptos avanzados
+                const technicalTerms = /(?:concepto|teor\u00EDa|an\u00E1lisis|hip\u00F3tesis|principio|fen\u00F3meno|estructura|proceso|sistema|caracter\u00EDstica|definici\u00F3n|relaci\u00F3n|consecuencia)/i;
+                if (technicalTerms.test(q.q)) score += 1;
             });
 
-            // Calcular puntuaci\u00F3n total
-            totalScore = (
-                factors.questionLength +
-                factors.optionLength +
-                factors.vocabulary +
-                factors.technical
-            ) / questions.length;
+            // Calcular puntuaci\u00F3n promedio por pregunta
+            const avgScore = score / totalQuestions;
 
-            // Clasificar seg\u00FAn puntuaci\u00F3n
-            if (totalScore >= 9) return 'Dif\u00EDcil';
-            else if (totalScore >= 6) return 'Medio';
-            else return 'F\u00E1cil';
-        }
-
-        function getDifficultyBadge(difficulty) {
-            if (!difficulty || difficulty === 'NA') {
-                return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
-            }
-
-            const styles = {
-                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
-                'Intermedio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
-            };
-
-            // Si la dificultad no coincide exactamente con las claves, usa un estilo gris por defecto pero MUESTRA el texto
-            const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-            return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
+            // Clasificar seg\u00FAn el puntaje promedio
+            if (avgScore >= 4) return "Dif\u00EDcil";
+            else if (avgScore >= 2) return "Medio";
+            else return "F\u00E1cil";
         }
 
         function parseQuizText(text) {
@@ -644,13 +625,13 @@
         // --- Scan Functions ---
         async function loadUnitDescriptions() {
             try {
-                const response = await fetch('./unit_descriptions.json');
+                const response = await fetch('../data/unit_descriptions.json');
                 const data = await response.json();
 
-                // Convertir el array de Historia_Mexico a un objeto indexado por n\u00FAmero de unidad
-                if (data.Historia_Mexico) {
+                // Convertir el array de Geografia a un objeto indexado por n\u00FAmero de unidad
+                if (data.Geografia) {
                     const descriptions = {};
-                    data.Historia_Mexico.forEach(unit => {
+                    data.Geografia.forEach(unit => {
                         descriptions[unit.unit] = {
                             title: unit.title,
                             description: unit.description
@@ -670,7 +651,7 @@
             renderView();
 
             const units = {};
-            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
+            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
 
             for (let i = 1; i <= 20; i++) {
                 let foundUnit = false;
@@ -679,7 +660,7 @@
                 for (const diff of difficulties) {
                     try {
                         const fileName = diff ? `Cuestionario_1_${diff}.pdf` : `Cuestionario_1.pdf`;
-                        await pdfjsLib.getDocument(`./${SUBJECT.folderName}/Unidad_${i}/${fileName}`).promise;
+                        await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/${fileName}`).promise;
                         units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
                         foundUnit = true;
                         break;
@@ -706,29 +687,32 @@
             const unit = state.units[unitKey];
             const quizzes = {};
 
-            // El orden es importante: busca primero los que tienen dificultad explicita
-            const difficulties = ['Facil', 'Intermedio', 'Dificil', ''];
+            const difficulties = ['Facil', 'Medio', 'Dificil', '']; // '' para archivos sin dificultad
 
             for (let i = 1; i <= 20; i++) {
                 let foundQuiz = false;
 
+                // Intentar cargar con cada sufijo de dificultad
                 for (const diff of difficulties) {
                     try {
                         const fileName = diff ? `Cuestionario_${i}_${diff}.pdf` : `Cuestionario_${i}.pdf`;
-                        const pdf = await pdfjsLib.getDocument(`./${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
-
-                        // Leemos solo la primera página para el título
+                        const pdf = await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
                         const page = await pdf.getPage(1);
                         const tc = await page.getTextContent();
                         const txt = normalizeText(tc.items.map(s => s.str).join(" "));
 
                         let title = `Cuestionario ${i}`;
+                        const idx = txt.search(/\b1\.-/);
+                        if (idx > 0) {
+                            const h = txt.substring(0, idx).trim();
+                            if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
+                        }
 
-                        // Asignar etiqueta bonita basada en el sufijo del archivo
+                        // Extraer dificultad del nombre del archivo
                         let difficulty = 'NA';
-                        if (diff === 'Facil') difficulty = 'Fácil';
-                        else if (diff === 'Intermedio') difficulty = 'Intermedio';
-                        else if (diff === 'Dificil') difficulty = 'Difícil';
+                        if (diff === 'Facil') difficulty = 'F\u00E1cil';
+                        else if (diff === 'Medio') difficulty = 'Medio';
+                        else if (diff === 'Dificil') difficulty = 'Dif\u00EDcil';
 
                         quizzes[`q${i}`] = {
                             fileName: fileName,
@@ -738,12 +722,14 @@
                         };
 
                         foundQuiz = true;
-                        break; // Importante: si encontramos una versión (ej. Facil), dejamos de buscar las otras para este número
+                        break; // Encontramos el archivo, salir del loop de dificultades
                     } catch {
+                        // Continuar probando con el siguiente sufijo
                         continue;
                     }
                 }
 
+                // Si no encontramos ning\u00FAn archivo con este n\u00FAmero, terminar b\u00FAsqueda
                 if (!foundQuiz) break;
             }
 
@@ -817,6 +803,11 @@
             }
         }
 
+        // --- Helper Functions ---
+        function allAnswered() {
+            return Object.keys(state.answers).length === state.loadedQuestions.length;
+        }
+
         // --- Actions ---
         window.actions = {
             setUnit: async (key) => {
@@ -836,7 +827,7 @@
                 const quiz = unit.quizzes[key];
 
                 try {
-                    const text = await extractTextFromPDF(`./${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
+                    const text = await extractTextFromPDF(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
@@ -859,63 +850,85 @@
                     renderView();
                 }
             },
-            answer: (idx) => {
-                if (state.isAnswered) return;
-                state.selectedOption = idx;
-                state.isAnswered = true;
-                if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
-                renderView();
-            },
-            next: () => {
-                if (state.currentQuestion + 1 < state.loadedQuestions.length) {
-                    state.currentQuestion++;
-                    state.isAnswered = false;
-                    state.showHint = false;
-                    renderView();
-                } else {
-                    // Quiz terminado - guardar score
-                    state.view = 'finished';
-
-                    // Guardar score en Supabase
-                    const totalQuestions = state.loadedQuestions.length;
-                    saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, totalQuestions);
-
-                    renderView();
-                }
-            },
-            hint: () => { state.showHint = !state.showHint; renderView(); },
-            goBack: () => {
-                // Navegaci\u00F3n tipo "cd .." - regresar a la vista anterior
-                if (state.view === 'quiz' || state.view === 'finished') {
-                    // Si estamos en quiz o terminado, regresar a lista de quizzes
-                    state.quiz = null;
-                    state.view = 'quizzes';
-                    updateHash();
-                } else if (state.view === 'quizzes') {
-                    // Si estamos en lista de quizzes, regresar a unidades
-                    state.unit = null;
-                    state.quiz = null;
-                    state.view = 'units';
-                    window.location.hash = '';
-                } else {
-                    // Si estamos en unidades, ir a index.html
-                    window.location.href = 'index.html';
-                }
-                renderView();
-            },
+               answer: (idx) => {
+                   if (state.isAnswered) return;
+                   state.selectedOption = idx;
+                   state.answers[state.currentQuestion] = idx;
+                   state.isAnswered = true;
+                   if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
+                   renderView();
+               },
+              jumpToQuestion: (index) => {
+                  if (index === state.currentQuestion) return;
+                  state.currentQuestion = index;
+                  state.isAnswered = state.answers[index] !== undefined;
+                  state.showHint = false;
+                  state.selectedOption = state.answers[index] !== undefined ? state.answers[index] : null;
+                  renderView();
+              },
+              next: async () => {
+                 if (state.currentQuestion + 1 < state.loadedQuestions.length) {
+                     state.currentQuestion++;
+                     state.isAnswered = state.answers[state.currentQuestion] !== undefined;
+                     state.showHint = false;
+                     state.selectedOption = state.answers[state.currentQuestion] !== undefined ? state.answers[state.currentQuestion] : null;
+                     renderView();
+                 } else {
+                     // Estamos en la última pregunta
+                     if (allAnswered()) {
+                         state.view = 'review';
+                         renderView();
+                     }
+                 }
+             },
+             hint: () => { state.showHint = !state.showHint; renderView(); },
+             showReview: () => {
+                 state.view = 'review';
+                 renderView();
+             },
+             confirmSubmit: async () => {
+                 state.view = 'finished';
+                 renderView();
+                 
+                 // Guardar el score en la BD
+                 const total = state.loadedQuestions.length;
+                 const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
+                 showScoreSavedNotification(saved);
+             },
+             reviewGoBack: () => {
+                 state.view = 'quiz';
+                 renderView();
+             },
+             goBack: () => {
+                 // Handle review view first
+                 if (state.view === 'review') {
+                     state.view = 'quiz';
+                     renderView();
+                     return;
+                 }
+                 // Navegación tipo "cd .." - regresar a la vista anterior
+                 if (state.view === 'quiz' || state.view === 'finished') {
+                     // Si estamos en quiz o terminado, regresar a lista de quizzes
+                     state.quiz = null;
+                     state.view = 'quizzes';
+                     updateHash();
+                 } else if (state.view === 'quizzes') {
+                     // Si estamos en lista de quizzes, regresar a unidades
+                     state.unit = null;
+                     state.quiz = null;
+                     state.view = 'units';
+                     window.location.hash = '';
+                 } else {
+                     // Si estamos en unidades, ir a index.html
+                     window.location.href = '../index.html';
+                 }
+                 renderView();
+             },
             goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
             goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
             restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
             copyLink: () => { copyLink(); },
-            toggleMobileMenu: () => {
-                state.mobileMenuOpen = !state.mobileMenuOpen;
-                if (state.mobileMenuOpen) {
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.style.overflow = '';
-                }
-                renderView();
-            }
+            toggleMobileMenu: () => { state.mobileMenuOpen = !state.mobileMenuOpen; renderView(); }
         };
 
         // --- Render ---
@@ -931,7 +944,7 @@
                         <button onclick="actions.goBack()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
                             <i data-lucide="arrow-left" class="w-4 h-4"></i>
                         </button>
-                        <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-10 w-auto object-contain">
+                        <img src="../assets/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-10 w-auto object-contain">
                         <div>
                             <h1 class="text-sm font-bold ${t.textPrimary}">${SUBJECT.title}</h1>
                             <p class="text-[10px] ${t.textMuted}">CEFIMAT</p>
@@ -944,7 +957,7 @@
                             <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
                         </button>
                         <div class="user-dropdown">
-                            <button onclick="toggleUserDropdown(event)" class="${t.glass} px-3 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-emerald-500/50 transition-all">
+                            <button onclick="toggleUserDropdown(event)" class="${t.glass} px-3 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-amber-500/50 transition-all">
                                 <div class="user-avatar">${userData.name ? userData.name.charAt(0) : 'U'}</div>
                                 <i data-lucide="chevron-down" class="w-3 h-3 ${t.textMuted}"></i>
                             </button>
@@ -952,7 +965,7 @@
                                 <div class="p-4 border-b ${t.border}">
                                     <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
                                     <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
-                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
+                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-bold">
                                         <i data-lucide="users" class="w-3 h-3"></i>
                                         Grupo ${userData.group || 'N/A'}
                                     </div>
@@ -988,7 +1001,7 @@
                             <div>
                                 <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
                                 <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
-                                <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
+                                <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-500 text-xs font-bold">
                                     <i data-lucide="users" class="w-3 h-3"></i>
                                     Grupo ${userData.group || 'N/A'}
                                 </div>
@@ -996,7 +1009,7 @@
                         </div>
                     </div>
                     <div class="p-6 space-y-3">
-                        <button onclick="toggleDarkMode()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:text-emerald-500 transition-all">
+                        <button onclick="toggleDarkMode()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:text-amber-500 transition-all">
                             <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-5 h-5"></i>
                             <span class="text-sm font-medium">${state.darkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>
                         </button>
@@ -1013,7 +1026,7 @@
                     <div class="max-w-4xl mx-auto">
                         <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                             <div class="flex items-center gap-2">
-                                <img src="Logo/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-8 w-auto object-contain opacity-50">
+                                <img src="../assets/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-8 w-auto object-contain opacity-50">
                                 <p class="text-xs ${t.textMuted}">© 2026 CEFIMAT Asesor\u00EDas</p>
                             </div>
                             <div class="flex items-center gap-3">
@@ -1029,7 +1042,7 @@
                                 <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-green-500 transition-colors">
                                     <i data-lucide="music" class="w-4 h-4"></i>
                                 </a>
-                                <a href="https://www.cefimat.com/" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-emerald-500 transition-colors">
+                                <a href="https://www.cefimat.com/" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-amber-500 transition-colors">
                                     <i data-lucide="globe" class="w-4 h-4"></i>
                                 </a>
                             </div>
@@ -1109,12 +1122,21 @@
                                             <div class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
                                                 <span class="text-white font-black text-xl md:text-2xl">${q.number}</span>
                                             </div>
-                                            <div class="flex-1 min-w-0">
-                                                <div class="flex items-start md:items-center gap-2 mb-1 flex-wrap">
-                                                    <h3 class="${t.textPrimary} font-bold text-base md:text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
-                                                    ${q.difficulty ? getDifficultyBadge(q.difficulty) : ''}
-                                                </div>
-                                                ${q.description ? `<p class="${t.textSecondary} text-sm">${q.description}</p>` : ''}
+                                             <div class="flex-1 min-w-0">
+                                                 <div class="flex items-start md:items-center gap-2 mb-1 flex-wrap">
+                                                     <h3 class="${t.textPrimary} font-bold text-base md:text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
+                                                 </div>
+                                                 ${q.description ? `<p class="${t.textSecondary} text-sm">${(() => {
+                        let desc = q.description;
+                        const periodIdx = desc.indexOf('.');
+                        const cefimatIdx = desc.search(/CEFIMAT/i);
+                        const colonIdx = desc.indexOf(':');
+                        const indices = [periodIdx, cefimatIdx, colonIdx].filter(i => i !== -1);
+                        if (indices.length > 0) {
+                            desc = desc.substring(0, Math.min(...indices)).trim();
+                        }
+                        return desc;
+                    })()}</p>` : ''}
                                             </div>
                                             <div class="flex items-center justify-center w-10 h-10 rounded-xl ${t.subjectBg} ${t.subjectText} group-hover:scale-110 transition-transform">
                                                 <i data-lucide="play" class="w-5 h-5"></i>
@@ -1136,12 +1158,11 @@
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
                             <div class="flex items-center justify-between">
-                                <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
-                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
-                                </button>
-                                ${getDifficultyBadge(state.quizDifficulty)}
-                            </div>
-                            <div class="flex items-center justify-between gap-4">
+                                 <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
+                                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                                 </button>
+                             </div>
+                             <div class="flex items-center justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="flex justify-between mb-2">
                                         <span class="text-xs ${t.textSecondary}">Pregunta ${state.currentQuestion + 1}/${total}</span>
@@ -1151,8 +1172,8 @@
                                         <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
+                             </div>
+                             <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
                                 <h3 class="text-lg font-bold ${t.textPrimary} leading-relaxed">${q.q}</h3>
                                 ${state.showHint ? `
                                     <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -1176,12 +1197,71 @@
                                         </button>`;
                 }).join('')}
                             </div>
-                            ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Ver Resultados'}</button>` : ''}
+                            <!-- Selector de Preguntas (pequeño, al final) -->
+                            <div class="${t.glass} rounded-lg p-2 border ${t.border}">
+                                <div class="grid grid-cols-6 sm:grid-cols-12 gap-1">
+                                    ${Array.from({length: total}).map((_, i) => `
+                                        <button onclick="actions.jumpToQuestion(${i})" class="w-full h-8 rounded text-xs font-bold transition-all ${i === state.currentQuestion ? `bg-gradient-to-r ${t.gradientIcon} text-white` : `${t.glass} hover:border-amber-500/50`} flex items-center justify-center border ${t.border}">
+                                            ${i + 1}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                             ${state.isAnswered ? `<button onclick="${state.currentQuestion + 1 < total ? 'actions.next()' : (allAnswered() ? 'actions.showReview()' : '')}" class="w-full py-4 rounded-xl text-white font-bold ${state.currentQuestion + 1 < total || allAnswered() ? `bg-gradient-to-r ${t.gradientIcon} hover:opacity-90 transition-opacity` : 'bg-slate-600/50 cursor-not-allowed'}" ${!state.currentQuestion + 1 < total && !allAnswered() ? 'disabled' : ''}>${state.currentQuestion + 1 < total ? 'Siguiente' : (allAnswered() ? 'Revisar Respuestas' : 'Completa todas las preguntas')}</button>` : ''}
                         </div>
                     </div>
                     ${footer}`;
-            }
-            else if (state.view === 'finished') {
+             }
+              else if (state.view === 'review') {
+                   const total = state.loadedQuestions.length;
+                   const answered = state.loadedQuestions.filter((q, i) => state.answers[i] !== undefined).length;
+                   
+                   content = `${header}
+                       <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                           <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
+                               <div class="space-y-2">
+                                   <h2 class="text-2xl font-bold ${t.textPrimary}">Revisar Respuestas</h2>
+                                   <p class="${t.textSecondary} text-sm">Has respondido ${answered}/${total} preguntas</p>
+                               </div>
+                               
+                               <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
+                                   ${state.loadedQuestions.map((q, idx) => {
+                                       const answered = state.answers[idx] !== undefined;
+                                       const selectedAns = state.answers[idx];
+                                       return `
+                                           <div class="border rounded-lg p-4 ${answered ? 'border-blue-500/50 bg-blue-500/10' : 'border-slate-500/30 bg-slate-500/10'}">
+                                               <div class="flex items-start gap-3 mb-3">
+                                                   <span class="text-sm font-bold ${t.subjectText}">${idx + 1}.</span>
+                                                   <div class="flex-1">
+                                                       <p class="${t.textPrimary} text-sm">${q.q}</p>
+                                                   </div>
+                                               </div>
+                                               ${answered ? `
+                                                   <div class="space-y-2 text-xs">
+                                                       <div class="flex items-center gap-2">
+                                                           <span class="${t.textSecondary}">Tu respuesta:</span>
+                                                           <span class="font-bold text-blue-400">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
+                                                       </div>
+                                                   </div>
+                                               ` : '<p class="${t.textSecondary} text-xs">No respondida</p>'}
+                                           </div>
+                                       `;
+                                   }).join('')}
+                               </div>
+                               
+                               <div class="flex gap-3">
+                                   <button onclick="actions.reviewGoBack()" class="flex-1 py-4 rounded-xl border ${t.border} ${t.textPrimary} font-bold hover:opacity-80 transition-all">
+                                       Volver
+                                   </button>
+                                   <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">
+                                       Confirmar y Enviar
+                                   </button>
+                               </div>
+                           </div>
+                       </div>
+                       ${footer}`;
+              }
+             else if (state.view === 'finished') {
                 const total = state.loadedQuestions.length;
                 const perc = Math.round((state.score / total) * 100);
                 const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
@@ -1207,7 +1287,7 @@
                             </div>
                             <div class="flex gap-3">
                                 <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl ${t.glass} ${t.textPrimary} font-bold hover:opacity-80 border ${t.border}">Otro Quiz</button>
-                                <a href="index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
+                                <a href="../index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
                             </div>
                         </div>
                     </div>
