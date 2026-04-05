@@ -6,8 +6,11 @@ const nextConfig: NextConfig = {
             bodySizeLimit: '10mb',
         },
     },
-    webpack: (config) => {
+    webpack: (config, { isServer }) => {
         config.resolve.alias.canvas = false;
+        if (isServer) {
+            config.externals.push('canvas');
+        }
         return config;
     },
 };
