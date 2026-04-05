@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// MODELS
+// ================================
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  passwordHash  String   @map("password_hash")
+  role          String   @default("student") // 'admin' | 'student'
+  groupName     String?  @map("group_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  lastLogin     DateTime? @map("last_login")
+  
+  quizAttempts  UserQuizAttempt[]
+  
+  @@map("users")
+}
+
+model Unit {
+  id          String   @id @default(uuid())
+  key         String   @unique // 'u1', 'u2', etc.
+  subject     String   // 'historia_mexico', 'geografia', etc.
+  title       String
+  description String?  @db.Text
+  orderIndex  Int      @map("order_index")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  quizzes     Quiz[]
+  
+  @@map("units")
+}
+
+model Quiz {
+  id            String   @id @default(uuid())
+  unitId        String   @map("unit_id")
+  key           String   // 'q1', 'q2', etc.
+  title         String
+  difficulty    String?  // 'Fácil' | 'Medio' | 'Difícil'
+  orderIndex    Int      @map("order_index")
+  isActive      Boolean  @default(true) @map("is_active")
+  sourcePdfUrl  String?  @map("source_pdf_url") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  unit          Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  questions     Question[]
+  attempts      UserQuizAttempt[]
+  
+  @@unique([unitId, key])
+  @@map("quizzes")
+}
+
+model Question {
+  id              String   @id @default(uuid())
+  quizId          String   @map("quiz_id")
+  questionText    String   @map("question_text") @db.Text
+  options         Json     // ['opción1', 'opción2', 'opción3', 'opción4']
+  correctIndex    Int      @map("correct_index") // 0, 1, 2, or 3
+  hint            String?  @db.Text
+  explanation     String?  @db.Text
+  orderIndex      Int      @map("order_index")
+  tags            String[]
+  difficulty      String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  quiz            Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userAnswers     UserQuestionAttempt[]
+  
+  @@map("questions")
+}
+
+model UserQuizAttempt {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  quizId          String   @map("quiz_id")
+  startedAt       DateTime @default(now()) @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  score           Int?
+  totalQuestions  Int?     @map("total_questions")
+  percentage      Decimal? @db.Decimal(5, 2)
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz            Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionAttempts UserQuestionAttempt[]
+  
+  @@map("user_quiz_attempts")
+}
+
+model UserQuestionAttempt {
+  id              String   @id @default(uuid())
+  attemptId       String   @map("attempt_id")
+  questionId      String   @map("question_id")
+  selectedIndex   Int?     @map("selected_index")
+  isCorrect       Boolean? @map("is_correct")
+  timeSpentSeconds Int?    @map("time_spent_seconds")
+  usedHint        Boolean  @default(false) @map("used_hint")
+  answeredAt      DateTime @default(now()) @map("answered_at")
+  
+  attempt         UserQuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  @@map("user_question_attempts")
+}
