@@ -1,11 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    /* config options here */
     experimental: {
         serverActions: {
-            bodySizeLimit: '10mb', // Para PDFs grandes
+            bodySizeLimit: '10mb',
         },
+    },
+    webpack: (config) => {
+        config.resolve.alias.canvas = false;
+        return config;
     },
 };
 
