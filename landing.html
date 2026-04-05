@@ -735,10 +735,14 @@
                 </div>
             `;
 
-            lucide.createIcons();
+            // Renderizar iconos lucide del footer
+            setTimeout(() => lucide.createIcons(), 10);
             
             // Initialize scroll animations after render (solo desktop)
             setTimeout(initScrollAnimations, 100);
+            
+            // Renderizar iconos lucide finales
+            setTimeout(() => lucide.createIcons(), 150);
         }
 
         // Smooth scroll for anchor links

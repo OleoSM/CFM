@@ -1009,13 +1009,16 @@
                     </div>
                 </div>
             `;
-
-            lucide.createIcons();
+            
+            // Renderizar iconos lucide del nav y footer
+            setTimeout(() => lucide.createIcons(), 10);
         }
 
         // Init
         applyTheme();
         fetchLeaderboards();
+        // Renderizar iconos lucide finales
+        setTimeout(() => lucide.createIcons(), 100);
     </script>
 </body>
 
