@@ -7,8 +7,8 @@
 const BASE_PATH = window.location.pathname.includes('/materias/') ? '../' : '';
 
 const API_CONFIG = {
-    // Backend URL - change this for production
-    BASE_URL: 'http://localhost:3000',
+    // Backend URL
+    BASE_URL: 'https://cfm-seven.vercel.app',
 
     // Endpoints
     ENDPOINTS: {
