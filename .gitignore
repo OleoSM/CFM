@@ -12,8 +12,8 @@
 *.env
 back-end/.env
 
-# Configuracion con credenciales de Supabase
-js/config.js
+# Nota: js/config.js contiene SUPABASE_URL y SUPABASE_ANON_KEY
+# que son credenciales publicas del frontend (seguras de commitear)
 
 # Claves y certificados
 *.key
