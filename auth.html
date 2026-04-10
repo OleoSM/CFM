@@ -8,8 +8,10 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- API Service -->
-    <script src="js/api.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
 
     <script>
         tailwind.config = {
@@ -195,9 +197,32 @@
             }
 
             try {
-                const result = await api.login(email, password);
+                // SUPABASE LOGIN
+                const result = await loginUser(email, password);
 
-                showToast(`¡Bienvenido, ${result.user.name || email}!`);
+                if (!result.success) {
+                    throw new Error(result.error || 'Error al iniciar sesión');
+                }
+
+                // Get user data
+                const userResult = await getCurrentUser();
+                if (userResult.success) {
+                    const userData = {
+                        id: userResult.user.id,
+                        name: userResult.user.nombre || userResult.user.email.split('@')[0],
+                        email: userResult.user.email,
+                        group: userResult.user.clave_curso || 'Sin grupo'
+                    };
+
+                    // Store user data locally
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    localStorage.setItem('userName', userData.name);
+                    localStorage.setItem('userGroup', userData.group);
+                    localStorage.setItem('userId', userData.id);
+                }
+
+                showToast(`¡Bienvenido, ${userResult.user.nombre || email}!`);
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
@@ -237,12 +262,31 @@
             }
 
             try {
-                const result = await api.register({
-                    email,
-                    password,
-                    name,
-                    group: accessCode
-                });
+                // SUPABASE REGISTRATION WITH ACCESS CODE
+                const result = await registerUser(email, password, name, accessCode, accessCode);
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Error al crear cuenta');
+                }
+
+                // Auto-login after registration
+                const loginResult = await loginUser(email, password);
+
+                if (loginResult.success) {
+                    const userData = {
+                        id: result.user.id,
+                        name: name,
+                        email: email,
+                        group: accessCode  // Usar el código de acceso como grupo
+                    };
+
+                    // Store user data locally
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    localStorage.setItem('userName', userData.name);
+                    localStorage.setItem('userGroup', userData.group);
+                    localStorage.setItem('userId', userData.id);
+                }
 
                 showToast(`¡Cuenta creada! Bienvenido, ${name}!`);
                 setTimeout(() => {
