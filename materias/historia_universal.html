@@ -958,15 +958,6 @@
                      }
                  }
              },
-             debugAutoAnswer: () => {
-                 state.loadedQuestions.forEach((q, i) => { state.answers[i] = q.c; });
-                 state.score = state.loadedQuestions.length;
-                 state.currentQuestion = state.loadedQuestions.length - 1;
-                 state.isAnswered = true;
-                 state.selectedOption = state.answers[state.currentQuestion];
-                 console.log('DEBUG - Respuestas correctas:', state.loadedQuestions.map((q, i) => `P${i+1}: ${['A','B','C','D'][q.c]} (idx ${q.c})`));
-                 renderView();
-             },
              hint: () => { state.showHint = !state.showHint; renderView(); },
              jumpToQuestion: (index) => {
                  if (index === state.currentQuestion) return;
@@ -1249,7 +1240,6 @@
                                 <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
                                      <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
                                  </button>
-                                 <button onclick="actions.debugAutoAnswer()" class="px-3 py-1 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600">DEBUG: Auto-answer</button>
                              </div>
                              <div class="flex items-center justify-between gap-4">
                                 <div class="flex-1">
@@ -1353,8 +1343,8 @@
                 const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
 
                 content = `${header}
-                    <div class="flex-1 flex items-center justify-center p-6">
-                        <div class="text-center space-y-8 fade-in max-w-md">
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="text-center space-y-8 fade-in max-w-md mx-auto pb-6">
                             <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
                                 <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
                             </div>
@@ -1374,6 +1364,23 @@
                             <div class="flex gap-3">
                                 <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl ${t.glass} ${t.textPrimary} font-bold hover:opacity-80 border ${t.border}">Otro Quiz</button>
                                 <a href="../index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
+                            </div>
+                            <div class="${t.glass} rounded-2xl p-6 border ${t.border} text-left space-y-4 mt-4">
+                                <h3 class="text-lg font-bold ${t.textPrimary}">Desglose de respuestas</h3>
+                                ${state.loadedQuestions.map((q, idx) => {
+                                    const selected = state.answers[idx];
+                                    const correct = q.c;
+                                    const isCorrect = selected === correct;
+                                    return `
+                                        <div class="p-4 rounded-xl border ${isCorrect ? 'border-green-500/50 bg-green-500/10' : 'border-red-500/50 bg-red-500/10'}">
+                                            <div class="flex items-start gap-2 mb-2">
+                                                <span class="text-lg">${isCorrect ? '✅' : '❌'}</span>
+                                                <p class="text-sm font-medium ${t.textPrimary}">${idx + 1}. ${q.q}</p>
+                                            </div>
+                                            ${!isCorrect ? `<p class="text-sm text-red-400 ml-7">Tu respuesta: <span class="font-bold">${String.fromCharCode(65 + selected)}) ${q.a[selected]}</span></p>` : ''}
+                                            <p class="text-sm text-green-400 ml-7">Correcta: <span class="font-bold">${String.fromCharCode(65 + correct)}) ${q.a[correct]}</span></p>
+                                        </div>`;
+                                }).join('')}
                             </div>
                         </div>
                     </div>
