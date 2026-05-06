@@ -1273,34 +1273,7 @@
             `;
 
             // Coming Soon
-            document.getElementById('comingSoon').innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="${glassClass} rounded-3xl p-8 text-center shadow-xl">
-                        <div class="flex items-center justify-center gap-2 mb-4">
-                            <i data-lucide="clock" class="w-5 h-5 text-indigo-500"></i>
-                            <h3 class="text-lg font-bold ${textPrimary}">En Desarrollo</h3>
-                        </div>
-                        <p class="text-sm ${textSecondary} mb-6">Estamos trabajando en contenido nuevo para ti</p>
-                        <div class="flex flex-wrap items-center justify-center gap-3">
-                            ${['Filosof\u00eda', 'Literatura'].map(materia =>
-                `<span class="px-4 py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${materia}</span>`
-            ).join('')}
-                        </div>
-                    </div>
-                    <div class="${glassClass} rounded-3xl p-8 text-center shadow-xl">
-                        <div class="flex items-center justify-center gap-2 mb-4">
-                            <i data-lucide="book-open" class="w-5 h-5 text-indigo-500"></i>
-                            <h3 class="text-lg font-bold ${textPrimary}">Planificado</h3>
-                        </div>
-                        <p class="text-sm ${textSecondary} mb-6">Pr\u00F3ximas materias a integrar</p>
-                        <div class="flex flex-wrap items-center justify-center gap-3">
-                            ${['Matem\u00e1ticas', 'Espa\u00f1ol'].map(materia =>
-                `<span class="px-4 py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${materia}</span>`
-            ).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
+
 
             // Footer
             document.getElementById('footer').innerHTML = `
