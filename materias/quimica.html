@@ -8,6 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../assets/css/cefimat-modern.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="../js/api.js"></script>
 
@@ -194,12 +195,12 @@
         const SUBJECT = {
             key: 'quimica',
             folderName: 'Quimica',
-            title: 'Quimica',
+            title: 'Química',
             icon: 'flask-conical',
-            gradient: 'from-lime-500 to-teal-600',
-            bg: 'bg-lime-500/10',
-            border: 'border-lime-500/20',
-            text: 'text-lime-400'
+            gradient: 'from-fuchsia-500 to-pink-600',
+            bg: 'bg-fuchsia-500/10',
+            border: 'border-fuchsia-500/20',
+            text: 'text-fuchsia-400'
         };
 
         const state = {
@@ -370,8 +371,8 @@
             const units = {};
             for (let i = 1; i <= 20; i++) {
                 try {
-                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
-                    units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
+                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad ${i}/Cuestionario_1.pdf`).promise;
+                    units[`u${i}`] = { folderName: `Unidad ${i}`, label: `Unidad ${i}`, quizzes: {} };
                 } catch { break; }
             }
             state.units = units;

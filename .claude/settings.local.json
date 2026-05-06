@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "Bash(powershell *)",
+      "Read(//c/Users/arcti/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python scripts/search.py \"education quiz exam preparation academic dashboard\" --design-system -p \"CEFIMAT ECOEMS\" -f markdown)"
+    ]
+  }
+}

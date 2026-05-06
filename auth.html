@@ -8,6 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/css/cefimat-modern.css">
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
@@ -333,14 +334,18 @@
                     <!-- Auth Card -->
                     <div class="${glassClass} rounded-3xl shadow-2xl overflow-hidden">
                         <!-- Header -->
-                        <div class="p-8 text-center">
-                            <h1 class="text-3xl font-black ${textPrimary} mb-2">
-                                ${state.mode === 'login' ? 'Bienvenido' : 'Crear Cuenta'}
+                        <div class="p-8 text-center space-y-3">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-bold uppercase tracking-widest">
+                                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                                ${state.mode === 'login' ? 'Acceso seguro' : '\u00DAnete a CEFIMAT'}
+                            </div>
+                            <h1 class="text-3xl md:text-4xl font-black ${textPrimary} tracking-tight">
+                                ${state.mode === 'login' ? '\u00A1Hola de nuevo!' : 'Crear <span class="gradient-text">Cuenta</span>'}
                             </h1>
-                            <p class="text-sm ${textSecondary}">
+                            <p class="text-sm ${textSecondary} leading-relaxed">
                                 ${state.mode === 'login'
-                    ? 'Ingresa a tu cuenta para continuar'
-                    : 'Reg\u00EDstrate para acceder a los cuestionarios'}
+                    ? 'Ingresa a tu cuenta para continuar con tus cuestionarios'
+                    : 'Reg\u00EDstrate para acceder a los cuestionarios interactivos'}
                             </p>
                         </div>
 

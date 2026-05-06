@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/css/cefimat-modern.css">
 
     <script>
         tailwind.config = {
@@ -386,7 +387,7 @@
                     </h1>
                     <p class="text-base md:text-xl ${textSecondary} max-w-3xl mx-auto leading-relaxed px-4">
                         Plataforma interactiva de cuestionarios organizados por unidades y materias.<br class="hidden md:block">
-                        Tu camino hacia la universidad comienza aqu\u00ED.
+                        Tu camino hacia ECOEMS comienza aqu\u00ED.
                     </p>
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 md:pt-8 px-4">
                         <a href="auth.html?tab=register" class="w-full sm:w-auto pulse-ring px-6 md:px-8 py-3 md:py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold text-base md:text-lg hover:shadow-xl transition-shadow shadow-lg flex items-center justify-center gap-3">
@@ -399,17 +400,17 @@
                         </a>
                     </div>
                     <div class="pt-8 md:pt-12 flex items-center justify-center gap-4 md:gap-8 flex-wrap px-4">
-                        <div class="${glassClass} px-4 md:px-6 py-3 md:py-4 rounded-2xl shadow-lg">
-                            <div class="text-2xl md:text-3xl font-black text-indigo-500">3</div>
-                            <div class="text-xs ${textMuted} uppercase tracking-wider">Materias</div>
+                        <div class="${glassClass} px-5 md:px-7 py-4 md:py-5 rounded-2xl shadow-lg">
+                            <div class="text-3xl md:text-4xl font-black gradient-text leading-none">4</div>
+                            <div class="text-[10px] md:text-xs ${textMuted} uppercase tracking-widest font-bold mt-1">Materias</div>
                         </div>
-                        <div class="${glassClass} px-4 md:px-6 py-3 md:py-4 rounded-2xl shadow-lg">
-                            <div class="text-2xl md:text-3xl font-black text-purple-500">18</div>
-                            <div class="text-xs ${textMuted} uppercase tracking-wider">Unidades</div>
+                        <div class="${glassClass} px-5 md:px-7 py-4 md:py-5 rounded-2xl shadow-lg">
+                            <div class="text-3xl md:text-4xl font-black gradient-text leading-none">22</div>
+                            <div class="text-[10px] md:text-xs ${textMuted} uppercase tracking-widest font-bold mt-1">Unidades</div>
                         </div>
-                        <div class="${glassClass} px-4 md:px-6 py-3 md:py-4 rounded-2xl shadow-lg">
-                            <div class="text-2xl md:text-3xl font-black text-pink-500">100+</div>
-                            <div class="text-xs ${textMuted} uppercase tracking-wider">Cuestionarios</div>
+                        <div class="${glassClass} px-5 md:px-7 py-4 md:py-5 rounded-2xl shadow-lg">
+                            <div class="text-3xl md:text-4xl font-black gradient-text leading-none">100+</div>
+                            <div class="text-[10px] md:text-xs ${textMuted} uppercase tracking-widest font-bold mt-1">Cuestionarios</div>
                         </div>
                     </div>
                 </div>
@@ -456,7 +457,7 @@
                         <div class="scroll-fade ${glassClass} p-6 md:p-10 rounded-3xl shadow-2xl space-y-6">
                             <div class="flex items-center gap-3">
                                 <i data-lucide="award" class="w-6 md:w-8 h-6 md:h-8 text-indigo-500"></i>
-                                <h3 class="text-xl md:text-2xl font-black ${textPrimary}">¿Por qu\u00E9 CEFIMAT?</h3>
+                                <h3 class="text-xl md:text-2xl font-black ${textPrimary}">Â¿Por qu\u00E9 CEFIMAT?</h3>
                             </div>
                             <ul class="space-y-4 ${textSecondary} text-sm md:text-base">
                                 <li class="flex items-start gap-3">
@@ -524,7 +525,8 @@
                         ${[
                             { icon: 'scroll-text', color: 'from-emerald-500 to-teal-600', name: 'Historia de M\u00E9xico', units: '8 unidades' },
                             { icon: 'globe-2', color: 'from-indigo-500 to-purple-600', name: 'Historia Universal', units: '8 unidades' },
-                            { icon: 'map', color: 'from-amber-500 to-orange-600', name: 'Geograf\u00EDa', units: '2 unidades' }
+                            { icon: 'map', color: 'from-amber-500 to-orange-600', name: 'Geograf\u00EDa', units: '2 unidades' },
+                            { icon: 'atom', color: 'from-rose-500 to-orange-600', name: 'F\u00EDsica', units: '4 unidades' }
                         ].map((s, i) => `
                             <div class="scroll-fade feature-card ${glassClass} p-6 md:p-8 rounded-3xl shadow-2xl text-center">
                                 <div class="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br ${s.color} flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-2xl">
@@ -546,7 +548,7 @@
                         </div>
                         <p class="text-sm ${textSecondary} mb-4 md:mb-6">M\u00E1s materias estar\u00E1n disponibles pronto</p>
                         <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                            ${['Literatura', 'Filosof\u00EDa', 'Matem\u00E1ticas', 'F\u00EDsica', 'Qu\u00EDmica', 'Biolog\u00EDa', 'Espa\u00F1ol'].map(m => 
+                            ${['Literatura', 'Filosof\u00EDa', 'Matem\u00E1ticas', 'Qu\u00EDmica', 'Biolog\u00EDa', 'Espa\u00F1ol'].map(m =>
                                 `<span class="px-3 md:px-4 py-1.5 md:py-2 rounded-full ${glassClass} text-xs ${textMuted} font-semibold">${m}</span>`
                             ).join('')}
                         </div>
@@ -589,10 +591,10 @@
                                     <i data-lucide="trophy" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-lg md:text-xl font-bold ${textPrimary} mb-2">¡Felicidades a Nuestros Estudiantes!</h3>
+                                    <h3 class="text-lg md:text-xl font-bold ${textPrimary} mb-2">Â¡Felicidades a Nuestros Estudiantes!</h3>
                                     <p class="${textSecondary} text-sm md:text-base mb-3 md:mb-4">
-                                        El 87% de nuestros estudiantes han logrado ingresar a su universidad de preferencia. 
-                                        ¡T\u00FA tambi\u00E9n puedes lograrlo con dedicaci\u00F3n y pr\u00E1ctica constante!
+                                        El 87% de nuestros estudiantes han logrado ingresar a ECOEMS.
+                                        Â¡T\u00FA tambi\u00E9n puedes lograrlo con dedicaci\u00F3n y pr\u00E1ctica constante!
                                     </p>
                                     <div class="flex items-center gap-2 text-xs ${textMuted}">
                                         <i data-lucide="calendar" class="w-3 h-3 md:w-4 md:h-4"></i>
@@ -610,8 +612,8 @@
                                 <div class="flex-1 min-w-0">
                                     <h3 class="text-lg md:text-xl font-bold ${textPrimary} mb-2">Fechas de Examen 2026</h3>
                                     <p class="${textSecondary} text-sm md:text-base mb-3 md:mb-4">
-                                        Las fechas oficiales de examen ya est\u00E1n disponibles. Consulta el calendario de tu universidad 
-                                        y organiza tu tiempo de estudio. ¡No dejes tu preparaci\u00F3n para el \u00FAltimo momento!
+                                        Las fechas oficiales de examen ya est\u00E1n disponibles. Consulta el calendario de ECOEMS 
+                                        y organiza tu tiempo de estudio. Â¡No dejes tu preparaci\u00F3n para el \u00FAltimo momento!
                                     </p>
                                     <div class="flex items-center gap-2 text-xs ${textMuted}">
                                         <i data-lucide="clock" class="w-3 h-3 md:w-4 md:h-4"></i>
@@ -633,7 +635,7 @@
                             Comienza tu preparaci\u00F3n hoy
                         </div>
                         <h2 class="text-3xl md:text-4xl lg:text-5xl font-black ${textPrimary} mb-6">
-                            ¿Listo para alcanzar<br>tu meta?
+                            Â¿Listo para alcanzar<br>tu meta?
                         </h2>
                         <p class="text-base md:text-lg ${textSecondary} mb-8 max-w-2xl mx-auto">
                             \u00FAnete a miles de estudiantes que ya est\u00E1n prepar\u00E1ndose para su examen de ingreso. 
@@ -728,8 +730,8 @@
                         </div>
 
                         <div class="border-t ${borderColor} pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <p class="text-xs ${textMuted} uppercase tracking-widest text-center md:text-left">© 2026 CEFIMAT Asesor\u00EDas. Todos los derechos reservados.</p>
-                            <p class="text-xs ${textMuted} text-center md:text-right">Hecho con <span class="text-red-500">❤</span> para nuestros estudiantes</p>
+                            <p class="text-xs ${textMuted} uppercase tracking-widest text-center md:text-left">Â© 2026 CEFIMAT Asesor\u00EDas. Todos los derechos reservados.</p>
+                            <p class="text-xs ${textMuted} text-center md:text-right">Hecho con <span class="text-red-500">â¤</span> para nuestros estudiantes</p>
                         </div>
                     </div>
                 </div>

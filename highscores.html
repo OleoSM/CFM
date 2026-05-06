@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
+    <link rel="stylesheet" href="assets/css/cefimat-modern.css">
 
     <script>
         tailwind.config = {
@@ -397,7 +398,7 @@
     <!-- Container -->
     <div class="container mx-auto px-4 py-8 max-w-7xl relative z-10">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-10 gap-4 flex-wrap">
             <button onclick="goBack()" class="back-btn">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 <span class="font-bold">Volver</span>
@@ -407,99 +408,146 @@
             <div class="sync-indicator">
                 <div class="sync-dot active" id="syncDot"></div>
                 <span class="text-sm font-medium" id="syncStatus">Sincronizado</span>
-                <button onclick="syncNow()" class="ml-2 px-3 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-600 transition-colors text-white text-xs font-bold">
-                    <i data-lucide="refresh-cw" class="w-3 h-3 inline"></i>
+                <button onclick="syncNow()" class="ml-2 px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 transition-colors text-white text-xs font-bold flex items-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
                     Actualizar
                 </button>
             </div>
         </div>
 
-        <!-- Hero Section -->
-         <div class="hero-container p-8 md:p-12 mb-12">
-             <div class="text-center space-y-4">
-                 <div class="trophy-icon inline-block text-7xl mb-4">
-                     <svg class="w-16 h-16 mx-auto text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
-                 </div>
-                <h1 class="text-4xl md:text-6xl font-black bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
-                    CEFIMAT High Scores
-                </h1>
-                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto">
-                    Rankings y estadísticas de los mejores estudiantes
-                </p>
+        <!-- Hall of Fame Navbar -->
+        <nav class="hof-navbar mb-12">
+            <div class="hof-navbar-inner">
+                <!-- Brand: trofeo + título -->
+                <div class="hof-brand">
+                    <div class="hof-trophy">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                        </svg>
+                    </div>
+                    <div class="hof-brand-text">
+                        <div class="hof-tag">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i>
+                            <span>Hall of Fame · CEFIMAT 2026</span>
+                        </div>
+                        <h1 class="hof-title">
+                            <span class="hof-title-main">Hall of Fame</span>
+                        </h1>
+                        <p class="hof-subtitle">Rankings y estadísticas en vivo</p>
+                    </div>
+                </div>
 
-                <!-- Live Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 max-w-3xl mx-auto">
-                    <div class="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-xl p-4 border border-emerald-500/30">
-                        <div class="text-3xl font-black text-emerald-400" id="totalStudents">0</div>
-                        <div class="text-sm text-slate-400 font-medium">Estudiantes Activos</div>
+                <!-- Stats -->
+                <div class="hof-stats" role="group" aria-label="Estadísticas globales">
+                    <div class="hof-stat hof-stat--students">
+                        <div class="hof-stat-icon">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="hof-stat-body">
+                            <div class="hof-stat-value" id="totalStudents">0</div>
+                            <div class="hof-stat-label">Estudiantes</div>
+                        </div>
                     </div>
-                    <div class="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-xl p-4 border border-indigo-500/30">
-                        <div class="text-3xl font-black text-indigo-400" id="avgScore">0%</div>
-                        <div class="text-sm text-slate-400 font-medium">Promedio Global</div>
+                    <div class="hof-stat-divider" aria-hidden="true"></div>
+                    <div class="hof-stat hof-stat--avg">
+                        <div class="hof-stat-icon">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="hof-stat-body">
+                            <div class="hof-stat-value" id="avgScore">0%</div>
+                            <div class="hof-stat-label">Promedio</div>
+                        </div>
                     </div>
-                    <div class="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-xl p-4 border border-amber-500/30">
-                        <div class="text-3xl font-black text-amber-400" id="topScore">0%</div>
-                        <div class="text-sm text-slate-400 font-medium">Mejor Puntuación</div>
+                    <div class="hof-stat-divider" aria-hidden="true"></div>
+                    <div class="hof-stat hof-stat--top">
+                        <div class="hof-stat-icon">
+                            <i data-lucide="crown"></i>
+                        </div>
+                        <div class="hof-stat-body">
+                            <div class="hof-stat-value" id="topScore">0%</div>
+                            <div class="hof-stat-label">Top score</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </nav>
 
         <!-- Filters -->
-        <div class="mb-8">
+        <div class="mb-12">
+            <div class="text-center mb-5">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Filtrar por materia</p>
+            </div>
             <div class="flex flex-wrap gap-3 justify-center">
                 <button class="filter-btn active" onclick="filterSubject('all')" data-filter="all">
                     <i data-lucide="trophy" class="w-4 h-4 inline"></i>
-                    Todos
+                    <span>Todos</span>
                 </button>
                 <button class="filter-btn" onclick="filterSubject('historia_mexico')" data-filter="historia_mexico">
                     <i data-lucide="scroll-text" class="w-4 h-4 inline"></i>
-                    Historia de México
+                    <span>Historia de México</span>
                 </button>
                 <button class="filter-btn" onclick="filterSubject('historia_universal')" data-filter="historia_universal">
                     <i data-lucide="globe-2" class="w-4 h-4 inline"></i>
-                    Historia Universal
+                    <span>Historia Universal</span>
                 </button>
                  <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
                      <i data-lucide="map" class="w-4 h-4 inline"></i>
-                     Geografía
+                     <span>Geografía</span>
                  </button>
                  <button class="filter-btn" onclick="filterSubject('fisica')" data-filter="fisica">
                      <i data-lucide="atom" class="w-4 h-4 inline"></i>
-                     Física
+                     <span>Física</span>
                  </button>
              </div>
         </div>
 
          <!-- TOP 3 Podium -->
-         <div class="mb-16">
-             <h2 class="text-3xl font-black text-center mb-8 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                 TOP 3 - High Scores
-             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto" id="podium">
+         <div class="mb-20">
+             <div class="text-center mb-10 space-y-2">
+                <div class="hs-section-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-amber-400">
+                    <i data-lucide="medal" class="w-3.5 h-3.5"></i>
+                    Podio de Honor
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-500 bg-clip-text text-transparent">
+                    TOP 3 Estudiantes
+                </h2>
+                <p class="text-sm md:text-base text-slate-400">Los mejores resultados por puntuación absoluta</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto" id="podium">
                 <!-- Podium cards will be inserted here -->
             </div>
         </div>
 
          <!-- Analytics Charts -->
-         <div class="mb-16">
-             <h2 class="text-3xl font-black text-center mb-8">Analytics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div class="mb-20">
+             <div class="text-center mb-10 space-y-2">
+                <div class="hs-section-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-indigo-400">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                    Analytics
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black tracking-tight">Estadísticas en vivo</h2>
+                <p class="text-sm md:text-base text-slate-400">Comportamiento por materia y estudiantes destacados</p>
+             </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
                 <div class="chart-container">
-                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-indigo-400"></i>
+                    <h3 class="text-base md:text-lg font-bold mb-5 flex items-center gap-2.5">
+                        <span class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-400"></i>
+                        </span>
                         <span>Puntuaciones por Materia</span>
                     </h3>
-                    <div style="height: 300px; position: relative;">
+                    <div style="height: 320px; position: relative;">
                         <canvas id="subjectChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-container">
-                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                        <i data-lucide="pie-chart" class="w-5 h-5 text-purple-400"></i>
+                    <h3 class="text-base md:text-lg font-bold mb-5 flex items-center gap-2.5">
+                        <span class="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
+                            <i data-lucide="pie-chart" class="w-4 h-4 text-purple-400"></i>
+                        </span>
                         <span>Top 5 Estudiantes</span>
                     </h3>
-                    <div style="height: 300px; position: relative;">
+                    <div style="height: 320px; position: relative;">
                         <canvas id="topStudentsChart"></canvas>
                     </div>
                 </div>
@@ -507,9 +555,16 @@
         </div>
 
         <!-- Complete Rankings -->
-        <div class="mb-16">
-            <h2 class="text-3xl font-black text-center mb-8">📋 Rankings Completos</h2>
-            <div id="rankingsBySubject">
+        <div class="mb-20">
+            <div class="text-center mb-10 space-y-2">
+                <div class="hs-section-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-emerald-400">
+                    <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
+                    Rankings completos
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black tracking-tight">Por unidad y materia</h2>
+                <p class="text-sm md:text-base text-slate-400">Quién lidera cada cuestionario</p>
+            </div>
+            <div id="rankingsBySubject" class="max-w-7xl mx-auto">
                 <!-- Rankings will be inserted here -->
             </div>
         </div>
@@ -788,32 +843,44 @@
                 .sort((a, b) => b.score - a.score)
                 .slice(0, 3);
             
-             const medals = ['1', '2', '3'];
              const positions = ['first-place', 'second-place', 'third-place'];
              const colors = ['amber', 'slate', 'orange'];
-             
+             const labels = ['1er Lugar', '2do Lugar', '3er Lugar'];
+             const trophies = ['crown', 'medal', 'award'];
+             const gradients = [
+                 'linear-gradient(135deg, #FCD34D, #F59E0B, #D97706)',
+                 'linear-gradient(135deg, #E5E7EB, #9CA3AF, #6B7280)',
+                 'linear-gradient(135deg, #FED7AA, #FB923C, #C2410C)'
+             ];
+
              const podiumHTML = topStudents.map((student, index) => `
-                 <div class="podium-card ${positions[index]} p-6 text-center">
-                     <div class="medal mb-4 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl font-black text-white" style="background: ${index === 0 ? 'linear-gradient(135deg, #FCD34D, #F59E0B)' : index === 1 ? 'linear-gradient(135deg, #E5E7EB, #9CA3AF)' : 'linear-gradient(135deg, #FED7AA, #FB923C)'};">${medals[index]}</div>
-                                    <h3 class="text-2xl font-black text-${colors[index]}-400 mb-2">
+                 <div class="podium-card ${positions[index]} p-7 md:p-8">
+                     <div class="podium-rank-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-${colors[index]}-400 bg-${colors[index]}-500/10 border border-${colors[index]}-500/30 mb-5">
+                        <i data-lucide="${trophies[index]}" class="w-3 h-3"></i>
+                        ${labels[index]}
+                     </div>
+                     <div class="medal mb-5 w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center mx-auto text-4xl md:text-5xl font-black text-white shadow-2xl" style="background: ${gradients[index]};">
+                        ${index + 1}
+                     </div>
+                     <h3 class="text-xl md:text-2xl font-black text-${colors[index]}-400 mb-1.5 truncate" title="${student.usuarios?.nombre || 'Usuario'}">
                         ${student.usuarios?.nombre || 'Usuario'}
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="bg-${colors[index]}-500/10 rounded-lg p-3 border border-${colors[index]}-500/30">
-                            <div class="text-3xl font-black text-${colors[index]}-400">${student.score}/${student.total_questions}</div>
-                            <div class="text-xs text-slate-400 font-medium">Puntuación</div>
-                        </div>
-                        <div class="bg-${colors[index]}-500/10 rounded-lg p-3 border border-${colors[index]}-500/30">
-                            <div class="text-2xl font-black text-${colors[index]}-400">${student.percentage.toFixed(1)}%</div>
-                            <div class="text-xs text-slate-400 font-medium">Porcentaje</div>
-                        </div>
-                        <div class="text-xs text-slate-500">
-                            ${getSubjectName(student.subject)} - ${student.unit_key.toUpperCase()}
-                        </div>
-                    </div>
+                     </h3>
+                     <p class="text-xs text-slate-500 mb-5 line-clamp-1">
+                        ${getSubjectName(student.subject)} · ${student.unit_key.toUpperCase()}
+                     </p>
+                     <div class="grid grid-cols-2 gap-3">
+                         <div class="bg-${colors[index]}-500/10 rounded-xl p-3 border border-${colors[index]}-500/25">
+                             <div class="text-2xl md:text-3xl font-black text-${colors[index]}-400 leading-none">${student.score}<span class="text-base text-slate-500 font-bold">/${student.total_questions}</span></div>
+                             <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Puntuación</div>
+                         </div>
+                         <div class="bg-${colors[index]}-500/10 rounded-xl p-3 border border-${colors[index]}-500/25">
+                             <div class="text-2xl md:text-3xl font-black text-${colors[index]}-400 leading-none">${student.percentage.toFixed(0)}<span class="text-lg">%</span></div>
+                             <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Porcentaje</div>
+                         </div>
+                     </div>
                 </div>
             `).join('');
-            
+
             document.getElementById('podium').innerHTML = podiumHTML;
         }
 
@@ -996,61 +1063,81 @@
                     const numB = parseInt(b.replace('u', ''));
                     return numA - numB;
                 });
-                
+                const totalEntries = units.reduce((sum, k) => sum + (unitLeaderboards[k]?.length || 0), 0);
+
                 return `
-                    <div class="rankings-table mb-12">
-                        <div class="table-header p-4 mb-6">
-                            <h3 class="text-2xl font-black text-${colors[subject]}-400 flex items-center gap-2">
-                                <i data-lucide="${icons[subject]}" class="w-6 h-6"></i>
-                                ${getSubjectName(subject)}
-                            </h3>
+                    <div class="rankings-table mb-14">
+                        <div class="rankings-subject-header flex items-center gap-4 px-6 py-5 mb-6 border-b border-slate-700/40">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-${colors[subject]}-500 to-${colors[subject]}-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                                <i data-lucide="${icons[subject]}" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-2xl md:text-3xl font-black text-${colors[subject]}-400 leading-tight tracking-tight">
+                                    ${getSubjectName(subject)}
+                                </h3>
+                                <p class="text-xs ${state.darkMode ? 'text-slate-400' : 'text-slate-500'} mt-1">
+                                    ${units.length} unidad${units.length !== 1 ? 'es' : ''} · ${totalEntries} registro${totalEntries !== 1 ? 's' : ''}
+                                </p>
+                            </div>
                         </div>
-                        
+
                         <!-- Grid de Unidades -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 px-2">
                             ${units.map(unitKey => {
                                 const unitScores = unitLeaderboards[unitKey] || [];
                                 return `
-                                    <div class="unit-column rounded-xl border border-slate-700 overflow-hidden ${state.darkMode ? 'bg-slate-800/50' : 'bg-white/50'}">
+                                    <div class="hs-unit-card rounded-2xl border border-slate-700/50 overflow-hidden ${state.darkMode ? 'bg-slate-800/40' : 'bg-white/70'}">
                                         <!-- Unit Header -->
-                                        <div class="bg-${colors[subject]}-500/20 border-b border-slate-700 px-4 py-3">
-                                            <h4 class="text-sm font-bold text-${colors[subject]}-400 uppercase tracking-widest">
-                                                Unidad ${unitKey.replace('u', '')}
-                                            </h4>
-                                            <p class="text-xs ${state.darkMode ? 'text-slate-400' : 'text-slate-600'} mt-1">
-                                                ${unitScores.length} estudiante${unitScores.length !== 1 ? 's' : ''}
-                                            </p>
+                                        <div class="hs-unit-header bg-${colors[subject]}-500/15 border-b border-${colors[subject]}-500/20 px-5 py-4 flex items-center justify-between">
+                                            <div>
+                                                <h4 class="text-sm font-black text-${colors[subject]}-400 uppercase tracking-widest leading-none">
+                                                    Unidad ${unitKey.replace('u', '')}
+                                                </h4>
+                                                <p class="text-[11px] ${state.darkMode ? 'text-slate-400' : 'text-slate-500'} mt-1.5 font-medium">
+                                                    ${unitScores.length} estudiante${unitScores.length !== 1 ? 's' : ''}
+                                                </p>
+                                            </div>
+                                            <span class="w-9 h-9 rounded-xl bg-${colors[subject]}-500/20 flex items-center justify-center">
+                                                <i data-lucide="${icons[subject]}" class="w-4 h-4 text-${colors[subject]}-400"></i>
+                                            </span>
                                         </div>
-                                        
+
                                         <!-- Rankings Lista -->
-                                        <div class="divide-y divide-slate-700/50">
+                                        <div class="divide-y divide-slate-700/30">
                                             ${unitScores.length === 0 ? `
-                                                <div class="p-4 text-center text-slate-500 text-sm">
-                                                    Sin registros
+                                                <div class="p-6 text-center text-slate-500 text-sm">
+                                                    <i data-lucide="inbox" class="w-6 h-6 mx-auto mb-2 opacity-50"></i>
+                                                    <p>Sin registros aún</p>
                                                 </div>
                                             ` : unitScores.map((score, index) => {
                                                 const percentage = score.percentage;
+                                                const isTop1 = index === 0;
                                                 const isTop = index < 3;
+                                                const rankBg = isTop1
+                                                    ? `bg-gradient-to-br from-amber-400 to-amber-600 text-white`
+                                                    : index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-white'
+                                                    : index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white'
+                                                    : 'bg-slate-700/60 text-slate-300';
                                                 return `
-                                                    <div class="p-3 ${isTop ? `bg-${colors[subject]}-500/10` : ''} hover:${state.darkMode ? 'bg-slate-700/50' : 'bg-slate-100/50'} transition-colors">
-                                                        <div class="flex items-start gap-2 mb-2">
-                                                            <div class="flex-shrink-0 w-6 h-6 rounded-full ${isTop ? `bg-${colors[subject]}-500` : 'bg-slate-600'} flex items-center justify-center text-white font-bold text-xs">
+                                                    <div class="px-5 py-4 ${isTop ? `bg-${colors[subject]}-500/5` : ''} hs-rank-row transition-colors">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="flex-shrink-0 w-8 h-8 rounded-xl ${rankBg} flex items-center justify-center font-black text-xs shadow-md">
                                                                 ${index + 1}
                                                             </div>
                                                             <div class="flex-1 min-w-0">
-                                                                <div class="font-semibold text-xs ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
+                                                                <div class="font-bold text-sm ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
                                                                     ${score.usuarios?.nombre || 'Usuario'}
                                                                 </div>
-                                                                <div class="text-xs ${state.darkMode ? 'text-slate-400' : 'text-slate-600'} mt-0.5">
-                                                                    ${score.score}/${score.total_questions}
+                                                                <div class="text-[11px] ${state.darkMode ? 'text-slate-400' : 'text-slate-500'} mt-0.5 font-medium">
+                                                                    ${score.score}/${score.total_questions} aciertos
                                                                 </div>
                                                             </div>
+                                                            <div class="text-right flex-shrink-0">
+                                                                <div class="text-base font-black text-${colors[subject]}-400 leading-none">${percentage.toFixed(0)}%</div>
+                                                            </div>
                                                         </div>
-                                                        <div class="progress-bar-container h-1.5 rounded bg-slate-700/30">
-                                                            <div class="progress-bar h-full rounded bg-${colors[subject]}-500 transition-all" style="width: ${percentage}%"></div>
-                                                        </div>
-                                                        <div class="text-xs ${state.darkMode ? 'text-slate-500' : 'text-slate-600'} mt-1 text-right">
-                                                            ${percentage.toFixed(0)}%
+                                                        <div class="progress-bar-container h-1.5 rounded-full mt-3">
+                                                            <div class="progress-bar h-full rounded-full transition-all" style="width: ${percentage}%; background: linear-gradient(90deg, var(--cm-primary), var(--cm-primary-2), var(--cm-accent));"></div>
                                                         </div>
                                                     </div>
                                                 `;
