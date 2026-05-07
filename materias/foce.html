@@ -211,7 +211,8 @@
             if (!text) return "";
             let normalized = text;
             try {
-                if (/[À-ÿ][-¿]/.test(normalized)) {
+                const hasHighUnicode = /[Ā-￿]/.test(normalized);
+                if (!hasHighUnicode && /[À-ÿ][-¿]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
             } catch (e) {}

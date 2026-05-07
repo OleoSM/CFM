@@ -211,7 +211,8 @@
             if (!text) return "";
             let normalized = text;
             try {
-                if (/[À-ÿ][-¿]/.test(normalized)) {
+                const hasHighUnicode = /[Ā-￿]/.test(normalized);
+                if (!hasHighUnicode && /[À-ÿ][-¿]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
             } catch (e) {}
@@ -285,16 +286,6 @@
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
-        function debugText(text) {
-            const sample = text.substring(0, 4000);
-            let out = '';
-            for (let i = 0; i < sample.length; i++) {
-                const c = sample[i], code = c.charCodeAt(0);
-                if (code > 127 || code === 65533) out += `[${c}=U+${code.toString(16).toUpperCase().padStart(4,'0')}]`;
-                else out += c;
-            }
-            console.log('=== DEBUG RAW PDF TEXT ===\n', out);
-        }
         function preprocessCheckmarks(text) {
             return text
                 .replace(/[✓✔☑✅]/g, '§CK§')
@@ -308,7 +299,6 @@
 
         function parseQuizText(text) {
             const questions = [];
-            debugText(text);
                         let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
 
