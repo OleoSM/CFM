@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -292,6 +292,7 @@
                 .replace(/â[œ]["“”„]/g, '§CK§')
                 .replace(/â[-¿][-¿]/g, '§CK§')
                 .replace(/â(?=[-¿“”"]?\s*\.)/g, '§CK§')
+                .replace(/\s+X\s+\./g, ' §CK§.')
                 .replace(/[▸►◄▶▼▲●]/g, '§CK§');
         }
 

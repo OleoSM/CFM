@@ -285,14 +285,6 @@
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
-        function debugText(text) {
-            const sample = text.substring(0, 3000);
-            let out = '';
-            for (let i = 0; i < sample.length; i++) {
-                const c = sample[i], code = c.charCodeAt(0);
-                if (code > 127) out += `[${c}=U+${code.toString(16).toUpperCase().padStart(4,'0')}]`;
-                else out += c;
-            }
             console.log('=== DEBUG RAW PDF TEXT ===\n', out);
         }
         function preprocessCheckmarks(text) {
@@ -302,13 +294,13 @@
                 .replace(/â[œ]["“”„]/g, '§CK§')
                 .replace(/â[-¿][-¿]/g, '§CK§')
                 .replace(/â(?=[-¿“”"]?\s*\.)/g, '§CK§')
+                .replace(/\s+X\s+\./g, ' §CK§.')
                 .replace(/[▸►◄▶▼▲●]/g, '§CK§');
         }
 
         function parseQuizText(text) {
             const questions = [];
-            debugText(text);
-                        let cleanText = normalizeText(preprocessCheckmarks(text));
+            let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
 
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
