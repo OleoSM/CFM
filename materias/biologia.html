@@ -285,8 +285,6 @@
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
-            console.log('=== DEBUG RAW PDF TEXT ===\n', out);
-        }
         function preprocessCheckmarks(text) {
             return text
                 .replace(/[✓✔☑✅]/g, '§CK§')
