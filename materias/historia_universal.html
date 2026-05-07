@@ -171,7 +171,39 @@
 
         .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
-    </style>
+
+        /* ── Dark mode overrides ── */
+        body.dark {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
+        }
+        body.dark .glass {
+            background: rgba(15, 23, 42, 0.85) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: none !important;
+        }
+        body.dark [class*="bg-white"] {
+            background: rgba(30, 41, 59, 0.9) !important;
+        }
+        body.dark [class*="border-slate-200"],
+        body.dark [class*="border-slate-300"] {
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        body.dark [class*="text-slate-800"],
+        body.dark [class*="text-slate-900"] { color: #f1f5f9 !important; }
+        body.dark [class*="text-slate-700"] { color: #cbd5e1 !important; }
+        body.dark [class*="text-slate-600"] { color: #94a3b8 !important; }
+        body.dark [class*="text-slate-500"] { color: #64748b !important; }
+        body.dark [class*="bg-slate-100"] { background: rgba(255, 255, 255, 0.06) !important; }
+        body.dark [class*="bg-slate-200"] { background: rgba(255, 255, 255, 0.10) !important; }
+        body.dark [class*="hover:bg-slate-100"]:hover { background: rgba(255, 255, 255, 0.10) !important; }
+        body.dark [class*="hover:bg-slate-200"]:hover { background: rgba(255, 255, 255, 0.14) !important; }
+        body.dark [class*="hover:text-slate-800"]:hover { color: #ffffff !important; }
+        body.dark .quiz-background { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important; }
+        body.dark [class*="border-b"] { border-bottom-color: rgba(255, 255, 255, 0.08) !important; }
+        body.dark [class*="text-green-700"] { color: #4ade80 !important; }
+        body.dark [class*="text-red-600"] { color: #f87171 !important; }
+        body.dark [class*="text-amber-600"] { color: #fbbf24 !important; }
+        body.dark [class*="text-amber-700"] { color: #f59e0b !important; }    </style>
 </head>
 <body>
     <div id="app" class="responsive-container glass"></div>
@@ -204,7 +236,8 @@
              units: {},
              scannedUnits: {},
              quizDifficulty: 'NA',
-             answers: {}
+             answers: {},
+             isDark: localStorage.getItem('cefimat_dark') === '1'
          };
 
         // --- PDF Functions ---
@@ -599,7 +632,13 @@
                 updateHash();
                 renderView();
             },
-            copyLink: () => { copyLink(); }
+            copyLink: () => { copyLink(); },
+            toggleDark: () => {
+                state.isDark = !state.isDark;
+                document.body.classList.toggle('dark', state.isDark);
+                localStorage.setItem('cefimat_dark', state.isDark ? '1' : '0');
+                renderView();
+            }
         };
 
         // --- Render ---
@@ -617,14 +656,19 @@
                             <p class="text-[10px] text-slate-500">CEFIMAT</p>
                         </div>
                     </div>
-                    <a href="../index.html" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800">
-                        <i data-lucide="home" class="w-4 h-4"></i>
-                    </a>
-                    ${state.view === 'quiz' ? `
-                        <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white" title="Copiar enlace">
-                            <i data-lucide="link" class="w-4 h-4"></i>
+                    <div class="flex items-center gap-2">
+                        ${state.view === 'quiz' ? `
+                            <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800" title="Copiar enlace">
+                                <i data-lucide="link" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                        <button onclick="actions.toggleDark()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800" title="Modo noche">
+                            <i data-lucide="${state.isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
                         </button>
-                    ` : ''}
+                        <a href="../index.html" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                        </a>
+                    </div>
                 </div>
             `;
 
@@ -855,6 +899,7 @@
 
         // Init
         async function init() {
+            document.body.classList.toggle('dark', state.isDark);
             const hash = window.location.hash.slice(1);
             if (hash) {
                 await handleHash();
