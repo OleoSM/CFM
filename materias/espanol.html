@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -34,14 +34,47 @@
         
         body { 
             font-family: 'Inter', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #eef2ff 100%);
             min-height: 100vh;
         }
 
+        .quiz-background {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #eef2ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-background.dark {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #eef2ff 100%);
+        }
+
+        .quiz-background::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0; left: 0; z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(79,70,229,0.10) 0%, transparent 2%),
+                radial-gradient(circle at 85% 15%, rgba(79,70,229,0.08) 0%, transparent 2.5%),
+                radial-gradient(circle at 25% 75%, rgba(79,70,229,0.09) 0%, transparent 2%),
+                radial-gradient(circle at 80% 85%, rgba(79,70,229,0.08) 0%, transparent 2.2%),
+                radial-gradient(circle at 50% 50%, rgba(79,70,229,0.08) 0%, transparent 1.8%);
+            background-size: 100% 100%, 150% 150%, 120% 120%, 140% 140%, 160% 160%;
+        }
+
+        @keyframes flotarMotas {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            50% { background-position: 6% 10%, -6% 15%, 8% -6%, -4% 9%, 5% 7%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+        }
+
         .glass {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
         }
 
         .fade-in { animation: fadeIn 0.5s ease-out; }
@@ -64,19 +97,19 @@
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(79,70,229,0.35); border-radius: 10px; }
 
         .card-hover { transition: all 0.3s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.10); }
 
         .btn-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             transition: all 0.3s;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(99,102,241,0.5); }
 
         .progress-bar {
-            background: linear-gradient(90deg, #10b981, #059669, #047857);
+            background: linear-gradient(90deg, #6366f1, #4f46e5, #4338ca);
             background-size: 200% 100%;
             animation: shimmer 2s linear infinite;
         }
@@ -84,20 +117,55 @@
 
         .loader {
             width: 50px; height: 50px;
-            border: 3px solid rgba(16, 185, 129, 0.1);
-            border-top-color: #10b981;
+            border: 3px solid rgba(79,70,229,0.15);
+            border-top-color: #4f46e5;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .gradient-text {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
 
         .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
-        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 40px rgba(99,102,241,0.6); } }
+
+        /* ── Dark mode overrides ── */
+        body.dark { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important; }
+        body.dark .glass { background: rgba(15,23,42,0.85) !important; border-color: rgba(255,255,255,0.08) !important; box-shadow: none !important; }
+        body.dark [class*="bg-white"] { background: rgba(30,41,59,0.9) !important; }
+        body.dark [class*="border-slate-200"],
+        body.dark [class*="border-slate-300"] { border-color: rgba(255,255,255,0.1) !important; }
+        body.dark [class*="text-slate-800"], body.dark [class*="text-slate-900"] { color: #f1f5f9 !important; }
+        body.dark [class*="text-slate-700"] { color: #cbd5e1 !important; }
+        body.dark [class*="text-slate-600"] { color: #94a3b8 !important; }
+        body.dark [class*="text-slate-500"] { color: #64748b !important; }
+        body.dark [class*="bg-slate-100"] { background: rgba(255,255,255,0.06) !important; }
+        body.dark [class*="bg-slate-200"] { background: rgba(255,255,255,0.10) !important; }
+        body.dark [class*="hover:bg-slate-100"]:hover { background: rgba(255,255,255,0.10) !important; }
+        body.dark [class*="hover:bg-slate-200"]:hover { background: rgba(255,255,255,0.14) !important; }
+        body.dark [class*="hover:text-slate-800"]:hover { color: #ffffff !important; }
+        body.dark .quiz-background { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important; }
+        body.dark [class*="border-b"] { border-bottom-color: rgba(255,255,255,0.08) !important; }
+        body.dark [class*="text-green-700"] { color: #4ade80 !important; }
+        body.dark [class*="text-red-600"] { color: #f87171 !important; }
+        body.dark [class*="text-amber-600"] { color: #fbbf24 !important; }
+        body.dark [class*="text-amber-700"] { color: #f59e0b !important; }
+        body.dark [class*="bg-amber-50"] { background: rgba(251,191,36,0.08) !important; }
+        body.dark [class*="border-amber-300"] { border-color: rgba(251,191,36,0.3) !important; }
+        body.dark [class*="text-amber-800"] { color: #fcd34d !important; }
+        body.dark [class*="bg-green-100"] { background: rgba(34,197,94,0.15) !important; }
+        body.dark [class*="border-green-500"] { border-color: rgba(34,197,94,0.4) !important; }
+        body.dark [class*="bg-blue-50"] { background: rgba(59,130,246,0.10) !important; }
+        body.dark [class*="border-blue-400"] { border-color: rgba(59,130,246,0.4) !important; }
+        body.dark [class*="bg-slate-50"] { background: rgba(148,163,184,0.08) !important; }
+        body.dark [class*="bg-green-50"] { background: rgba(34,197,94,0.08) !important; }
+        body.dark [class*="border-green-400"] { border-color: rgba(34,197,94,0.35) !important; }
+        body.dark [class*="bg-red-50"] { background: rgba(239,68,68,0.08) !important; }
+        body.dark [class*="border-red-400"] { border-color: rgba(239,68,68,0.35) !important; }
+        body.dark [class*="hover:bg-green-200"]:hover { background: rgba(34,197,94,0.22) !important; }
     </style>
 </head>
 <body>
@@ -106,13 +174,14 @@
     <script>
         const SUBJECT = {
             key: 'espanol',
-            folderName: 'Espanol',
-            title: 'Espanol',
+            folderName: 'Español',
+            title: 'Español',
             icon: 'languages',
-            gradient: 'from-amber-500 to-teal-600',
-            bg: 'bg-amber-500/10',
-            border: 'border-amber-500/20',
-            text: 'text-amber-400'
+            gradient: 'from-indigo-500 to-violet-600',
+            bg: 'bg-indigo-500/10',
+            border: 'border-indigo-500/20',
+            text: 'text-indigo-500',
+            color: 'indigo'
         };
 
         const state = {
@@ -130,7 +199,8 @@
             units: {},
             scannedUnits: {},
             quizDifficulty: 'NA',
-            answers: {}
+            answers: {},
+            isDark: localStorage.getItem('cefimat_dark') === '1'
         };
 
         // --- PDF Functions ---
@@ -244,37 +314,38 @@
 
         function parseQuizText(text) {
             const questions = [];
-            let cleanText = normalizeText(text);
+            const preNorm = text.replace(/âœ”|â”|✓|✔|✅|☑/g, ' (correcta) ');
+            let cleanText = normalizeText(preNorm);
             let blocks = [];
-            
+
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
             else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
             else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
 
             blocks.forEach(block => {
-                if (!block.includes("A)") && !block.includes("a)")) return;
+                if (!block.includes(“A)”) && !block.includes(“a)”)) return;
                 try {
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
-                    
-                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
+
+                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, “”).trim();
                     if (!q || q.length < 5) return;
 
-                    const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
+                    const optParts = parts.slice(1).join(“ A) “).split(/\s+[BbCcDd][).\-]+\s+/);
                     if (optParts.length < 4) return;
 
                     let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
-                    
-                    let hint = "Sin pista disponible.";
+
+                    let hint = “Sin pista disponible.”;
                     const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
-                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
+                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], “”).trim(); }
                     const nq = opts[3].match(/\s+\d+[).\-]/);
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
                     opts = opts.map((o, i) => {
-                        if (o.includes('âœ“') || o.includes('âœ”') || o.toLowerCase().includes('(correcta)')) correct = i;
-                        return o.replace(/[âœ“âœ”]/g, '').replace(/\(correcta\)/gi, '').trim();
+                        if (o.toLowerCase().includes('(correcta)') || o.includes('✓') || o.includes('✔')) correct = i;
+                        return o.replace(/[✓✔✅☑]/g, '').replace(/\(correcta\)/gi, '').trim();
                     });
 
                     if (opts.some(o => !o)) return;
@@ -419,7 +490,9 @@
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
+                    state.answers = {};
                     state.isAnswered = false;
+                    state.selectedOption = null;
                     state.showHint = false;
                     state.isLoading = false;
                     state.view = 'quiz';
@@ -443,15 +516,18 @@
              jumpToQuestion: (index) => {
                  if (index === state.currentQuestion) return;
                  state.currentQuestion = index;
-                 state.isAnswered = false;
+                 const prev = state.answers[index];
+                 state.isAnswered = prev !== undefined;
+                 state.selectedOption = prev !== undefined ? prev : null;
                  state.showHint = false;
-                 state.selectedOption = null;
                  renderView();
              },
              next: async () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) {
                     state.currentQuestion++;
-                    state.isAnswered = false;
+                    const prev = state.answers[state.currentQuestion];
+                    state.isAnswered = prev !== undefined;
+                    state.selectedOption = prev !== undefined ? prev : null;
                     state.showHint = false;
                     renderView();
                 } else {
@@ -485,7 +561,13 @@
              goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
              goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
              restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
-             copyLink: () => { copyLink(); }
+             copyLink: () => { copyLink(); },
+             toggleDark: () => {
+                 state.isDark = !state.isDark;
+                 document.body.classList.toggle('dark', state.isDark);
+                 localStorage.setItem('cefimat_dark', state.isDark ? '1' : '0');
+                 renderView();
+             }
         };
 
         // --- Render ---
@@ -493,24 +575,29 @@
             const app = document.getElementById('app');
             
             const header = `
-                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center shadow-lg">
                             <i data-lucide="${SUBJECT.icon}" class="w-5 h-5 text-white"></i>
                         </div>
                         <div>
-                            <h1 class="text-sm font-bold text-white">${SUBJECT.title}</h1>
-                            <p class="text-[10px] text-slate-400">CEFIMAT</p>
+                            <h1 class="text-sm font-bold text-slate-800">${SUBJECT.title}</h1>
+                            <p class="text-[10px] text-slate-500">CEFIMAT</p>
                         </div>
                     </div>
-                    <a href="../index.html" class="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white">
-                        <i data-lucide="home" class="w-4 h-4"></i>
-                    </a>
-                    ${state.view === 'quiz' ? `
-                        <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white" title="Copiar enlace">
-                            <i data-lucide="link" class="w-4 h-4"></i>
+                    <div class="flex items-center gap-2">
+                        ${state.view === 'quiz' ? `
+                            <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800" title="Copiar enlace">
+                                <i data-lucide="link" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                        <button onclick="actions.toggleDark()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800" title="Modo noche">
+                            <i data-lucide="${state.isDark ? 'sun' : 'moon'}" class="w-4 h-4"></i>
                         </button>
-                    ` : ''}
+                        <a href="../index.html" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 hover:text-slate-800">
+                            <i data-lucide="home" class="w-4 h-4"></i>
+                        </a>
+                    </div>
                 </div>
             `;
 
@@ -520,7 +607,7 @@
                 content = `${header}
                     <div class="flex-1 flex flex-col items-center justify-center gap-6 p-8">
                         <div class="loader"></div>
-                        <p class="text-white font-medium">${state.loadingMessage}</p>
+                        <p class="text-slate-700 font-medium">${state.loadingMessage}</p>
                     </div>`;
             }
             else if (state.view === 'units') {
@@ -529,19 +616,19 @@
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 fade-in">
                             <div class="text-center space-y-2">
-                                <h2 class="text-2xl font-black text-white">Selecciona una Unidad</h2>
-                                <p class="text-slate-400 text-sm">${units.length} unidades disponibles</p>
+                                <h2 class="text-2xl font-black text-slate-800">Selecciona una Unidad</h2>
+                                <p class="text-slate-500 text-sm">${units.length} unidades disponibles</p>
                             </div>
                             <div class="space-y-3">
                                 ${units.length === 0 ? `<p class="text-center text-slate-400 py-8">No se encontraron unidades</p>` :
                                 units.map(([k, u]) => `
-                                    <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
+                                    <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl bg-white border border-slate-200 shadow-sm card-hover flex items-center gap-4 text-left">
                                         <div class="w-12 h-12 rounded-xl ${SUBJECT.bg} ${SUBJECT.border} border flex items-center justify-center">
                                             <span class="${SUBJECT.text} font-black text-lg">${k.replace('u','')}</span>
                                         </div>
                                         <div class="flex-1">
-                                            <h3 class="text-white font-bold">${u.label}</h3>
-                                            <p class="text-slate-400 text-xs">Cuestionarios disponibles</p>
+                                            <h3 class="text-slate-800 font-bold">${u.label}</h3>
+                                            
                                         </div>
                                         <i data-lucide="chevron-right" class="w-5 h-5 text-slate-500"></i>
                                     </button>
@@ -556,24 +643,24 @@
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="max-w-2xl mx-auto space-y-6 fade-in">
-                            <button onclick="actions.goUnits()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                            <button onclick="actions.goUnits()" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm">
                                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Regresar
                             </button>
                             <div class="text-center space-y-2">
-                                <h2 class="text-2xl font-black text-white">${unit.label}</h2>
-                                <p class="text-slate-400 text-sm">${quizzes.length} cuestionarios</p>
+                                <h2 class="text-2xl font-black text-slate-800">${unit.label}</h2>
+                                <p class="text-slate-500 text-sm">${quizzes.length} cuestionarios</p>
                             </div>
                             <div class="space-y-3">
                                 ${quizzes.map(([k, q]) => `
-                                    <button onclick="actions.startQuiz('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
+                                    <button onclick="actions.startQuiz('${k}')" class="w-full p-5 rounded-2xl bg-white border border-slate-200 shadow-sm card-hover flex items-center gap-4 text-left">
                                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center shadow-lg">
                                             <span class="text-white font-black">${q.number}</span>
                                         </div>
                                          <div class="flex-1 min-w-0">
                                              <div class="flex items-center gap-2 mb-1">
-                                                 <h3 class="text-white font-bold truncate">${q.label}</h3>
+                                                 <h3 class="text-slate-800 font-bold truncate">${q.label}</h3>
                                              </div>
-                                             <p class="text-slate-400 text-xs">${q.fileName}</p>
+                                             
                                          </div>
                                         <i data-lucide="play" class="w-5 h-5 ${SUBJECT.text}"></i>
                                     </button>
@@ -590,41 +677,40 @@
                   content = `${header}
                       <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                           <div class="max-w-2xl mx-auto space-y-6 slide-up">
-                              <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                              <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-sm">
                                   <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
                               </button>
                               <div class="flex items-center justify-between gap-4">
                                   <div class="flex-1">
-                                      <div class="flex justify-between mb-2">
-                                          <span class="text-xs text-slate-400">Pregunta ${state.currentQuestion + 1}/${total}</span>
+                                      <div class="flex justify-between mb-2"><span class="text-xs text-slate-500">Pregunta ${state.currentQuestion + 1}/${total}</span>
                                           <span class="text-xs font-bold ${SUBJECT.text}">${state.score} pts</span>
                                       </div>
-                                      <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+                                      <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
                                           <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
                                       </div>
                                   </div>
                                </div>
                                
-                               <div class="glass rounded-2xl p-6 space-y-4">
-                                  <h3 class="text-lg font-bold text-white leading-relaxed">${q.q}</h3>
+                               <div class="bg-white rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm">
+                                  <h3 class="text-lg font-bold text-slate-800 leading-relaxed">${q.q}</h3>
                                   ${state.showHint ? `
-                                      <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                          <p class="text-sm text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
+                                      <div class="p-4 rounded-xl bg-amber-50 border border-amber-300">
+                                          <p class="text-sm text-amber-800"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
                                       </div>
-                                  ` : `<button onclick="actions.hint()" class="text-xs text-amber-400 hover:text-amber-300"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
+                                  ` : `<button onclick="actions.hint()" class="text-xs text-amber-600 hover:text-amber-700"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
                               </div>
                               <div class="space-y-3">
                                   ${q.a.map((opt, i) => {
-                                      let cls = 'glass border-white/5';
+                                      let cls = 'bg-white border-slate-200';
                                       let icon = '';
-                                      if (state.isAnswered) {
+                                      if (state.isAnswered && i === state.selectedOption) {
                                           if (i === q.c) { cls = 'bg-amber-500/20 border-amber-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-amber-400"></i>'; }
-                                          else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
+                                          else { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
                                       }
                                       return `
                                           <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-amber-500/50 transition-all">
-                                              <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65+i)}</span>
-                                              <span class="flex-1 text-sm text-white">${opt}</span>
+                                              <span class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-600">${String.fromCharCode(65+i)}</span>
+                                              <span class="flex-1 text-sm text-slate-700">${opt}</span>
                                               ${icon}
                                           </button>`;
                                   }).join('')}
@@ -651,40 +737,40 @@
                       <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                           <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
                               <div class="space-y-2">
-                                  <h2 class="text-2xl font-bold text-white">Revisar Respuestas</h2>
-                                  <p class="text-slate-400 text-sm">Has respondido ${answered}/${total} preguntas</p>
+                                  <h2 class="text-2xl font-bold text-slate-800">Revisar Respuestas</h2>
+                                  <p class="text-slate-500 text-sm">Has respondido ${answered}/${total} preguntas</p>
                               </div>
                               
-                              <div class="glass rounded-2xl p-6 space-y-4">
+                              <div class="bg-white rounded-2xl p-6 space-y-4 border border-slate-200 shadow-sm">
                                   ${state.loadedQuestions.map((q, idx) => {
                                       const answered = state.answers[idx] !== undefined;
                                       const selectedAns = state.answers[idx];
                                       const isCorrect = selectedAns === q.c;
                                       return `
-                                          <div class="border rounded-lg p-4 ${answered ? (isCorrect ? 'border-amber-500/50 bg-amber-500/10' : 'border-red-500/50 bg-red-500/10') : 'border-slate-500/30 bg-slate-500/10'}">
+                                          <div class="border rounded-lg p-4 ${answered ? (isCorrect ? 'border-amber-500/50 bg-amber-500/10' : 'border-red-400 bg-red-50') : 'border-slate-300 bg-slate-50'}">
                                               <div class="flex items-start gap-3 mb-3">
                                                   <span class="text-sm font-bold ${SUBJECT.text}">${idx + 1}.</span>
                                                   <div class="flex-1">
-                                                      <p class="text-white text-sm">${q.q}</p>
+                                                      <p class="text-slate-800 text-sm">${q.q}</p>
                                                   </div>
                                                   ${answered ? (isCorrect ? '<i data-lucide="check" class="w-5 h-5 text-amber-400"></i>' : '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>') : '<i data-lucide="help-circle" class="w-5 h-5 text-slate-400"></i>'}
                                               </div>
                                               ${answered ? `
                                                   <div class="space-y-2 text-xs">
                                                       <div class="flex items-center gap-2">
-                                                          <span class="text-slate-400">Tu respuesta:</span>
+                                                          <span class="text-slate-500">Tu respuesta:</span>
                                                           <span class="font-bold ${isCorrect ? 'text-amber-400' : 'text-red-400'}">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
                                                       </div>
                                                       ${!isCorrect ? `<div class="flex items-center gap-2"><span class="text-slate-400">Respuesta correcta:</span><span class="font-bold text-amber-400">${String.fromCharCode(65 + q.c)} - ${q.a[q.c]}</span></div>` : ''}
                                                   </div>
-                                              ` : '<p class="text-slate-400 text-xs">No respondida</p>'}
+                                              ` : '<p class="text-slate-500 text-xs">No respondida</p>'}
                                           </div>
                                       `;
                                   }).join('')}
                               </div>
                               
                               <div class="flex gap-3">
-                                  <button onclick="actions.goBack()" class="flex-1 py-4 rounded-xl border border-slate-500/30 text-white font-bold hover:bg-slate-500/10 transition-all">
+                                  <button onclick="actions.goBack()" class="flex-1 py-4 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-100 transition-all">
                                       Volver
                                   </button>
                                   <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold">
@@ -706,20 +792,20 @@
                                 <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
                             </div>
                             <div>
-                                <h2 class="text-3xl font-black text-white">${msg}</h2>
+                                <h2 class="text-3xl font-black text-slate-800">${msg}</h2>
                             </div>
-                            <div class="glass rounded-3xl p-8 space-y-6">
+                            <div class="bg-white rounded-3xl p-8 space-y-6 border border-slate-200 shadow-sm">
                                 <div class="flex items-end justify-center gap-2">
                                     <span class="text-6xl font-black gradient-text">${state.score}</span>
-                                    <span class="text-2xl text-slate-500 mb-2">/ ${total}</span>
+                                    <span class="text-2xl text-slate-400 mb-2">/ ${total}</span>
                                 </div>
-                                <div class="h-3 rounded-full bg-white/5 overflow-hidden">
+                                <div class="h-3 rounded-full bg-slate-200 overflow-hidden">
                                     <div class="h-full progress-bar rounded-full" style="width:${perc}%"></div>
                                 </div>
-                                <p class="text-slate-400">${perc}% de efectividad</p>
+                                <p class="text-slate-500">${perc}% de efectividad</p>
                             </div>
                             <div class="flex gap-3">
-                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl glass text-white font-bold hover:bg-white/10">Otro Quiz</button>
+                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-bold hover:bg-slate-200">Otro Quiz</button>
                                 <a href="../index.html" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold text-center">Inicio</a>
                             </div>
                         </div>
@@ -732,6 +818,7 @@
 
         // Init
         async function init() {
+            document.body.classList.toggle('dark', state.isDark);
             const hash = window.location.hash.slice(1);
             if (hash) {
                 await handleHash();

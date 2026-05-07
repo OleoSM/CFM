@@ -172,6 +172,14 @@
             .card-6 {
                 animation-delay: 0.6s;
             }
+
+            .card-7 {
+                animation-delay: 0.7s;
+            }
+
+            .card-8 {
+                animation-delay: 0.8s;
+            }
         }
 
         /* M\u00F3vil: sin animaciones */
@@ -953,7 +961,7 @@
                 <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
                     <div class="${glassClass} inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${textSecondary}">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        7 materias activas
+                        8 materias activas
                     </div>
                     <div class="${glassClass} inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold ${textSecondary}">
                         <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>
@@ -1076,6 +1084,22 @@
                     tag: 'Ciencias Exactas',
                     topics: ['Tabla Peri\u00f3dica', 'Reacciones Qu\u00edmicas', 'Estequiometr\u00eda'],
                     difficulty: { level: 3, label: 'Avanzado' }
+                },
+                {
+                    key: 'espanol',
+                    href: 'materias/espanol.html',
+                    cardCls: 'card-8',
+                    icon: 'languages',
+                    gradient: 'from-indigo-500 to-violet-600',
+                    color: 'indigo',
+                    title: 'Español',
+                    subtitle: 'Lengua, comunicación y comprensión lectora',
+                    units: 4,
+                    quizzes: 20,
+                    questions: 200,
+                    tag: 'Humanidades',
+                    topics: ['Comprensión Lectora', 'Gramática', 'Literatura'],
+                    difficulty: { level: 2, label: 'Intermedio' }
                 }
             ];
 
