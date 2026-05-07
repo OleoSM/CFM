@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -942,7 +942,7 @@
             document.getElementById('hero').innerHTML = `
                 <div class="hero-badge inline-flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full ${glassClass} text-xs text-indigo-500 font-bold shadow-lg uppercase tracking-widest">
                     <i data-lucide="sparkles" class="w-3 h-3 sm:w-4 sm:h-4"></i>
-                    Ingreso a Licenciatura 2026
+                    Ingreso a ECOEMS 2026
                 </div>
                 <h2 class="text-4xl sm:text-5xl md:text-7xl font-black ${textPrimary} leading-[1.05] px-4 tracking-tight">
                     Hola, <span class="gradient-text">${state.userName}</span>
@@ -1210,9 +1210,6 @@
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-${s.color}-500/10 text-${s.color}-600 text-[10px] font-bold uppercase tracking-widest">
                                         <i data-lucide="bookmark" class="w-2.5 h-2.5"></i>
                                         ${s.tag}
-                                    </span>
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${s.difficulty.level === 1 ? 'bg-emerald-500/10 text-emerald-600' : s.difficulty.level === 2 ? 'bg-amber-500/10 text-amber-600' : 'bg-rose-500/10 text-rose-600'}">
-                                        ${s.difficulty.label}
                                     </span>
                                 </div>
                                 <h3 class="text-xl md:text-2xl font-black text-${s.color}-600 leading-tight tracking-tight">${s.title}</h3>
