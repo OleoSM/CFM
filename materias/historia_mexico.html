@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Historia de Mexico - CEFIMAT</title>
+    <title>Historia de México - CEFIMAT</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="../assets/css/cefimat-modern.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="../js/api.js"></script>
-    <!-- Supabase Client -->
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script src="../js/supabase-client.js"></script>
@@ -19,7 +18,6 @@
 
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -32,24 +30,16 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
-            min-height: 100vh;
-            transition: background 0.3s;
-        }
-
-        body.dark {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
         }
 
         .quiz-background {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             position: relative;
             overflow: hidden;
         }
@@ -67,43 +57,35 @@
             left: 0;
             z-index: 0;
             pointer-events: none;
-            background-image: 
-                radial-gradient(circle at 15% 25%, rgba(34, 197, 94, 0.2) 0%, transparent 2%),
-                radial-gradient(circle at 85% 15%, rgba(34, 197, 94, 0.17) 0%, transparent 2.5%),
-                radial-gradient(circle at 25% 75%, rgba(34, 197, 94, 0.18) 0%, transparent 2%),
-                radial-gradient(circle at 80% 85%, rgba(34, 197, 94, 0.16) 0%, transparent 2.2%),
-                radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 1.8%),
-                radial-gradient(circle at 10% 60%, rgba(34, 197, 94, 0.17) 0%, transparent 2%),
-                radial-gradient(circle at 90% 45%, rgba(34, 197, 94, 0.19) 0%, transparent 2.3%),
-                radial-gradient(circle at 45% 15%, rgba(34, 197, 94, 0.16) 0%, transparent 2%),
-                radial-gradient(circle at 60% 80%, rgba(34, 197, 94, 0.17) 0%, transparent 2.1%),
-                radial-gradient(circle at 35% 45%, rgba(34, 197, 94, 0.18) 0%, transparent 1.9%);
-            background-size: 
-                100% 100%,
-                150% 150%,
-                120% 120%,
-                140% 140%,
-                160% 160%,
-                110% 110%,
-                130% 130%,
-                125% 125%,
-                135% 135%,
-                145% 145%;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(14, 165, 233, 0.2) 0%, transparent 2%),
+                radial-gradient(circle at 85% 15%, rgba(14, 165, 233, 0.17) 0%, transparent 2.5%),
+                radial-gradient(circle at 25% 75%, rgba(14, 165, 233, 0.18) 0%, transparent 2%),
+                radial-gradient(circle at 80% 85%, rgba(14, 165, 233, 0.16) 0%, transparent 2.2%),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15) 0%, transparent 1.8%),
+                radial-gradient(circle at 10% 60%, rgba(14, 165, 233, 0.17) 0%, transparent 2%),
+                radial-gradient(circle at 90% 45%, rgba(14, 165, 233, 0.19) 0%, transparent 2.3%),
+                radial-gradient(circle at 45% 15%, rgba(14, 165, 233, 0.16) 0%, transparent 2%),
+                radial-gradient(circle at 60% 80%, rgba(14, 165, 233, 0.17) 0%, transparent 2.1%),
+                radial-gradient(circle at 35% 45%, rgba(14, 165, 233, 0.18) 0%, transparent 1.9%);
+            background-size:
+                100% 100%, 150% 150%, 120% 120%, 140% 140%, 160% 160%,
+                110% 110%, 130% 130%, 125% 125%, 135% 135%, 145% 145%;
             animation: flotarMotas 20s ease-in-out infinite, flotarMotas2 25s ease-in-out infinite reverse, flotarMotas3 30s linear infinite;
         }
 
         .quiz-background.dark::before {
-            background-image: 
-                radial-gradient(circle at 15% 25%, rgba(16, 185, 129, 0.25) 0%, transparent 2%),
-                radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.22) 0%, transparent 2.5%),
-                radial-gradient(circle at 25% 75%, rgba(16, 185, 129, 0.23) 0%, transparent 2%),
-                radial-gradient(circle at 80% 85%, rgba(16, 185, 129, 0.21) 0%, transparent 2.2%),
-                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.2) 0%, transparent 1.8%),
-                radial-gradient(circle at 10% 60%, rgba(16, 185, 129, 0.22) 0%, transparent 2%),
-                radial-gradient(circle at 90% 45%, rgba(16, 185, 129, 0.24) 0%, transparent 2.3%),
-                radial-gradient(circle at 45% 15%, rgba(16, 185, 129, 0.21) 0%, transparent 2%),
-                radial-gradient(circle at 60% 80%, rgba(16, 185, 129, 0.22) 0%, transparent 2.1%),
-                radial-gradient(circle at 35% 45%, rgba(16, 185, 129, 0.23) 0%, transparent 1.9%);
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(3, 105, 161, 0.25) 0%, transparent 2%),
+                radial-gradient(circle at 85% 15%, rgba(3, 105, 161, 0.22) 0%, transparent 2.5%),
+                radial-gradient(circle at 25% 75%, rgba(3, 105, 161, 0.23) 0%, transparent 2%),
+                radial-gradient(circle at 80% 85%, rgba(3, 105, 161, 0.21) 0%, transparent 2.2%),
+                radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.2) 0%, transparent 1.8%),
+                radial-gradient(circle at 10% 60%, rgba(3, 105, 161, 0.22) 0%, transparent 2%),
+                radial-gradient(circle at 90% 45%, rgba(3, 105, 161, 0.24) 0%, transparent 2.3%),
+                radial-gradient(circle at 45% 15%, rgba(3, 105, 161, 0.21) 0%, transparent 2%),
+                radial-gradient(circle at 60% 80%, rgba(3, 105, 161, 0.22) 0%, transparent 2.1%),
+                radial-gradient(circle at 35% 45%, rgba(3, 105, 161, 0.23) 0%, transparent 1.9%);
         }
 
         @keyframes flotarMotas {
@@ -128,274 +110,81 @@
             100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
         }
 
-        .glass-light {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        .glass-dark {
+        .glass {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Optimizaci\u00F3n m\u00F3vil */
-        @media (min-width: 768px) {
-            .fade-in {
-                animation: fadeIn 0.5s ease-out;
-            }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .slide-up {
-                animation: slideUp 0.4s ease-out;
-            }
-
-            @keyframes slideUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .card-hover {
-                transition: all 0.3s;
-            }
-
-            .card-hover:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
-            }
-
-            .progress-bar {
-                background: linear-gradient(90deg, #10b981, #059669, #047857);
-                background-size: 200% 100%;
-                animation: shimmer 2s linear infinite;
-            }
-
-            @keyframes shimmer {
-                0% {
-                    background-position: -200% 0;
-                }
-
-                100% {
-                    background-position: 200% 0;
-                }
-            }
-
-            .pulse-glow {
-                animation: pulseGlow 2s ease-in-out infinite;
-            }
-
-            @keyframes pulseGlow {
-
-                0%,
-                100% {
-                    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-                }
-
-                50% {
-                    box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
-                }
-            }
-
-            .theme-toggle:hover {
-                transform: rotate(180deg);
-            }
-        }
-
-        @media (max-width: 767px) {
-
-            .fade-in,
-            .slide-up,
-            .card-hover,
-            .progress-bar,
-            .pulse-glow {
-                animation: none !important;
-                opacity: 1 !important;
-                transform: none !important;
-            }
-
-            .glass-light,
-            .glass-dark {
-                backdrop-filter: blur(10px);
-            }
-        }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         .responsive-container {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+            width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         @media (min-width: 768px) {
-            body {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 2rem;
-            }
-
+            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
             .responsive-container {
-                max-width: 900px;
-                min-height: auto;
-                height: 90vh;
-                max-height: 750px;
-                border-radius: 2rem;
-                overflow: hidden;
+                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
+                border-radius: 2rem; overflow: hidden;
             }
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(16, 185, 129, 0.3);
-            border-radius: 10px;
+        .card-hover { transition: all 0.3s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s;
         }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5); }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981, #059669, #047857);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
         .loader {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border: 3px solid rgba(16, 185, 129, 0.1);
             border-top-color: #10b981;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .theme-toggle {
-            transition: transform 0.3s;
-        }
-
-        /* User Profile Dropdown */
-        .user-dropdown {
-            position: relative;
-        }
-
-        .user-dropdown-menu {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            min-width: 220px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .user-dropdown:hover .user-dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .user-dropdown.active .user-dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 14px;
-            text-transform: uppercase;
+        .gradient-text {
             background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
 
-        /* Mobile menu styles */
-        .mobile-menu-panel {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 280px;
-            height: 100vh;
-            transition: right 0.3s ease-in-out;
-            z-index: 200;
-            overflow-y: auto;
-        }
-
-        .mobile-menu-panel.active {
-            right: 0;
-        }
-
-        .menu-overlay-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 199;
-        }
-
-        .menu-overlay-panel.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        @media (min-width: 768px) {
-            .mobile-menu-button {
-                display: none !important;
-            }
-        }
+        .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
     </style>
 </head>
-
-<body id="body">
-    <div id="app" class="responsive-container"></div>
+<body>
+    <div id="app" class="responsive-container glass"></div>
 
     <script>
-        // Check authentication on page load
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        if (!isLoggedIn) {
-            window.location.href = '../auth.html';
-        }
-
-        // Get user data
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-
         const SUBJECT = {
             key: 'historia_mexico',
             folderName: 'Historia_Mexico',
             title: 'Historia de México',
             icon: 'scroll-text',
+            gradient: 'from-violet-500 to-purple-600',
+            bg: 'bg-violet-500/10',
+            border: 'border-violet-500/20',
+            text: 'text-violet-400',
             color: 'violet'
         };
 
@@ -414,136 +203,35 @@
              units: {},
              scannedUnits: {},
              quizDifficulty: 'NA',
-             darkMode: localStorage.getItem('darkMode') !== 'false',
-             unitDescriptions: {},
-             mobileMenuOpen: false,
              answers: {}
          };
-
-        // Theme
-        function toggleDarkMode() {
-            state.darkMode = !state.darkMode;
-            localStorage.setItem('darkMode', state.darkMode);
-            applyTheme();
-        }
-
-        function applyTheme() {
-            const body = document.getElementById('body');
-            if (state.darkMode) {
-                body.classList.add('dark');
-            } else {
-                body.classList.remove('dark');
-            }
-        }
-
-        function logout() {
-            api.logout();
-        }
-
-        function toggleUserDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.querySelector('.user-dropdown');
-            if (dropdown) dropdown.classList.toggle('active');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function () {
-            const dropdown = document.querySelector('.user-dropdown');
-            if (dropdown && dropdown.classList.contains('active')) {
-                dropdown.classList.remove('active');
-            }
-        });
-
-        function getThemeClasses() {
-            const isDark = state.darkMode;
-            return {
-                glass: isDark ? 'glass-dark' : 'glass-light',
-                textPrimary: isDark ? 'text-white' : 'text-slate-900',
-                textSecondary: isDark ? 'text-slate-400' : 'text-slate-600',
-                textMuted: isDark ? 'text-slate-500' : 'text-slate-400',
-                border: isDark ? 'border-white/5' : 'border-black/5',
-                btnPrimary: `bg-gradient-to-r from-${SUBJECT.color}-500 to-${SUBJECT.color}-600 text-white`,
-                subjectBg: `bg-${SUBJECT.color}-500/10`,
-                subjectBorder: `border-${SUBJECT.color}-500/20`,
-                subjectText: `text-${SUBJECT.color}-500`,
-                gradientIcon: `from-${SUBJECT.color}-500 to-${SUBJECT.color}-600`
-            };
-        }
 
         // --- PDF Functions ---
         function normalizeText(text) {
             if (!text) return "";
             let normalized = text;
+            try {
+                if (/[À-ÿ][-¿]/.test(normalized)) {
+                    normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
+                }
+            } catch (e) {}
 
-            // PASO 1: Corregir acentos malformados
-            // El PDF puede tener espacios: "pa ´ i s" o "pa´is"
-            // Buscar: letra + (espacio opcional) + ´ + (espacio opcional) + vocal
-
-            // Con espacios opcionales alrededor del acento
-            normalized = normalized
-                .replace(/([a-zA-Z])\s*\u00B4\s*a/g, '$1\u00E1')
-                .replace(/([a-zA-Z])\s*\u00B4\s*A/g, '$1\u00E1')
-                .replace(/([a-zA-Z])\s*\u00B4\s*e/g, '$1\u00E9')
-                .replace(/([a-zA-Z])\s*\u00B4\s*E/g, '$1\u00E9')
-                .replace(/([a-zA-Z])\s*\u00B4\s*i/g, '$1\u00ED')
-                .replace(/([a-zA-Z])\s*\u00B4\s*I/g, '$1\u00ED')
-                .replace(/([a-zA-Z])\s*\u00B4\s*o/g, '$1\u00F3')
-                .replace(/([a-zA-Z])\s*\u00B4\s*O/g, '$1\u00F3')
-                .replace(/([a-zA-Z])\s*\u00B4\s*u/g, '$1\u00FA')
-                .replace(/([a-zA-Z])\s*\u00B4\s*U/g, '$1\u00FA')
-                // Al inicio de palabra con espacios opcionales
-                .replace(/\s*\u00B4\s*a/g, '\u00E1')
-                .replace(/\s*\u00B4\s*A/g, '\u00E1')
-                .replace(/\s*\u00B4\s*e/g, '\u00E9')
-                .replace(/\s*\u00B4\s*E/g, '\u00E9')
-                .replace(/\s*\u00B4\s*i/g, '\u00ED')
-                .replace(/\s*\u00B4\s*I/g, '\u00ED')
-                .replace(/\s*\u00B4\s*o/g, '\u00F3')
-                .replace(/\s*\u00B4\s*O/g, '\u00F3')
-                .replace(/\s*\u00B4\s*u/g, '\u00FA')
-                .replace(/\s*\u00B4\s*U/g, '\u00FA')
-                // Limpiar cualquier ´ suelto que quede
-                .replace(/\u00B4/g, '');
-
-            // PASO 1.5: Corregir ñ malformada (˜ + n = ñ)
-            // El PDF puede tener: "Espa˜ na" o "Espa˜na"
-            normalized = normalized
-                .replace(/([a-zA-Z]?)\s*\u02DC\s*n/g, '$1\u00F1')  // ˜ (SMALL TILDE U+02DC)
-                .replace(/([a-zA-Z]?)\s*\u02DC\s*N/g, '$1\u00D1')
-                .replace(/([a-zA-Z]?)\s*\u007E\s*n/g, '$1\u00F1')  // ~ (ASCII TILDE U+007E)
-                .replace(/([a-zA-Z]?)\s*\u007E\s*N/g, '$1\u00D1')
-                .replace(/([a-zA-Z]?)\s*\u0303\s*n/g, '$1\u00F1')  // ̃ (COMBINING TILDE U+0303)
-                .replace(/([a-zA-Z]?)\s*\u0303\s*N/g, '$1\u00D1')
-                .replace(/\s*\u02DC\s*n/g, '\u00F1')
-                .replace(/\s*\u02DC\s*N/g, '\u00D1')
-                .replace(/\s*\u007E\s*n/g, '\u00F1')
-                .replace(/\s*\u007E\s*N/g, '\u00D1');
-
-            // PASO 2: Normalizar Unicode
-            normalized = normalized.normalize("NFC");
-
-            // PASO 3: CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
+            normalized = normalized.normalize("NFKC");
             normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
             normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-
-            // PASO 4: Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
+            normalized = normalized
+                .replace(/[áàäâãå]/gi, match => match.toUpperCase() === match ? 'á' : 'á')
+                .replace(/[éèëê]/gi, match => match.toUpperCase() === match ? 'é' : 'é')
+                .replace(/[íìïî]/gi, match => match.toUpperCase() === match ? 'í' : 'í')
+                .replace(/[óòöôõø]/gi, match => match.toUpperCase() === match ? 'ó' : 'ó')
+                .replace(/[úùüû]/gi, match => match.toUpperCase() === match ? 'ú' : 'ú')
+                .replace(/[ñ]/g, 'ñ');
             normalized = normalized
                 .replace(/[–—−]/g, '-')
-                .replace(/['']/g, "'")
+                .replace(/[''´`]/g, "'")
                 .replace(/[""]/g, '"')
                 .replace(/\s+/g, " ")
                 .trim();
-
-            // PASO 5: Eliminar números de página
-            // Patrones comunes: "Página 5", "Pág. 5", "5 de 10", "- 5 -"
-            normalized = normalized
-                .replace(/\bP[áa]gina\s+\d+\b/gi, '')
-                .replace(/\bP[áa]g\.\s*\d+\b/gi, '')
-                .replace(/\b\d+\s+de\s+\d+\b/gi, '')
-                .replace(/[-–—]\s*\d+\s*[-–—]/g, '')
-                .replace(/\s+/g, " ")
-                .trim();
-
             return normalized;
         }
 
@@ -561,101 +249,62 @@
         }
 
         function detectDifficulty(questions) {
-            if (!questions || questions.length === 0) return 'NA';
-
-            let totalScore = 0;
-            const factors = {
-                questionLength: 0,
-                optionLength: 0,
-                vocabulary: 0,
-                technical: 0
-            };
-
+            if (!questions || questions.length === 0) return "NA";
+            let score = 0;
+            const totalQuestions = questions.length;
             questions.forEach(q => {
-                // 1. Longitud de la pregunta
-                const qLen = q.q.length;
-                if (qLen > 200) factors.questionLength += 3;
-                else if (qLen > 100) factors.questionLength += 2;
-                else factors.questionLength += 1;
-
-                // 2. Longitud promedio de opciones
-                const avgOptLen = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
-                if (avgOptLen > 80) factors.optionLength += 3;
-                else if (avgOptLen > 40) factors.optionLength += 2;
-                else factors.optionLength += 1;
-
-                // 3. Complejidad del vocabulario (palabras largas)
-                const allText = q.q + ' ' + q.a.join(' ');
-                const words = allText.split(/\s+/);
-                const longWords = words.filter(w => w.length > 8).length;
-                const longWordRatio = longWords / words.length;
-                if (longWordRatio > 0.3) factors.vocabulary += 3;
-                else if (longWordRatio > 0.15) factors.vocabulary += 2;
-                else factors.vocabulary += 1;
-
-                // 4. Presencia de n\u00FAmeros, f\u00F3rmulas o t\u00E9rminos t\u00E9cnicos
-                const technicalPatterns = /\d+|[A-Z]{2,}|[α-ω]|[\+\-\*\/=<>≤≥→←↔]/;
-                const hasTechnical = technicalPatterns.test(allText);
-                if (hasTechnical) factors.technical += 2;
-                else factors.technical += 1;
+                if (q.q.length > 150) score += 2;
+                else if (q.q.length > 100) score += 1;
+                const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
+                if (avgOptionLength > 80) score += 2;
+                else if (avgOptionLength > 50) score += 1;
+                const words = q.q.split(/\s+/);
+                const longWords = words.filter(w => w.length > 12).length;
+                if (longWords > 3) score += 2;
+                else if (longWords > 1) score += 1;
+                if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
+                const technicalTerms = /(?:concepto|teoría|análisis|hipótesis|principio|fenómeno|estructura|proceso|sistema|característica|definición|relación|consecuencia)/i;
+                if (technicalTerms.test(q.q)) score += 1;
             });
-
-            // Calcular puntuaci\u00F3n total
-            totalScore = (
-                factors.questionLength +
-                factors.optionLength +
-                factors.vocabulary +
-                factors.technical
-            ) / questions.length;
-
-            // Clasificar seg\u00FAn puntuaci\u00F3n
-            if (totalScore >= 9) return 'Dif\u00EDcil';
-            else if (totalScore >= 6) return 'Medio';
-            else return 'F\u00E1cil';
+            const avgScore = score / totalQuestions;
+            if (avgScore >= 4) return "Difícil";
+            else if (avgScore >= 2) return "Medio";
+            else return "Fácil";
         }
 
         function getDifficultyBadge(difficulty) {
             if (!difficulty || difficulty === 'NA') {
                 return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
             }
-
             const styles = {
                 'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
-                'Intermedio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+                'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
                 'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
-
-            // Si la dificultad no coincide exactamente con las claves, usa un estilo gris por defecto pero MUESTRA el texto
-            const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+            const styleClass = styles[difficulty] || styles['NA'];
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
+        }
+
+        function preprocessCheckmarks(text) {
+            return text
+                .replace(/[✓✔☑✅]/g, '§CK§')
+                .replace(/√/g, '§CK§')
+                .replace(/â[œ]["“”„]/g, '§CK§')
+                .replace(/â[-¿][-¿]/g, '§CK§')
+                .replace(/â(?=[-¿“”"]?\s*\.)/g, '§CK§')
+                .replace(/[▸►◄▶▼▲●]/g, '§CK§');
         }
 
         function parseQuizText(text) {
             const questions = [];
-            let cleanText = normalizeText(text);
+            let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
 
-            // Intentar m\u00FAltiples patrones de numeraci\u00F3n en orden de especificidad
-            // Patr\u00F3n 1: "1.- " (n\u00FAmero, punto, guion, espacio)
-            if (/\b\d+\.-/.test(cleanText)) {
-                blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
-            }
-            // Patr\u00F3n 2: "1. " seguido de may\u00FAscula (n\u00FAmero, punto, espacio, letra may\u00FAscula)
-            else if (/\b\d+\.\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1¿]/.test(cleanText)) {
-                blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
-            }
-            // Patr\u00F3n 3: "1) " (n\u00FAmero, par\u00E9ntesis, espacio)
-            else if (/\b\d+\)\s/.test(cleanText)) {
-                blocks = cleanText.split(/(?=\b\d+\)\s)/g);
-            }
-            // Patr\u00F3n 4: "1 ¿" (n\u00FAmero, espacio, signo de interrogaci\u00F3n)
-            else if (/\b\d+\s+¿/.test(cleanText)) {
-                blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
-            }
-            // Patr\u00F3n 5: "1 " seguido de may\u00FAscula (n\u00FAmero, espacio, letra may\u00FAscula)
-            else if (/\b\d+\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1]/.test(cleanText)) {
-                blocks = cleanText.split(/(?=\b\d+\s+[A-Z\u00E1\u00E9\u00ED\u00F3\u00FA\u00F1])/g);
-            }
+            if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
+            else if (/\b\d+\.\s+[A-ZÀ-ÿ¿]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            else if (/\b\d+\s+¿/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
+            else if (/\b\d+\s+[A-ZÀ-ÿ]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+[A-ZÀ-ÿ])/g);
 
             blocks.forEach(block => {
                 if (!block.includes("A)") && !block.includes("a)")) return;
@@ -663,11 +312,8 @@
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
 
-                    // Limpiar el n\u00FAmero de pregunta con m\u00E1s patrones flexibles
                     let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
 
-                    // Si hay un punto seguido de números u otro contenido no deseado, truncar ahí
-                    // Esto captura casos como "pregunta. 15" o "pregunta. Página 3"
                     const unwantedAfterPeriod = q.match(/\.\s+(?:\d+|P[áa]g)/i);
                     if (unwantedAfterPeriod) {
                         q = q.substring(0, unwantedAfterPeriod.index + 1).trim();
@@ -688,91 +334,63 @@
 
                     let correct = 0;
                     let hasCheckmark = false;
-                    // Detectar cual opcion tiene el check/palomita (diversas variantes)
-                    const checkPatterns = /[✓✔☑✅√▸►●•∙]/;
+
                     opts = opts.map((o, i) => {
-                        // Buscar checks, palomitas o marcadores de respuesta correcta
-                        if (checkPatterns.test(o) || o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                        if (/§CK§/.test(o) || /[✓✔☑✅√]/.test(o) ||
+                            o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
                             correct = i;
                             hasCheckmark = true;
+                        } else {
+                            const sinPunto = o.trimEnd().replace(/\.\s*$/, '').trimEnd();
+                            const ultimoChar = sinPunto.slice(-1);
+                            const code = ultimoChar.charCodeAt(0);
+                            if (ultimoChar && (
+                                (code >= 0x2190 && code <= 0x27ff) ||
+                                (code >= 0x25a0 && code <= 0x25ff) ||
+                                (code >= 0xe000 && code <= 0xf8ff) ||
+                                code === 0x00e2 || code === 0x00e3 ||
+                                code === 0x00a7 || code === 0x00b7
+                            )) {
+                                correct = i;
+                                hasCheckmark = true;
+                            }
                         }
-                        // Limpiar todos los simbolos de check y marcadores
                         let cleaned = o
-                            .replace(/[✓✔☑✅√▸►●•∙]/g, '')
+                            .replace(/§CK§/g, '')
+                            .replace(/[✓✔☑✅√▸►◄▶▼▲●]/g, '')
                             .replace(/\(correcta\)/gi, '')
                             .replace(/\(correcto\)/gi, '')
                             .replace(/^\s*[-_]\s*/, '')
                             .trim();
-
-                        // Quitar punto final si existe
                         if (cleaned.endsWith('.')) {
                             cleaned = cleaned.slice(0, -1).trim();
                         }
-
                         return cleaned;
                     });
 
-                    // Si la pregunta termina en punto Y tiene una respuesta correcta marcada, quitar el punto final
                     if (hasCheckmark && q.endsWith('.')) {
                         q = q.slice(0, -1).trim();
                     }
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
-                } catch (e) { }
+                } catch (e) {}
             });
             return questions;
         }
 
         // --- Scan Functions ---
-        async function loadUnitDescriptions() {
-            try {
-                const response = await fetch('../data/unit_descriptions.json');
-                const data = await response.json();
-
-                // Convertir el array de Historia_Mexico a un objeto indexado por n\u00FAmero de unidad
-                if (data.Historia_Mexico) {
-                    const descriptions = {};
-                    data.Historia_Mexico.forEach(unit => {
-                        descriptions[unit.unit] = {
-                            title: unit.title,
-                            description: unit.description
-                        };
-                    });
-                    state.unitDescriptions = descriptions;
-                }
-            } catch (error) {
-                console.warn('No se pudieron cargar las descripciones de unidades:', error);
-                state.unitDescriptions = {};
-            }
-        }
-
         async function scanUnits() {
             state.isLoading = true;
             state.loadingMessage = 'Buscando unidades...';
             renderView();
 
             const units = {};
-            const difficulties = ['Facil', 'Intermedio', 'Dificil', '']; // '' para archivos sin dificultad
-
             for (let i = 1; i <= 20; i++) {
-                let foundUnit = false;
-
-                // Intentar encontrar al menos un cuestionario con cualquier sufijo
-                for (const diff of difficulties) {
-                    try {
-                        const fileName = diff ? `Cuestionario_1_${diff}.pdf` : `Cuestionario_1.pdf`;
-                        await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/${fileName}`).promise;
-                        units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
-                        foundUnit = true;
-                        break;
-                    } catch {
-                        continue;
-                    }
-                }
-
-                // Si no encontramos ning\u00FAn cuestionario 1 en esta unidad, terminar b\u00FAsqueda
-                if (!foundUnit) break;
+                try {
+                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
+                    units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
+                } catch { break; }
             }
             state.units = units;
             state.isLoading = false;
@@ -789,45 +407,21 @@
             const unit = state.units[unitKey];
             const quizzes = {};
 
-            // El orden es importante: busca primero los que tienen dificultad explicita
-            const difficulties = ['Facil', 'Intermedio', 'Dificil', ''];
-
             for (let i = 1; i <= 20; i++) {
-                let foundQuiz = false;
+                try {
+                    const pdf = await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
+                    const page = await pdf.getPage(1);
+                    const tc = await page.getTextContent();
+                    const txt = normalizeText(tc.items.map(s => s.str).join(" "));
 
-                for (const diff of difficulties) {
-                    try {
-                        const fileName = diff ? `Cuestionario_${i}_${diff}.pdf` : `Cuestionario_${i}.pdf`;
-                        const pdf = await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/${fileName}`).promise;
-
-                        // Leemos solo la primera página para el título
-                        const page = await pdf.getPage(1);
-                        const tc = await page.getTextContent();
-                        const txt = normalizeText(tc.items.map(s => s.str).join(" "));
-
-                        let title = `Cuestionario ${i}`;
-
-                        // Asignar etiqueta bonita basada en el sufijo del archivo
-                        let difficulty = 'NA';
-                        if (diff === 'Facil') difficulty = 'Fácil';
-                        else if (diff === 'Intermedio') difficulty = 'Intermedio';
-                        else if (diff === 'Dificil') difficulty = 'Difícil';
-
-                        quizzes[`q${i}`] = {
-                            fileName: fileName,
-                            label: title,
-                            number: i,
-                            difficulty: difficulty
-                        };
-
-                        foundQuiz = true;
-                        break; // Importante: si encontramos una versión (ej. Facil), dejamos de buscar las otras para este número
-                    } catch {
-                        continue;
+                    let title = `Cuestionario ${i}`;
+                    const idx = txt.search(/\b1\.-/);
+                    if (idx > 0) {
+                        const h = txt.substring(0, idx).trim();
+                        if (h.length > 5 && h.length < 80) title = h.replace(/^.*?[:.-]\s*/, '').trim() || title;
                     }
-                }
-
-                if (!foundQuiz) break;
+                    quizzes[`q${i}`] = { fileName: `Cuestionario_${i}.pdf`, label: title, number: i };
+                } catch { break; }
             }
 
             state.units[unitKey].quizzes = quizzes;
@@ -848,28 +442,10 @@
             return window.location.href;
         }
 
-        function getMateriaLink() {
-            return window.location.origin + window.location.pathname;
-        }
-
         function copyLink() {
             navigator.clipboard.writeText(getShareLink()).then(() => {
-                showToast('Enlace copiado!');
+                alert('Enlace copiado: ' + getShareLink());
             });
-        }
-
-        function copyMateriaLink() {
-            navigator.clipboard.writeText(getMateriaLink()).then(() => {
-                showToast('Enlace de materia copiado!');
-            });
-        }
-
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-medium shadow-lg z-50';
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
         }
 
         async function handleHash() {
@@ -884,11 +460,9 @@
                 if (Object.keys(state.units).length === 0) {
                     await scanUnits();
                 }
-
                 if (state.units[unitKey]) {
                     state.unit = unitKey;
                     await scanQuizzes(unitKey);
-
                     if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
                         state.view = 'quizzes';
                         await actions.startQuiz(quizKey);
@@ -928,13 +502,15 @@
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
-                    // Usar la dificultad ya detectada del nombre del archivo
-                    state.quizDifficulty = quiz.difficulty || 'NA';
+                    state.quizDifficulty = detectDifficulty(questions);
+                    state.units[state.unit].quizzes[key].difficulty = state.quizDifficulty;
 
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
+                    state.answers = {};
                     state.isAnswered = false;
+                    state.selectedOption = null;
                     state.showHint = false;
                     state.isLoading = false;
                     state.view = 'quiz';
@@ -947,214 +523,105 @@
                     renderView();
                 }
             },
-              jumpToQuestion: (index) => {
-                   if (index === state.currentQuestion) return;
-                   state.currentQuestion = index;
-                   state.isAnswered = state.answers[index] !== undefined;
-                   state.showHint = false;
-                   state.selectedOption = state.answers[index] !== undefined ? state.answers[index] : null;
-                   renderView();
-               },
-               answer: (idx) => {
-                   if (state.isAnswered) return;
-                   state.selectedOption = idx;
-                   state.answers[state.currentQuestion] = idx;
-                   state.isAnswered = true;
-                   if (idx === state.loadedQuestions[state.currentQuestion].c) {
-                       state.score++;
-                   }
-                   renderView();
-               },
-             next: async () => {
-                 if (state.currentQuestion + 1 < state.loadedQuestions.length) {
-                     state.currentQuestion++;
-                     state.isAnswered = state.answers[state.currentQuestion] !== undefined;
-                     state.showHint = false;
-                     state.selectedOption = state.answers[state.currentQuestion] !== undefined ? state.answers[state.currentQuestion] : null;
-                     renderView();
-                 } else {
-                     // Estamos en la última pregunta
-                     if (allAnswered()) {
-                         state.view = 'review';
-                         renderView();
-                     }
-                 }
-             },
-             hint: () => { state.showHint = !state.showHint; renderView(); },
-             showReview: () => {
-                 state.view = 'review';
-                 renderView();
-             },
-             confirmSubmit: async () => {
-                 state.view = 'finished';
-                 renderView();
-                 
-                 // Guardar el score en la BD
-                 const total = state.loadedQuestions.length;
-                 const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
-                 showScoreSavedNotification(saved);
-             },
-             reviewGoBack: () => {
-                 state.view = 'quiz';
-                 renderView();
-             },
-             goBack: () => {
-                 // Handle review view first
-                 if (state.view === 'review') {
-                     state.view = 'quiz';
-                     renderView();
-                     return;
-                 }
-                 // Navegación tipo "cd .." - regresar a la vista anterior
-                 if (state.view === 'quiz' || state.view === 'finished') {
-                     // Si estamos en quiz o terminado, regresar a lista de quizzes
-                     state.quiz = null;
-                     state.view = 'quizzes';
-                     updateHash();
-                 } else if (state.view === 'quizzes') {
-                     // Si estamos en lista de quizzes, regresar a unidades
-                     state.unit = null;
-                     state.quiz = null;
-                     state.view = 'units';
-                     window.location.hash = '';
-                 } else {
-                     // Si estamos en unidades, ir a index.html
-                     window.location.href = '../index.html';
-                 }
-                 renderView();
-             },
-             goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; state.answers = {}; state.score = 0; window.location.hash = ''; renderView(); },
-             goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; state.answers = {}; state.score = 0; updateHash(); renderView(); },
-             restart: () => { state.quiz = null; state.view = 'quizzes'; state.answers = {}; state.score = 0; updateHash(); renderView(); },
-            copyLink: () => { copyLink(); },
-            toggleMobileMenu: () => {
-                state.mobileMenuOpen = !state.mobileMenuOpen;
-                if (state.mobileMenuOpen) {
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.style.overflow = '';
+            answer: (idx) => {
+                if (state.isAnswered) return;
+                state.selectedOption = idx;
+                state.answers[state.currentQuestion] = idx;
+                state.isAnswered = true;
+                if (idx === state.loadedQuestions[state.currentQuestion].c) {
+                    state.score++;
                 }
                 renderView();
-            }
+            },
+            jumpToQuestion: (index) => {
+                if (index === state.currentQuestion) return;
+                state.currentQuestion = index;
+                state.isAnswered = state.answers[index] !== undefined;
+                state.showHint = false;
+                state.selectedOption = state.answers[index] !== undefined ? state.answers[index] : null;
+                renderView();
+            },
+            next: async () => {
+                if (state.currentQuestion + 1 < state.loadedQuestions.length) {
+                    state.currentQuestion++;
+                    state.isAnswered = state.answers[state.currentQuestion] !== undefined;
+                    state.showHint = false;
+                    state.selectedOption = state.answers[state.currentQuestion] !== undefined ? state.answers[state.currentQuestion] : null;
+                    renderView();
+                } else {
+                    if (allAnswered()) {
+                        state.view = 'review';
+                        renderView();
+                    }
+                }
+            },
+            hint: () => { state.showHint = !state.showHint; renderView(); },
+            showReview: () => {
+                state.view = 'review';
+                renderView();
+            },
+            confirmSubmit: async () => {
+                state.view = 'finished';
+                renderView();
+                const total = state.loadedQuestions.length;
+                const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
+                showScoreSavedNotification(saved);
+            },
+            goBack: () => {
+                state.view = 'quiz';
+                renderView();
+            },
+            goUnits: () => {
+                state.unit = null;
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'units';
+                window.location.hash = '';
+                renderView();
+            },
+            goQuizzes: () => {
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'quizzes';
+                updateHash();
+                renderView();
+            },
+            restart: () => {
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'quizzes';
+                updateHash();
+                renderView();
+            },
+            copyLink: () => { copyLink(); }
         };
 
         // --- Render ---
         function renderView() {
             const app = document.getElementById('app');
-            const t = getThemeClasses();
-
-            app.className = `responsive-container ${t.glass}`;
 
             const header = `
-                <div class="px-6 py-4 border-b ${t.border} flex items-center justify-between">
+                <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <button onclick="actions.goBack()" class="w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        </button>
-                        <img src="../assets/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-10 w-auto object-contain">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center shadow-lg">
+                            <i data-lucide="${SUBJECT.icon}" class="w-5 h-5 text-white"></i>
+                        </div>
                         <div>
-                            <h1 class="text-sm font-bold ${t.textPrimary}">${SUBJECT.title}</h1>
-                            <p class="text-[10px] ${t.textMuted}">CEFIMAT</p>
+                            <h1 class="text-sm font-bold text-white">${SUBJECT.title}</h1>
+                            <p class="text-[10px] text-slate-400">CEFIMAT</p>
                         </div>
                     </div>
-                    
-                    <!-- Desktop buttons -->
-                    <div class="hidden md:flex items-center gap-2">
-                        <button onclick="toggleDarkMode()" class="theme-toggle w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary} hover:${t.subjectText} transition-all">
-                            <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-4 h-4"></i>
+                    <a href="../index.html" class="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                    </a>
+                    ${state.view === 'quiz' ? `
+                        <button onclick="actions.copyLink()" class="w-9 h-9 rounded-xl glass flex items-center justify-center text-slate-400 hover:text-white" title="Copiar enlace">
+                            <i data-lucide="link" class="w-4 h-4"></i>
                         </button>
-                        <div class="user-dropdown">
-                            <button onclick="toggleUserDropdown(event)" class="${t.glass} px-3 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-emerald-500/50 transition-all">
-                                <div class="user-avatar">${userData.name ? userData.name.charAt(0) : 'U'}</div>
-                                <i data-lucide="chevron-down" class="w-3 h-3 ${t.textMuted}"></i>
-                            </button>
-                            <div class="user-dropdown-menu ${t.glass} rounded-2xl shadow-2xl overflow-hidden">
-                                <div class="p-4 border-b ${t.border}">
-                                    <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
-                                    <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
-                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
-                                        <i data-lucide="users" class="w-3 h-3"></i>
-                                        Grupo ${userData.group || 'N/A'}
-                                    </div>
-                                </div>
-                                <button onclick="logout()" class="w-full px-4 py-3 text-left flex items-center gap-3 ${t.textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-colors">
-                                    <i data-lucide="log-out" class="w-4 h-4"></i>
-                                    <span class="text-sm font-medium">Cerrar sesi\u00F3n</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mobile hamburger button -->
-                    <button onclick="actions.toggleMobileMenu()" class="md:hidden mobile-menu-button w-9 h-9 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary}">
-                        <i data-lucide="menu" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <!-- Mobile menu overlay -->
-                <div class="menu-overlay-panel ${state.mobileMenuOpen ? 'active' : ''}" onclick="actions.toggleMobileMenu()"></div>
-
-                <!-- Mobile menu -->
-                <div class="mobile-menu-panel ${t.glass} shadow-2xl ${state.mobileMenuOpen ? 'active' : ''}">
-                    <div class="p-6 border-b ${t.border}">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-bold ${t.textPrimary}">Men\u00FA</h3>
-                            <button onclick="actions.toggleMobileMenu()" class="w-10 h-10 rounded-xl ${t.glass} flex items-center justify-center ${t.textSecondary}">
-                                <i data-lucide="x" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <div class="flex items-center gap-3 p-4 rounded-xl ${t.glass}">
-                            <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">${userData.name ? userData.name.charAt(0) : 'U'}</div>
-                            <div>
-                                <p class="text-sm font-bold ${t.textPrimary}">${userData.name || 'Usuario'}</p>
-                                <p class="text-xs ${t.textMuted}">${userData.email || ''}</p>
-                                <div class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold">
-                                    <i data-lucide="users" class="w-3 h-3"></i>
-                                    Grupo ${userData.group || 'N/A'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-6 space-y-3">
-                        <button onclick="toggleDarkMode()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:text-emerald-500 transition-all">
-                            <i data-lucide="${state.darkMode ? 'sun' : 'moon'}" class="w-5 h-5"></i>
-                            <span class="text-sm font-medium">${state.darkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>
-                        </button>
-                        <button onclick="logout()" class="w-full ${t.glass} px-4 py-3 rounded-xl flex items-center gap-3 ${t.textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-all">
-                            <i data-lucide="log-out" class="w-5 h-5"></i>
-                            <span class="text-sm font-medium">Cerrar sesi\u00F3n</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            const footer = `
-                <div class="px-6 py-4 border-t ${t.border} ${t.glass}">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                            <div class="flex items-center gap-2">
-                                <img src="../assets/Logo Cefimat Videos.png" alt="CEFIMAT Logo" class="h-8 w-auto object-contain opacity-50">
-                                <p class="text-xs ${t.textMuted}">© 2026 CEFIMAT Asesor\u00EDas</p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <a href="https://www.facebook.com/cefimatasesorias" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-blue-500 transition-colors">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                </a>
-                                <a href="https://www.instagram.com/cefimat" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-pink-500 transition-colors">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                                </a>
-                                <a href="https://www.tiktok.com/@cefimat.asesorias" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-slate-800 dark:hover:text-white transition-colors">
-                                    <i data-lucide="video" class="w-4 h-4"></i>
-                                </a>
-                                <a href="https://open.spotify.com/show/2DRzqIw2dT4negDqeROJCx?si=bbd8e97059c44c04" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-green-500 transition-colors">
-                                    <i data-lucide="music" class="w-4 h-4"></i>
-                                </a>
-                                <a href="https://www.cefimat.com/" target="_blank" class="w-8 h-8 rounded-lg ${t.glass} flex items-center justify-center ${t.textMuted} hover:text-emerald-500 transition-colors">
-                                    <i data-lucide="globe" class="w-4 h-4"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    ` : ''}
                 </div>
             `;
 
@@ -1164,87 +631,67 @@
                 content = `${header}
                     <div class="flex-1 flex flex-col items-center justify-center gap-6 p-8">
                         <div class="loader"></div>
-                        <p class="${t.textPrimary} font-medium">${state.loadingMessage}</p>
-                    </div>
-                    ${footer}`;
+                        <p class="text-white font-medium">${state.loadingMessage}</p>
+                    </div>`;
             }
             else if (state.view === 'units') {
                 const units = Object.entries(state.units);
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                        <div class="max-w-2xl mx-auto space-y-6 fade-in pb-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in">
                             <div class="text-center space-y-2">
-                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${t.subjectBg} ${t.subjectBorder} border">
-                                    <i data-lucide="${SUBJECT.icon}" class="w-4 h-4 ${t.subjectText}"></i>
-                                    <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${SUBJECT.title}</span>
-                                </div>
-                                <h2 class="text-3xl font-black ${t.textPrimary}">Selecciona una Unidad</h2>
-                                <p class="${t.textSecondary} text-sm">${units.length} unidades disponibles</p>
+                                <h2 class="text-2xl font-black text-white">Selecciona una Unidad</h2>
+                                <p class="text-slate-400 text-sm">${units.length} unidades disponibles</p>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                ${units.length === 0 ? `<p class="text-center ${t.textSecondary} py-8 col-span-2">No se encontraron unidades</p>` :
-                        units.map(([k, u]) => {
-                            const unitNum = parseInt(k.replace('u', ''));
-                            const desc = state.unitDescriptions[unitNum] || {};
-                            return `
-                                    <button onclick="actions.setUnit('${k}')" class="p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
-                                        <div class="flex items-start gap-4">
-                                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
-                                                <span class="text-white font-black text-xl">${unitNum}</span>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <h3 class="${t.textPrimary} font-bold text-lg mb-1 group-hover:${t.subjectText} transition-colors">${u.label}</h3>
-                                                ${desc.title ? `<p class="${t.textSecondary} text-sm mb-2 line-clamp-2">${desc.title}</p>` : `<p class="${t.textSecondary} text-sm">Cuestionarios de ${SUBJECT.title}</p>`}
-                                            </div>
-                                            <i data-lucide="chevron-right" class="w-5 h-5 ${t.textMuted} group-hover:${t.subjectText} transition-colors flex-shrink-0"></i>
+                            <div class="space-y-3">
+                                ${units.length === 0 ? `<p class="text-center text-slate-400 py-8">No se encontraron unidades</p>` :
+                                units.map(([k, u]) => `
+                                    <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
+                                        <div class="w-12 h-12 rounded-xl ${SUBJECT.bg} ${SUBJECT.border} border flex items-center justify-center">
+                                            <span class="${SUBJECT.text} font-black text-lg">${k.replace('u','')}</span>
                                         </div>
-                                    </button>
-                                `}).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    ${footer}`;
-            }
-            else if (state.view === 'quizzes') {
-                const unit = state.units[state.unit];
-                const quizzes = Object.entries(unit.quizzes);
-                const unitNum = parseInt(state.unit.replace('u', ''));
-                const desc = state.unitDescriptions[unitNum] || {};
-                content = `${header}
-                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                        <div class="max-w-2xl mx-auto space-y-6 fade-in pb-6">
-                            <div class="text-center space-y-2">
-                                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full ${t.subjectBg} ${t.subjectBorder} border">
-                                    <i data-lucide="book-open" class="w-4 h-4 ${t.subjectText}"></i>
-                                    <span class="text-xs font-bold ${t.subjectText} uppercase tracking-wider">${unit.label}</span>
-                                </div>
-                                ${desc.title ? `<h2 class="text-3xl font-black ${t.textPrimary}">${desc.title}</h2>` : ''}
-                                ${desc.description ? `<p class="${t.textSecondary} text-sm max-w-xl mx-auto">${desc.description}</p>` : ''}
-                                <p class="${t.textMuted} text-xs pt-2">${quizzes.length} cuestionarios disponibles</p>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4">
-                                ${quizzes.map(([k, q]) => `
-                                    <button onclick="actions.startQuiz('${k}')" class="p-4 md:p-6 rounded-2xl ${t.glass} card-hover text-left border ${t.border} hover:border-${SUBJECT.color}-500/50 transition-all group">
-                                        <div class="flex items-center gap-3 md:gap-4">
-                                            <div class="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center shadow-lg flex-shrink-0">
-                                                <span class="text-white font-black text-xl md:text-2xl">${q.number}</span>
-                                            </div>
-                                             <div class="flex-1 min-w-0">
-                                                 <div class="flex items-start md:items-center gap-2 mb-1 flex-wrap">
-                                                     <h3 class="${t.textPrimary} font-bold text-base md:text-lg group-hover:${t.subjectText} transition-colors">${q.label}</h3>
-                                                 </div>
-                                                 ${q.description ? `<p class="${t.textSecondary} text-sm">${q.description}</p>` : ''}
-                                             </div>
-                                            <div class="flex items-center justify-center w-10 h-10 rounded-xl ${t.subjectBg} ${t.subjectText} group-hover:scale-110 transition-transform">
-                                                <i data-lucide="play" class="w-5 h-5"></i>
-                                            </div>
+                                        <div class="flex-1">
+                                            <h3 class="text-white font-bold">${u.label}</h3>
+                                            <p class="text-slate-400 text-xs">Cuestionarios disponibles</p>
                                         </div>
+                                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-500"></i>
                                     </button>
                                 `).join('')}
                             </div>
                         </div>
-                    </div>
-                    ${footer}`;
+                    </div>`;
+            }
+            else if (state.view === 'quizzes') {
+                const unit = state.units[state.unit];
+                const quizzes = Object.entries(unit.quizzes);
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 fade-in">
+                            <button onclick="actions.goUnits()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Regresar
+                            </button>
+                            <div class="text-center space-y-2">
+                                <h2 class="text-2xl font-black text-white">${unit.label}</h2>
+                                <p class="text-slate-400 text-sm">${quizzes.length} cuestionarios</p>
+                            </div>
+                            <div class="space-y-3">
+                                ${quizzes.map(([k, q]) => `
+                                    <button onclick="actions.startQuiz('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
+                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center shadow-lg">
+                                            <span class="text-white font-black">${q.number}</span>
+                                        </div>
+                                         <div class="flex-1 min-w-0">
+                                             <div class="flex items-center gap-2 mb-1">
+                                                 <h3 class="text-white font-bold truncate">${q.label}</h3>
+                                             </div>
+                                             <p class="text-slate-400 text-xs">${q.fileName}</p>
+                                         </div>
+                                        <i data-lucide="play" class="w-5 h-5 ${SUBJECT.text}"></i>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>`;
             }
             else if (state.view === 'quiz') {
                 const q = state.loadedQuestions[state.currentQuestion];
@@ -1253,108 +700,104 @@
 
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6 quiz-background ${state.darkMode ? 'dark' : ''}">
-                        <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6 relative z-10">
-                            <div class="flex items-center justify-between">
-                                <button onclick="actions.goQuizzes()" class="flex items-center gap-2 ${t.textSecondary} hover:${t.subjectText} text-sm transition-colors">
-                                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
-                                 </button>
-                             </div>
-                             <div class="flex items-center justify-between gap-4">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up relative z-10">
+                            <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                            </button>
+                            <div class="flex items-center justify-between gap-4">
                                 <div class="flex-1">
                                     <div class="flex justify-between mb-2">
-                                        <span class="text-xs ${t.textSecondary}">Pregunta ${state.currentQuestion + 1}/${total}</span>
-                                        <span class="text-xs font-bold ${t.subjectText}">${state.score} pts</span>
+                                        <span class="text-xs text-slate-400">Pregunta ${state.currentQuestion + 1}/${total}</span>
+                                        <span class="text-xs font-bold ${SUBJECT.text}">${state.score} pts</span>
                                     </div>
-                                    <div class="h-2 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                    <div class="h-2 rounded-full bg-white/5 overflow-hidden">
                                         <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
                                     </div>
                                 </div>
                              </div>
-                             <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
-                                <h3 class="text-lg font-bold ${t.textPrimary} leading-relaxed">${q.q}</h3>
+
+                             <div class="glass rounded-2xl p-6 space-y-4">
+                                <h3 class="text-lg font-bold text-white leading-relaxed">${q.q}</h3>
                                 ${state.showHint ? `
                                     <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                        <p class="text-sm text-amber-600 dark:text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
+                                        <p class="text-sm text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
                                     </div>
-                                ` : `<button onclick="actions.hint()" class="text-xs text-amber-500 hover:text-amber-400"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
+                                ` : `<button onclick="actions.hint()" class="text-xs text-amber-400 hover:text-amber-300"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
                             </div>
                             <div class="space-y-3">
-                                ${q.a.map((opt, i) => {
-                     let cls = `${t.glass} ${t.border}`;
-                     let icon = '';
-                     if (i === state.selectedOption) { cls = `bg-${SUBJECT.color}-500/20 border-${SUBJECT.color}-500/50`; }
-                     return `
+                                 ${q.a.map((opt, i) => {
+                                     let cls = 'glass border-white/5';
+                                     let icon = '';
+                                     if (i === state.selectedOption) { cls = `border-${SUBJECT.color}-500/50 bg-${SUBJECT.color}-500/10`; }
+                                     return `
                                          <button onclick="actions.answer(${i})" ${state.isAnswered && i !== state.selectedOption ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-${SUBJECT.color}-500/50 transition-all ${state.isAnswered && i !== state.selectedOption ? 'opacity-50 cursor-not-allowed' : ''}">
-                                             <span class="w-8 h-8 rounded-lg ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} flex items-center justify-center text-sm font-bold ${t.textSecondary}">${String.fromCharCode(65 + i)}</span>
-                                             <span class="flex-1 text-sm ${t.textPrimary}">${opt}</span>
+                                             <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65+i)}</span>
+                                             <span class="flex-1 text-sm text-white">${opt}</span>
                                              ${icon}
                                          </button>`;
-                 }).join('')}
-                            </div>
-                             <!-- Selector de Preguntas (pequeño, al final) -->
-                             <div class="${t.glass} rounded-lg p-2 border ${t.border}">
-                                 <div class="grid grid-cols-6 sm:grid-cols-12 gap-1">
-                                     ${Array.from({length: total}).map((_, i) => `
-                                         <button onclick="actions.jumpToQuestion(${i})" class="w-full h-8 rounded text-xs font-bold transition-all ${i === state.currentQuestion ? `bg-gradient-to-r ${t.gradientIcon} text-white` : (state.answers[i] !== undefined ? 'bg-green-500/30 border border-green-500/50 text-green-400 hover:bg-green-500/40' : `${t.glass} hover:border-emerald-500/50`)} flex items-center justify-center border ${t.border}">
-                                             ${i + 1}
-                                         </button>
-                                     `).join('')}
-                                 </div>
+                                }).join('')}
                              </div>
-                              ${state.isAnswered ? `<button onclick="actions.next()" class="w-full py-4 rounded-xl text-white font-bold bg-gradient-to-r ${t.gradientIcon} hover:opacity-90 transition-opacity">${state.currentQuestion + 1 < total ? 'Siguiente' : 'Revisar Respuestas'}</button>` : ''}
-                        </div>
-                    </div>
-                    ${footer}`;
+                              <div class="glass rounded-lg p-2">
+                                  <div class="grid grid-cols-6 sm:grid-cols-12 gap-1">
+                                      ${Array.from({length: total}).map((_, i) => `
+                                          <button onclick="actions.jumpToQuestion(${i})" class="w-full h-8 rounded text-xs font-bold transition-all ${i === state.currentQuestion ? `btn-primary ${SUBJECT.text}` : (state.answers[i] !== undefined ? 'bg-green-500/30 border border-green-500/50 text-green-400 hover:bg-green-500/40' : 'glass hover:border-orange-500/50')} flex items-center justify-center">
+                                              ${i + 1}
+                                          </button>
+                                      `).join('')}
+                                  </div>
+                              </div>
+                               ${state.isAnswered ? `<button onclick="${state.currentQuestion + 1 < total ? 'actions.next()' : (allAnswered() ? 'actions.showReview()' : '')}" class="w-full py-4 rounded-xl text-white font-bold ${state.currentQuestion + 1 < total || allAnswered() ? 'btn-primary' : 'bg-slate-600/50 cursor-not-allowed'}" ${!(state.currentQuestion + 1 < total) && !allAnswered() ? 'disabled' : ''}>${state.currentQuestion + 1 < total ? 'Siguiente' : (allAnswered() ? 'Revisar Respuestas' : 'Completa todas las preguntas')}</button>` : ''}
+                         </div>
+                     </div>`;
             }
             else if (state.view === 'review') {
-                 const total = state.loadedQuestions.length;
-                 const answered = state.loadedQuestions.filter((q, i) => state.answers[i] !== undefined).length;
-                 
-                 content = `${header}
-                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                         <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
-                             <div class="space-y-2">
-                                 <h2 class="text-2xl font-bold ${t.textPrimary}">Revisar Respuestas</h2>
-                                 <p class="${t.textSecondary} text-sm">Has respondido ${answered}/${total} preguntas</p>
-                             </div>
-                             
-                             <div class="${t.glass} rounded-2xl p-6 space-y-4 border ${t.border}">
-                                 ${state.loadedQuestions.map((q, idx) => {
-                                     const answered = state.answers[idx] !== undefined;
-                                     const selectedAns = state.answers[idx];
-                                     return `
-                                         <div class="border rounded-lg p-4 ${answered ? 'border-blue-500/50 bg-blue-500/10' : 'border-slate-500/30 bg-slate-500/10'}">
-                                             <div class="flex items-start gap-3 mb-3">
-                                                 <span class="text-sm font-bold ${t.subjectText}">${idx + 1}.</span>
-                                                 <div class="flex-1">
-                                                     <p class="${t.textPrimary} text-sm">${q.q}</p>
-                                                 </div>
-                                             </div>
-                                             ${answered ? `
-                                                 <div class="space-y-2 text-xs">
-                                                     <div class="flex items-center gap-2">
-                                                         <span class="${t.textSecondary}">Tu respuesta:</span>
-                                                         <span class="font-bold text-blue-400">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
-                                                     </div>
-                                                 </div>
-                                             ` : '<p class="${t.textSecondary} text-xs">No respondida</p>'}
-                                         </div>
-                                     `;
-                                 }).join('')}
-                             </div>
-                             
-                             <div class="flex gap-3">
-                                 <button onclick="actions.reviewGoBack()" class="flex-1 py-4 rounded-xl border ${t.border} ${t.textPrimary} font-bold hover:opacity-80 transition-all">
-                                     Volver
-                                 </button>
-                                 <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold hover:opacity-90 transition-opacity">
-                                     Confirmar y Enviar
-                                 </button>
-                             </div>
-                         </div>
-                     </div>
-                     ${footer}`;
-             }
+                const total = state.loadedQuestions.length;
+                const answered = state.loadedQuestions.filter((q, i) => state.answers[i] !== undefined).length;
+
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
+                            <div class="space-y-2">
+                                <h2 class="text-2xl font-bold text-white">Revisar Respuestas</h2>
+                                <p class="text-slate-400 text-sm">Has respondido ${answered}/${total} preguntas</p>
+                            </div>
+
+                            <div class="glass rounded-2xl p-6 space-y-4">
+                                ${state.loadedQuestions.map((q, idx) => {
+                                    const answered = state.answers[idx] !== undefined;
+                                    const selectedAns = state.answers[idx];
+                                    return `
+                                        <div class="border rounded-lg p-4 ${answered ? 'border-blue-500/50 bg-blue-500/10' : 'border-slate-500/30 bg-slate-500/10'}">
+                                            <div class="flex items-start gap-3 mb-3">
+                                                <span class="text-sm font-bold ${SUBJECT.text}">${idx + 1}.</span>
+                                                <div class="flex-1">
+                                                    <p class="text-white text-sm">${q.q}</p>
+                                                </div>
+                                            </div>
+                                            ${answered ? `
+                                                <div class="space-y-2 text-xs">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-slate-400">Tu respuesta:</span>
+                                                        <span class="font-bold text-blue-400">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
+                                                    </div>
+                                                </div>
+                                            ` : '<p class="text-slate-400 text-xs">No respondida</p>'}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button onclick="actions.goBack()" class="flex-1 py-4 rounded-xl border border-slate-500/30 text-white font-bold hover:bg-slate-500/10 transition-all">
+                                    Volver
+                                </button>
+                                <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold">
+                                    Confirmar y Enviar
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            }
             else if (state.view === 'finished') {
                 const total = state.loadedQuestions.length;
                 const perc = Math.round((state.score / total) * 100);
@@ -1363,28 +806,28 @@
                 content = `${header}
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
                         <div class="text-center space-y-8 fade-in max-w-md mx-auto pb-6">
-                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${t.gradientIcon} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
+                            <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
                                 <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
                             </div>
                             <div>
-                                <h2 class="text-3xl font-black ${t.textPrimary}">${msg}</h2>
+                                <h2 class="text-3xl font-black text-white">${msg}</h2>
                             </div>
-                            <div class="${t.glass} rounded-3xl p-8 space-y-6 border ${t.border}">
+                            <div class="glass rounded-3xl p-8 space-y-6">
                                 <div class="flex items-end justify-center gap-2">
-                                    <span class="text-6xl font-black ${t.subjectText}">${state.score}</span>
-                                    <span class="text-2xl ${t.textMuted} mb-2">/ ${total}</span>
+                                    <span class="text-6xl font-black gradient-text">${state.score}</span>
+                                    <span class="text-2xl text-slate-500 mb-2">/ ${total}</span>
                                 </div>
-                                <div class="h-3 rounded-full ${state.darkMode ? 'bg-white/5' : 'bg-black/5'} overflow-hidden">
+                                <div class="h-3 rounded-full bg-white/5 overflow-hidden">
                                     <div class="h-full progress-bar rounded-full" style="width:${perc}%"></div>
                                 </div>
-                                <p class="${t.textSecondary}">${perc}% de efectividad</p>
+                                <p class="text-slate-400">${perc}% de efectividad</p>
                             </div>
                             <div class="flex gap-3">
-                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl ${t.glass} ${t.textPrimary} font-bold hover:opacity-80 border ${t.border}">Otro Quiz</button>
-                                <a href="../index.html" class="flex-1 py-4 rounded-xl bg-gradient-to-r ${t.gradientIcon} text-white font-bold text-center">Inicio</a>
+                                <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl glass text-white font-bold hover:bg-white/10">Otro Quiz</button>
+                                <a href="../index.html" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold text-center">Inicio</a>
                             </div>
-                            <div class="${t.glass} rounded-2xl p-6 border ${t.border} text-left space-y-4 mt-4">
-                                <h3 class="text-lg font-bold ${t.textPrimary}">Desglose de respuestas</h3>
+                            <div class="glass rounded-2xl p-6 text-left space-y-4 mt-4">
+                                <h3 class="text-lg font-bold text-white">Desglose de respuestas</h3>
                                 ${state.loadedQuestions.map((q, idx) => {
                                     const selected = state.answers[idx];
                                     const correct = q.c;
@@ -1393,7 +836,7 @@
                                         <div class="p-4 rounded-xl border ${isCorrect ? 'border-green-500/50 bg-green-500/10' : 'border-red-500/50 bg-red-500/10'}">
                                             <div class="flex items-start gap-2 mb-2">
                                                 <span class="text-lg">${isCorrect ? '✅' : '❌'}</span>
-                                                <p class="text-sm font-medium ${t.textPrimary}">${idx + 1}. ${q.q}</p>
+                                                <p class="text-sm font-medium text-white">${idx + 1}. ${q.q}</p>
                                             </div>
                                             ${!isCorrect ? `<p class="text-sm text-red-400 ml-7">Tu respuesta: <span class="font-bold">${String.fromCharCode(65 + selected)}) ${q.a[selected]}</span></p>` : ''}
                                             <p class="text-sm text-green-400 ml-7">Correcta: <span class="font-bold">${String.fromCharCode(65 + correct)}) ${q.a[correct]}</span></p>
@@ -1401,8 +844,7 @@
                                 }).join('')}
                             </div>
                         </div>
-                    </div>
-                    ${footer}`;
+                    </div>`;
             }
 
             app.innerHTML = content;
@@ -1411,8 +853,6 @@
 
         // Init
         async function init() {
-            applyTheme();
-            await loadUnitDescriptions(); // Cargar descripciones primero
             const hash = window.location.hash.slice(1);
             if (hash) {
                 await handleHash();
@@ -1423,5 +863,4 @@
         init();
     </script>
 </body>
-
 </html>

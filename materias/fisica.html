@@ -323,9 +323,19 @@
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
+        function preprocessCheckmarks(text) {
+            return text
+                .replace(/[✓✔☑✅]/g, '§CK§')
+                .replace(/√/g, '§CK§')
+                .replace(/â[œ]["""„]/g, '§CK§')
+                .replace(/â[-¿][-¿]/g, '§CK§')
+                .replace(/â(?=[-¿"""]?\s*\.)/g, '§CK§')
+                .replace(/[▸►◄▶▼▲●]/g, '§CK§');
+        }
+
         function parseQuizText(text) {
             const questions = [];
-            let cleanText = normalizeText(text);
+            let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
             
             // Intentar múltiples patrones de numeración en orden de especificidad
@@ -364,29 +374,37 @@
 
                     let correct = 0;
                     let hasCheckmark = false;
-                    
-                    // Detectar cual opción tiene el check/palomita (diversas variantes)
-                    const checkPatterns = /[✓✔☑✅√▸►●•∙]/;
+
                     opts = opts.map((o, i) => {
-                        // Buscar checks, palomitas o marcadores de respuesta correcta
-                        if (checkPatterns.test(o) || o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                        if (/§CK§/.test(o) || /[✓✔☑✅√]/.test(o) ||
+                            o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
                             correct = i;
                             hasCheckmark = true;
+                        } else {
+                            const sinPunto = o.trimEnd().replace(/\.\s*$/, '').trimEnd();
+                            const ultimoChar = sinPunto.slice(-1);
+                            const code = ultimoChar.charCodeAt(0);
+                            if (ultimoChar && (
+                                (code >= 0x2190 && code <= 0x27ff) ||
+                                (code >= 0x25a0 && code <= 0x25ff) ||
+                                (code >= 0xe000 && code <= 0xf8ff) ||
+                                code === 0x00e2 || code === 0x00e3 ||
+                                code === 0x00a7 || code === 0x00b7
+                            )) {
+                                correct = i;
+                                hasCheckmark = true;
+                            }
                         }
-                        
-                        // Limpiar todos los símbolos de check y marcadores
                         let cleaned = o
-                            .replace(/[✓✔☑✅√▸►●•∙]/g, '')
+                            .replace(/§CK§/g, '')
+                            .replace(/[✓✔☑✅√▸►◄▶▼▲●]/g, '')
                             .replace(/\(correcta\)/gi, '')
                             .replace(/\(correcto\)/gi, '')
                             .replace(/^\s*[-_]\s*/, '')
                             .trim();
-                        
-                        // Quitar punto final si existe
                         if (cleaned.endsWith('.')) {
                             cleaned = cleaned.slice(0, -1).trim();
                         }
-                        
                         return cleaned;
                     });
 

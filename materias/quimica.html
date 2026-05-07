@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quimica - CEFIMAT</title>
+    <title>Química - CEFIMAT</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -31,14 +30,84 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
             min-height: 100vh;
+        }
+
+        .quiz-background {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-background.dark {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        .quiz-background::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(14, 165, 233, 0.2) 0%, transparent 2%),
+                radial-gradient(circle at 85% 15%, rgba(14, 165, 233, 0.17) 0%, transparent 2.5%),
+                radial-gradient(circle at 25% 75%, rgba(14, 165, 233, 0.18) 0%, transparent 2%),
+                radial-gradient(circle at 80% 85%, rgba(14, 165, 233, 0.16) 0%, transparent 2.2%),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.15) 0%, transparent 1.8%),
+                radial-gradient(circle at 10% 60%, rgba(14, 165, 233, 0.17) 0%, transparent 2%),
+                radial-gradient(circle at 90% 45%, rgba(14, 165, 233, 0.19) 0%, transparent 2.3%),
+                radial-gradient(circle at 45% 15%, rgba(14, 165, 233, 0.16) 0%, transparent 2%),
+                radial-gradient(circle at 60% 80%, rgba(14, 165, 233, 0.17) 0%, transparent 2.1%),
+                radial-gradient(circle at 35% 45%, rgba(14, 165, 233, 0.18) 0%, transparent 1.9%);
+            background-size:
+                100% 100%, 150% 150%, 120% 120%, 140% 140%, 160% 160%,
+                110% 110%, 130% 130%, 125% 125%, 135% 135%, 145% 145%;
+            animation: flotarMotas 20s ease-in-out infinite, flotarMotas2 25s ease-in-out infinite reverse, flotarMotas3 30s linear infinite;
+        }
+
+        .quiz-background.dark::before {
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(3, 105, 161, 0.25) 0%, transparent 2%),
+                radial-gradient(circle at 85% 15%, rgba(3, 105, 161, 0.22) 0%, transparent 2.5%),
+                radial-gradient(circle at 25% 75%, rgba(3, 105, 161, 0.23) 0%, transparent 2%),
+                radial-gradient(circle at 80% 85%, rgba(3, 105, 161, 0.21) 0%, transparent 2.2%),
+                radial-gradient(circle at 50% 50%, rgba(3, 105, 161, 0.2) 0%, transparent 1.8%),
+                radial-gradient(circle at 10% 60%, rgba(3, 105, 161, 0.22) 0%, transparent 2%),
+                radial-gradient(circle at 90% 45%, rgba(3, 105, 161, 0.24) 0%, transparent 2.3%),
+                radial-gradient(circle at 45% 15%, rgba(3, 105, 161, 0.21) 0%, transparent 2%),
+                radial-gradient(circle at 60% 80%, rgba(3, 105, 161, 0.22) 0%, transparent 2.1%),
+                radial-gradient(circle at 35% 45%, rgba(3, 105, 161, 0.23) 0%, transparent 1.9%);
+        }
+
+        @keyframes flotarMotas {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            25% { background-position: 3% 5%, -3% 7%, 4% -3%, -2% 4%, 2% 3%, -4% 2%, 3% 4%, 5% -2%, -3% 3%, 2% -4%; }
+            50% { background-position: 6% 10%, -6% 15%, 8% -6%, -4% 9%, 5% 7%, -8% 5%, 7% 8%, 10% -4%, -6% 7%, 5% -8%; }
+            75% { background-position: 3% 5%, -3% 7%, 4% -3%, -2% 4%, 2% 3%, -4% 2%, 3% 4%, 5% -2%, -3% 3%, 2% -4%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+        }
+
+        @keyframes flotarMotas2 {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            25% { background-position: -5% 3%, 4% -4%, -3% 5%, 5% 2%, -2% -3%, 3% -5%, -4% 3%, 2% 4%, 4% -2%, -3% -4%; }
+            50% { background-position: -10% 7%, 8% -8%, -6% 10%, 10% 4%, -5% -6%, 7% -10%, -8% 6%, 5% 8%, 8% -4%, -7% -8%; }
+            75% { background-position: -5% 3%, 4% -4%, -3% 5%, 5% 2%, -2% -3%, 3% -5%, -4% 3%, 2% 4%, 4% -2%, -3% -4%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+        }
+
+        @keyframes flotarMotas3 {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+            50% { background-position: 5% -5%, -5% 5%, 3% 7%, -7% -3%, 4% 4%, -4% -4%, 6% 2%, -2% -6%, 1% 8%, -8% -1%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
         }
 
         .glass {
@@ -47,147 +116,62 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-up {
-            animation: slideUp 0.4s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         .responsive-container {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         @media (min-width: 768px) {
-            body {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 2rem;
-            }
-
+            body { display: flex; align-items: center; justify-content: center; padding: 2rem; }
             .responsive-container {
-                max-width: 900px;
-                min-height: auto;
-                height: 90vh;
-                max-height: 750px;
-                border-radius: 2rem;
-                overflow: hidden;
+                max-width: 900px; min-height: auto; height: 90vh; max-height: 750px;
+                border-radius: 2rem; overflow: hidden;
             }
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(16, 185, 129, 0.3);
-            border-radius: 10px;
-        }
-
-        .card-hover {
-            transition: all 0.3s;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
-        }
+        .card-hover { transition: all 0.3s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3); }
 
         .btn-primary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             transition: all 0.3s;
         }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5);
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(16, 185, 129, 0.5); }
 
         .progress-bar {
             background: linear-gradient(90deg, #10b981, #059669, #047857);
             background-size: 200% 100%;
             animation: shimmer 2s linear infinite;
         }
-
-        @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                background-position: 200% 0;
-            }
-        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
         .loader {
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border: 3px solid rgba(16, 185, 129, 0.1);
             border-top-color: #10b981;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .gradient-text {
             background: linear-gradient(135deg, #10b981, #059669);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
 
-        .pulse-glow {
-            animation: pulseGlow 2s ease-in-out infinite;
-        }
-
-        @keyframes pulseGlow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
-            }
-        }
+        .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); } 50% { box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); } }
     </style>
 </head>
-
 <body>
     <div id="app" class="responsive-container glass"></div>
 
@@ -200,63 +184,54 @@
             gradient: 'from-fuchsia-500 to-pink-600',
             bg: 'bg-fuchsia-500/10',
             border: 'border-fuchsia-500/20',
-            text: 'text-fuchsia-400'
+            text: 'text-fuchsia-400',
+            color: 'fuchsia'
         };
 
-        const state = {
-            view: 'units',
-            unit: null,
-            quiz: null,
-            currentQuestion: 0,
-            score: 0,
-            isAnswered: false,
-            selectedOption: null,
-            showHint: false,
-            isLoading: true,
-            loadingMessage: 'Cargando unidades...',
-            loadedQuestions: [],
-            units: {},
-            scannedUnits: {},
-            quizDifficulty: 'NA',
-            answers: {}
-        };
+         const state = {
+             view: 'units',
+             unit: null,
+             quiz: null,
+             currentQuestion: 0,
+             score: 0,
+             isAnswered: false,
+             selectedOption: null,
+             showHint: false,
+             isLoading: true,
+             loadingMessage: 'Cargando unidades...',
+             loadedQuestions: [],
+             units: {},
+             scannedUnits: {},
+             quizDifficulty: 'NA',
+             answers: {}
+         };
 
         // --- PDF Functions ---
         function normalizeText(text) {
             if (!text) return "";
             let normalized = text;
             try {
-                // Intentar decodificar UTF-8 si es necesario
-                if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
+                if (/[À-ÿ][-¿]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
-            } catch (e) { }
+            } catch (e) {}
 
-            // Normalizar y limpiar caracteres especiales
             normalized = normalized.normalize("NFKC");
-
-            // CORREGIR PALABRAS INTERRUMPIDAS POR GUIONES O SALTOS DE L\u00EDNEA
             normalized = normalized.replace(/(\w+)-\s+(\w+)/g, '$1$2');
             normalized = normalized.replace(/(\w+)\s*\n\s*(\w+)/g, '$1$2');
-
-            // Preservar acentos y caracteres especiales del espa\u00F1ol
             normalized = normalized
-                .replace(/[\u00E1àäâãå]/gi, match => match.toUpperCase() === match ? '\u00E1' : '\u00E1')
-                .replace(/[\u00E9èëê]/gi, match => match.toUpperCase() === match ? '\u00E9' : '\u00E9')
-                .replace(/[\u00EDìïî]/gi, match => match.toUpperCase() === match ? '\u00ED' : '\u00ED')
-                .replace(/[\u00F3òöôõø]/gi, match => match.toUpperCase() === match ? '\u00F3' : '\u00F3')
-                .replace(/[\u00FAù\u00FCû]/gi, match => match.toUpperCase() === match ? '\u00FA' : '\u00FA')
-                .replace(/[\u00F1]/g, '\u00F1')
-                .replace(/[\u00F1]/g, '\u00F1');
-
-            // Limpiar guiones especiales y s\u00EDmbolos ortogr\u00E1ficos
+                .replace(/[áàäâãå]/gi, match => match.toUpperCase() === match ? 'á' : 'á')
+                .replace(/[éèëê]/gi, match => match.toUpperCase() === match ? 'é' : 'é')
+                .replace(/[íìïî]/gi, match => match.toUpperCase() === match ? 'í' : 'í')
+                .replace(/[óòöôõø]/gi, match => match.toUpperCase() === match ? 'ó' : 'ó')
+                .replace(/[úùüû]/gi, match => match.toUpperCase() === match ? 'ú' : 'ú')
+                .replace(/[ñ]/g, 'ñ');
             normalized = normalized
                 .replace(/[–—−]/g, '-')
                 .replace(/[''´`]/g, "'")
                 .replace(/[""]/g, '"')
                 .replace(/\s+/g, " ")
                 .trim();
-
             return normalized;
         }
 
@@ -275,59 +250,61 @@
 
         function detectDifficulty(questions) {
             if (!questions || questions.length === 0) return "NA";
-
             let score = 0;
-            let totalQuestions = questions.length;
-
+            const totalQuestions = questions.length;
             questions.forEach(q => {
                 if (q.q.length > 150) score += 2;
                 else if (q.q.length > 100) score += 1;
-
                 const avgOptionLength = q.a.reduce((sum, opt) => sum + opt.length, 0) / q.a.length;
                 if (avgOptionLength > 80) score += 2;
                 else if (avgOptionLength > 50) score += 1;
-
                 const words = q.q.split(/\s+/);
                 const longWords = words.filter(w => w.length > 12).length;
                 if (longWords > 3) score += 2;
                 else if (longWords > 1) score += 1;
-
                 if (/\d{4,}/.test(q.q) || /[×÷±≈√∫∑]/.test(q.q)) score += 1;
-
-                const technicalTerms = /(?:concepto|teor\u00EDa|an\u00E1lisis|hip\u00F3tesis|principio|fen\u00F3meno|estructura|proceso|sistema|caracter\u00EDstica|definici\u00F3n|relaci\u00F3n|consecuencia)/i;
+                const technicalTerms = /(?:concepto|teoría|análisis|hipótesis|principio|fenómeno|estructura|proceso|sistema|característica|definición|relación|consecuencia)/i;
                 if (technicalTerms.test(q.q)) score += 1;
             });
-
             const avgScore = score / totalQuestions;
-
-            if (avgScore >= 4) return "Dif\u00EDcil";
+            if (avgScore >= 4) return "Difícil";
             else if (avgScore >= 2) return "Medio";
-            else return "F\u00E1cil";
+            else return "Fácil";
         }
 
         function getDifficultyBadge(difficulty) {
             if (!difficulty || difficulty === 'NA') {
                 return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold bg-gray-500/10 text-gray-500 border border-gray-500/20">NA</span>`;
             }
-
             const styles = {
-                'F\u00E1cil': 'bg-green-500/10 text-green-600 border-green-500/20',
+                'Fácil': 'bg-green-500/10 text-green-600 border-green-500/20',
                 'Medio': 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-                'Dif\u00EDcil': 'bg-red-500/10 text-red-600 border-red-500/20'
+                'Difícil': 'bg-red-500/10 text-red-600 border-red-500/20'
             };
-
-            const styleClass = styles[difficulty] || 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+            const styleClass = styles[difficulty] || styles['NA'];
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
+        }
+
+        function preprocessCheckmarks(text) {
+            return text
+                .replace(/[✓✔☑✅]/g, '§CK§')
+                .replace(/√/g, '§CK§')
+                .replace(/â[œ]["“”„]/g, '§CK§')
+                .replace(/â[-¿][-¿]/g, '§CK§')
+                .replace(/â(?=[-¿“”"]?\s*\.)/g, '§CK§')
+                .replace(/[▸►◄▶▼▲●]/g, '§CK§');
         }
 
         function parseQuizText(text) {
             const questions = [];
-            let cleanText = normalizeText(text);
+            let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
 
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
-            else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            else if (/\b\d+\.\s+[A-ZÀ-ÿ¿]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
             else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            else if (/\b\d+\s+¿/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
+            else if (/\b\d+\s+[A-ZÀ-ÿ]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+[A-ZÀ-ÿ])/g);
 
             blocks.forEach(block => {
                 if (!block.includes("A)") && !block.includes("a)")) return;
@@ -335,7 +312,13 @@
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
 
-                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
+                    let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
+
+                    const unwantedAfterPeriod = q.match(/\.\s+(?:\d+|P[áa]g)/i);
+                    if (unwantedAfterPeriod) {
+                        q = q.substring(0, unwantedAfterPeriod.index + 1).trim();
+                    }
+
                     if (!q || q.length < 5) return;
 
                     const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
@@ -350,14 +333,48 @@
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
+                    let hasCheckmark = false;
+
                     opts = opts.map((o, i) => {
-                        if (o.includes('âœ“') || o.includes('âœ”') || o.toLowerCase().includes('(correcta)')) correct = i;
-                        return o.replace(/[âœ“âœ”]/g, '').replace(/\(correcta\)/gi, '').trim();
+                        if (/§CK§/.test(o) || /[✓✔☑✅√]/.test(o) ||
+                            o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                            correct = i;
+                            hasCheckmark = true;
+                        } else {
+                            const sinPunto = o.trimEnd().replace(/\.\s*$/, '').trimEnd();
+                            const ultimoChar = sinPunto.slice(-1);
+                            const code = ultimoChar.charCodeAt(0);
+                            if (ultimoChar && (
+                                (code >= 0x2190 && code <= 0x27ff) ||
+                                (code >= 0x25a0 && code <= 0x25ff) ||
+                                (code >= 0xe000 && code <= 0xf8ff) ||
+                                code === 0x00e2 || code === 0x00e3 ||
+                                code === 0x00a7 || code === 0x00b7
+                            )) {
+                                correct = i;
+                                hasCheckmark = true;
+                            }
+                        }
+                        let cleaned = o
+                            .replace(/§CK§/g, '')
+                            .replace(/[✓✔☑✅√▸►◄▶▼▲●]/g, '')
+                            .replace(/\(correcta\)/gi, '')
+                            .replace(/\(correcto\)/gi, '')
+                            .replace(/^\s*[-_]\s*/, '')
+                            .trim();
+                        if (cleaned.endsWith('.')) {
+                            cleaned = cleaned.slice(0, -1).trim();
+                        }
+                        return cleaned;
                     });
+
+                    if (hasCheckmark && q.endsWith('.')) {
+                        q = q.slice(0, -1).trim();
+                    }
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
-                } catch (e) { }
+                } catch (e) {}
             });
             return questions;
         }
@@ -371,8 +388,8 @@
             const units = {};
             for (let i = 1; i <= 20; i++) {
                 try {
-                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad ${i}/Cuestionario_1.pdf`).promise;
-                    units[`u${i}`] = { folderName: `Unidad ${i}`, label: `Unidad ${i}`, quizzes: {} };
+                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
+                    units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
                 } catch { break; }
             }
             state.units = units;
@@ -432,23 +449,20 @@
         }
 
         async function handleHash() {
-            const hash = window.location.hash.slice(1); // Remove #
+            const hash = window.location.hash.slice(1);
             if (!hash) return;
 
             const parts = hash.split('/');
-            const unitKey = parts[0]; // e.g., "u1"
-            const quizKey = parts[1]; // e.g., "q1"
+            const unitKey = parts[0];
+            const quizKey = parts[1];
 
             if (unitKey && unitKey.startsWith('u')) {
-                // Wait for units to load
                 if (Object.keys(state.units).length === 0) {
                     await scanUnits();
                 }
-
                 if (state.units[unitKey]) {
                     state.unit = unitKey;
                     await scanQuizzes(unitKey);
-
                     if (quizKey && quizKey.startsWith('q') && state.units[unitKey].quizzes[quizKey]) {
                         state.view = 'quizzes';
                         await actions.startQuiz(quizKey);
@@ -488,14 +502,15 @@
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 
-                    // Detectar dificultad bas\u00E1ndose en el contenido de las preguntas
                     state.quizDifficulty = detectDifficulty(questions);
                     state.units[state.unit].quizzes[key].difficulty = state.quizDifficulty;
 
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
+                    state.answers = {};
                     state.isAnswered = false;
+                    state.selectedOption = null;
                     state.showHint = false;
                     state.isLoading = false;
                     state.view = 'quiz';
@@ -508,52 +523,80 @@
                     renderView();
                 }
             },
-             answer: (idx) => {
-                 if (state.isAnswered) return;
-                 state.selectedOption = idx;
-                 state.answers[state.currentQuestion] = idx;
-                 state.isAnswered = true;
-                 if (idx === state.loadedQuestions[state.currentQuestion].c) state.score++;
-                 renderView();
-             },
+            answer: (idx) => {
+                if (state.isAnswered) return;
+                state.selectedOption = idx;
+                state.answers[state.currentQuestion] = idx;
+                state.isAnswered = true;
+                if (idx === state.loadedQuestions[state.currentQuestion].c) {
+                    state.score++;
+                }
+                renderView();
+            },
+            jumpToQuestion: (index) => {
+                if (index === state.currentQuestion) return;
+                state.currentQuestion = index;
+                state.isAnswered = state.answers[index] !== undefined;
+                state.showHint = false;
+                state.selectedOption = state.answers[index] !== undefined ? state.answers[index] : null;
+                renderView();
+            },
             next: async () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) {
                     state.currentQuestion++;
-                    state.isAnswered = false;
+                    state.isAnswered = state.answers[state.currentQuestion] !== undefined;
                     state.showHint = false;
+                    state.selectedOption = state.answers[state.currentQuestion] !== undefined ? state.answers[state.currentQuestion] : null;
                     renderView();
                 } else {
-                    state.view = 'finished';
-                    renderView();
-                    
-                    // Guardar el score en la BD
-                    const total = state.loadedQuestions.length;
-                    const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
-                    showScoreSavedNotification(saved);
+                    if (allAnswered()) {
+                        state.view = 'review';
+                        renderView();
+                    }
                 }
             },
-             hint: () => { state.showHint = !state.showHint; renderView(); },
-             showReview: () => {
-                 state.view = 'review';
-                 renderView();
-             },
-             confirmSubmit: async () => {
-                 state.view = 'finished';
-                 renderView();
-                 
-                 // Guardar el score en la BD
-                 const total = state.loadedQuestions.length;
-                 const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
-                 showScoreSavedNotification(saved);
-             },
-             goBack: () => {
-                 state.view = 'quiz';
-                 renderView();
-             },
-             goUnits: () => { state.unit = null; state.quiz = null; state.view = 'units'; window.location.hash = ''; renderView(); },
-             goQuizzes: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
-             restart: () => { state.quiz = null; state.view = 'quizzes'; updateHash(); renderView(); },
-             copyLink: () => { copyLink(); }
+            hint: () => { state.showHint = !state.showHint; renderView(); },
+            showReview: () => {
+                state.view = 'review';
+                renderView();
+            },
+            confirmSubmit: async () => {
+                state.view = 'finished';
+                renderView();
+                const total = state.loadedQuestions.length;
+                const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
+                showScoreSavedNotification(saved);
+            },
+            goBack: () => {
+                state.view = 'quiz';
+                renderView();
+            },
+            goUnits: () => {
+                state.unit = null;
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'units';
+                window.location.hash = '';
+                renderView();
+            },
+            goQuizzes: () => {
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'quizzes';
+                updateHash();
+                renderView();
+            },
+            restart: () => {
+                state.quiz = null;
+                state.answers = {};
+                state.score = 0;
+                state.view = 'quizzes';
+                updateHash();
+                renderView();
+            },
+            copyLink: () => { copyLink(); }
         };
 
         // --- Render ---
@@ -602,10 +645,10 @@
                             </div>
                             <div class="space-y-3">
                                 ${units.length === 0 ? `<p class="text-center text-slate-400 py-8">No se encontraron unidades</p>` :
-                        units.map(([k, u]) => `
+                                units.map(([k, u]) => `
                                     <button onclick="actions.setUnit('${k}')" class="w-full p-5 rounded-2xl glass card-hover flex items-center gap-4 text-left">
                                         <div class="w-12 h-12 rounded-xl ${SUBJECT.bg} ${SUBJECT.border} border flex items-center justify-center">
-                                            <span class="${SUBJECT.text} font-black text-lg">${k.replace('u', '')}</span>
+                                            <span class="${SUBJECT.text} font-black text-lg">${k.replace('u','')}</span>
                                         </div>
                                         <div class="flex-1">
                                             <h3 class="text-white font-bold">${u.label}</h3>
@@ -641,6 +684,7 @@
                                              <div class="flex items-center gap-2 mb-1">
                                                  <h3 class="text-white font-bold truncate">${q.label}</h3>
                                              </div>
+                                             <p class="text-slate-400 text-xs">${q.fileName}</p>
                                          </div>
                                         <i data-lucide="play" class="w-5 h-5 ${SUBJECT.text}"></i>
                                     </button>
@@ -649,126 +693,119 @@
                         </div>
                     </div>`;
             }
-             else if (state.view === 'quiz') {
-                  const q = state.loadedQuestions[state.currentQuestion];
-                  const total = state.loadedQuestions.length;
-                  const progress = ((state.currentQuestion + 1) / total) * 100;
-                  
-                  content = `${header}
-                      <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                          <div class="max-w-2xl mx-auto space-y-6 slide-up">
-                              <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
-                                  <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
-                              </button>
-                              <div class="flex items-center justify-between gap-4">
-                                  <div class="flex-1">
-                                      <div class="flex justify-between mb-2">
-                                          <span class="text-xs text-slate-400">Pregunta ${state.currentQuestion + 1}/${total}</span>
-                                          <span class="text-xs font-bold ${SUBJECT.text}">${state.score} pts</span>
-                                      </div>
-                                      <div class="h-2 rounded-full bg-white/5 overflow-hidden">
-                                          <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
-                                      </div>
+            else if (state.view === 'quiz') {
+                const q = state.loadedQuestions[state.currentQuestion];
+                const total = state.loadedQuestions.length;
+                const progress = ((state.currentQuestion + 1) / total) * 100;
+
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6 quiz-background ${state.darkMode ? 'dark' : ''}">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up relative z-10">
+                            <button onclick="actions.goQuizzes()" class="flex items-center gap-2 text-slate-400 hover:text-white text-sm">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Salir del quiz
+                            </button>
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex justify-between mb-2">
+                                        <span class="text-xs text-slate-400">Pregunta ${state.currentQuestion + 1}/${total}</span>
+                                        <span class="text-xs font-bold ${SUBJECT.text}">${state.score} pts</span>
+                                    </div>
+                                    <div class="h-2 rounded-full bg-white/5 overflow-hidden">
+                                        <div class="h-full progress-bar rounded-full" style="width:${progress}%"></div>
+                                    </div>
+                                </div>
+                             </div>
+
+                             <div class="glass rounded-2xl p-6 space-y-4">
+                                <h3 class="text-lg font-bold text-white leading-relaxed">${q.q}</h3>
+                                ${state.showHint ? `
+                                    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                                        <p class="text-sm text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
+                                    </div>
+                                ` : `<button onclick="actions.hint()" class="text-xs text-amber-400 hover:text-amber-300"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
+                            </div>
+                            <div class="space-y-3">
+                                 ${q.a.map((opt, i) => {
+                                     let cls = 'glass border-white/5';
+                                     let icon = '';
+                                     if (i === state.selectedOption) { cls = `border-${SUBJECT.color}-500/50 bg-${SUBJECT.color}-500/10`; }
+                                     return `
+                                         <button onclick="actions.answer(${i})" ${state.isAnswered && i !== state.selectedOption ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-${SUBJECT.color}-500/50 transition-all ${state.isAnswered && i !== state.selectedOption ? 'opacity-50 cursor-not-allowed' : ''}">
+                                             <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65+i)}</span>
+                                             <span class="flex-1 text-sm text-white">${opt}</span>
+                                             ${icon}
+                                         </button>`;
+                                }).join('')}
+                             </div>
+                              <div class="glass rounded-lg p-2">
+                                  <div class="grid grid-cols-6 sm:grid-cols-12 gap-1">
+                                      ${Array.from({length: total}).map((_, i) => `
+                                          <button onclick="actions.jumpToQuestion(${i})" class="w-full h-8 rounded text-xs font-bold transition-all ${i === state.currentQuestion ? `btn-primary ${SUBJECT.text}` : (state.answers[i] !== undefined ? 'bg-green-500/30 border border-green-500/50 text-green-400 hover:bg-green-500/40' : 'glass hover:border-orange-500/50')} flex items-center justify-center">
+                                              ${i + 1}
+                                          </button>
+                                      `).join('')}
                                   </div>
-                               </div>
-                               
-                               <div class="glass rounded-2xl p-6 space-y-4">
-                                  <h3 class="text-lg font-bold text-white leading-relaxed">${q.q}</h3>
-                                  ${state.showHint ? `
-                                      <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                          <p class="text-sm text-amber-200"><i data-lucide="lightbulb" class="w-4 h-4 inline mr-2"></i>${q.h}</p>
-                                      </div>
-                                  ` : `<button onclick="actions.hint()" class="text-xs text-amber-400 hover:text-amber-300"><i data-lucide="lightbulb" class="w-3 h-3 inline mr-1"></i>Ver pista</button>`}
                               </div>
-                              <div class="space-y-3">
-                                  ${q.a.map((opt, i) => {
-                                      let cls = 'glass border-white/5';
-                                      let icon = '';
-                                      if (state.isAnswered) {
-                                          if (i === q.c) { cls = 'bg-lime-500/20 border-lime-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-lime-400"></i>'; }
-                                          else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
-                                      }
-                                      return `
-                                          <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-lime-500/50 transition-all">
-                                              <span class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm font-bold text-slate-400">${String.fromCharCode(65+i)}</span>
-                                              <span class="flex-1 text-sm text-white">${opt}</span>
-                                              ${icon}
-                                          </button>`;
-                                  }).join('')}
-                               </div>
-                               <!-- Selector de Preguntas (pequeño, al final) -->
-                               <div class="glass rounded-lg p-2">
-                                   <div class="grid grid-cols-6 sm:grid-cols-12 gap-1">
-                                       ${Array.from({length: total}).map((_, i) => `
-                                           <button onclick="actions.jumpToQuestion(${i})" class="w-full h-8 rounded text-xs font-bold transition-all ${i === state.currentQuestion ? `btn-primary ${SUBJECT.text}` : 'glass hover:border-lime-500/50'} flex items-center justify-center">
-                                               ${i + 1}
-                                           </button>
-                                       `).join('')}
-                                   </div>
-                               </div>
-                                ${state.isAnswered ? `<button onclick="${state.currentQuestion + 1 < total ? 'actions.next()' : (allAnswered() ? 'actions.showReview()' : '')}" class="w-full py-4 rounded-xl text-white font-bold ${state.currentQuestion + 1 < total || allAnswered() ? 'btn-primary' : 'bg-slate-600/50 cursor-not-allowed'}" ${!state.currentQuestion + 1 < total && !allAnswered() ? 'disabled' : ''}>${state.currentQuestion + 1 < total ? 'Siguiente' : (allAnswered() ? 'Revisar Respuestas' : 'Completa todas las preguntas')}</button>` : ''}
-                           </div>
-                       </div>`;
-             }
-             else if (state.view === 'review') {
-                  const total = state.loadedQuestions.length;
-                  const answered = state.loadedQuestions.filter((q, i) => state.answers[i] !== undefined).length;
-                  
-                  content = `${header}
-                      <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-                          <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
-                              <div class="space-y-2">
-                                  <h2 class="text-2xl font-bold text-white">Revisar Respuestas</h2>
-                                  <p class="text-slate-400 text-sm">Has respondido ${answered}/${total} preguntas</p>
-                              </div>
-                              
-                              <div class="glass rounded-2xl p-6 space-y-4">
-                                  ${state.loadedQuestions.map((q, idx) => {
-                                      const answered = state.answers[idx] !== undefined;
-                                      const selectedAns = state.answers[idx];
-                                      const isCorrect = selectedAns === q.c;
-                                      return `
-                                          <div class="border rounded-lg p-4 ${answered ? (isCorrect ? 'border-lime-500/50 bg-lime-500/10' : 'border-red-500/50 bg-red-500/10') : 'border-slate-500/30 bg-slate-500/10'}">
-                                              <div class="flex items-start gap-3 mb-3">
-                                                  <span class="text-sm font-bold ${SUBJECT.text}">${idx + 1}.</span>
-                                                  <div class="flex-1">
-                                                      <p class="text-white text-sm">${q.q}</p>
-                                                  </div>
-                                                  ${answered ? (isCorrect ? '<i data-lucide="check" class="w-5 h-5 text-lime-400"></i>' : '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>') : '<i data-lucide="help-circle" class="w-5 h-5 text-slate-400"></i>'}
-                                              </div>
-                                              ${answered ? `
-                                                  <div class="space-y-2 text-xs">
-                                                      <div class="flex items-center gap-2">
-                                                          <span class="text-slate-400">Tu respuesta:</span>
-                                                          <span class="font-bold ${isCorrect ? 'text-lime-400' : 'text-red-400'}">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
-                                                      </div>
-                                                      ${!isCorrect ? `<div class="flex items-center gap-2"><span class="text-slate-400">Respuesta correcta:</span><span class="font-bold text-lime-400">${String.fromCharCode(65 + q.c)} - ${q.a[q.c]}</span></div>` : ''}
-                                                  </div>
-                                              ` : '<p class="text-slate-400 text-xs">No respondida</p>'}
-                                          </div>
-                                      `;
-                                  }).join('')}
-                              </div>
-                              
-                              <div class="flex gap-3">
-                                  <button onclick="actions.goBack()" class="flex-1 py-4 rounded-xl border border-slate-500/30 text-white font-bold hover:bg-slate-500/10 transition-all">
-                                      Volver
-                                  </button>
-                                  <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold">
-                                      Confirmar y Enviar
-                                  </button>
-                              </div>
-                          </div>
-                      </div>`;
-             }
-             else if (state.view === 'finished') {
+                               ${state.isAnswered ? `<button onclick="${state.currentQuestion + 1 < total ? 'actions.next()' : (allAnswered() ? 'actions.showReview()' : '')}" class="w-full py-4 rounded-xl text-white font-bold ${state.currentQuestion + 1 < total || allAnswered() ? 'btn-primary' : 'bg-slate-600/50 cursor-not-allowed'}" ${!(state.currentQuestion + 1 < total) && !allAnswered() ? 'disabled' : ''}>${state.currentQuestion + 1 < total ? 'Siguiente' : (allAnswered() ? 'Revisar Respuestas' : 'Completa todas las preguntas')}</button>` : ''}
+                         </div>
+                     </div>`;
+            }
+            else if (state.view === 'review') {
+                const total = state.loadedQuestions.length;
+                const answered = state.loadedQuestions.filter((q, i) => state.answers[i] !== undefined).length;
+
+                content = `${header}
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="max-w-2xl mx-auto space-y-6 slide-up pb-6">
+                            <div class="space-y-2">
+                                <h2 class="text-2xl font-bold text-white">Revisar Respuestas</h2>
+                                <p class="text-slate-400 text-sm">Has respondido ${answered}/${total} preguntas</p>
+                            </div>
+
+                            <div class="glass rounded-2xl p-6 space-y-4">
+                                ${state.loadedQuestions.map((q, idx) => {
+                                    const answered = state.answers[idx] !== undefined;
+                                    const selectedAns = state.answers[idx];
+                                    return `
+                                        <div class="border rounded-lg p-4 ${answered ? 'border-blue-500/50 bg-blue-500/10' : 'border-slate-500/30 bg-slate-500/10'}">
+                                            <div class="flex items-start gap-3 mb-3">
+                                                <span class="text-sm font-bold ${SUBJECT.text}">${idx + 1}.</span>
+                                                <div class="flex-1">
+                                                    <p class="text-white text-sm">${q.q}</p>
+                                                </div>
+                                            </div>
+                                            ${answered ? `
+                                                <div class="space-y-2 text-xs">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-slate-400">Tu respuesta:</span>
+                                                        <span class="font-bold text-blue-400">${String.fromCharCode(65 + selectedAns)} - ${q.a[selectedAns]}</span>
+                                                    </div>
+                                                </div>
+                                            ` : '<p class="text-slate-400 text-xs">No respondida</p>'}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button onclick="actions.goBack()" class="flex-1 py-4 rounded-xl border border-slate-500/30 text-white font-bold hover:bg-slate-500/10 transition-all">
+                                    Volver
+                                </button>
+                                <button onclick="actions.confirmSubmit()" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold">
+                                    Confirmar y Enviar
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            else if (state.view === 'finished') {
                 const total = state.loadedQuestions.length;
                 const perc = Math.round((state.score / total) * 100);
                 const msg = perc >= 80 ? 'Excelente!' : perc >= 60 ? 'Muy bien!' : perc >= 40 ? 'Puedes mejorar' : 'Sigue practicando';
 
                 content = `${header}
-                    <div class="flex-1 flex items-center justify-center p-6">
-                        <div class="text-center space-y-8 fade-in max-w-md">
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                        <div class="text-center space-y-8 fade-in max-w-md mx-auto pb-6">
                             <div class="w-24 h-24 rounded-3xl bg-gradient-to-br ${SUBJECT.gradient} flex items-center justify-center mx-auto shadow-2xl pulse-glow">
                                 <i data-lucide="trophy" class="w-12 h-12 text-white"></i>
                             </div>
@@ -788,6 +825,23 @@
                             <div class="flex gap-3">
                                 <button onclick="actions.restart()" class="flex-1 py-4 rounded-xl glass text-white font-bold hover:bg-white/10">Otro Quiz</button>
                                 <a href="../index.html" class="flex-1 py-4 rounded-xl btn-primary text-white font-bold text-center">Inicio</a>
+                            </div>
+                            <div class="glass rounded-2xl p-6 text-left space-y-4 mt-4">
+                                <h3 class="text-lg font-bold text-white">Desglose de respuestas</h3>
+                                ${state.loadedQuestions.map((q, idx) => {
+                                    const selected = state.answers[idx];
+                                    const correct = q.c;
+                                    const isCorrect = selected === correct;
+                                    return `
+                                        <div class="p-4 rounded-xl border ${isCorrect ? 'border-green-500/50 bg-green-500/10' : 'border-red-500/50 bg-red-500/10'}">
+                                            <div class="flex items-start gap-2 mb-2">
+                                                <span class="text-lg">${isCorrect ? '✅' : '❌'}</span>
+                                                <p class="text-sm font-medium text-white">${idx + 1}. ${q.q}</p>
+                                            </div>
+                                            ${!isCorrect ? `<p class="text-sm text-red-400 ml-7">Tu respuesta: <span class="font-bold">${String.fromCharCode(65 + selected)}) ${q.a[selected]}</span></p>` : ''}
+                                            <p class="text-sm text-green-400 ml-7">Correcta: <span class="font-bold">${String.fromCharCode(65 + correct)}) ${q.a[correct]}</span></p>
+                                        </div>`;
+                                }).join('')}
                             </div>
                         </div>
                     </div>`;
@@ -809,5 +863,4 @@
         init();
     </script>
 </body>
-
 </html>
