@@ -482,22 +482,34 @@
                     <i data-lucide="trophy" class="w-4 h-4 inline"></i>
                     <span>Todos</span>
                 </button>
+                <button class="filter-btn" onclick="filterSubject('biologia')" data-filter="biologia">
+                    <i data-lucide="microscope" class="w-4 h-4 inline"></i>
+                    <span>Biología</span>
+                </button>
+                <button class="filter-btn" onclick="filterSubject('fisica')" data-filter="fisica">
+                    <i data-lucide="atom" class="w-4 h-4 inline"></i>
+                    <span>Física</span>
+                </button>
+                <button class="filter-btn" onclick="filterSubject('foce')" data-filter="foce">
+                    <i data-lucide="scale" class="w-4 h-4 inline"></i>
+                    <span>FOCE</span>
+                </button>
+                <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
+                    <i data-lucide="map" class="w-4 h-4 inline"></i>
+                    <span>Geografía</span>
+                </button>
                 <button class="filter-btn" onclick="filterSubject('historia_mexico')" data-filter="historia_mexico">
                     <i data-lucide="scroll-text" class="w-4 h-4 inline"></i>
-                    <span>Historia de México</span>
+                    <span>Hist. México</span>
                 </button>
                 <button class="filter-btn" onclick="filterSubject('historia_universal')" data-filter="historia_universal">
                     <i data-lucide="globe-2" class="w-4 h-4 inline"></i>
-                    <span>Historia Universal</span>
+                    <span>Hist. Universal</span>
                 </button>
-                 <button class="filter-btn" onclick="filterSubject('geografia')" data-filter="geografia">
-                     <i data-lucide="map" class="w-4 h-4 inline"></i>
-                     <span>Geografía</span>
-                 </button>
-                 <button class="filter-btn" onclick="filterSubject('fisica')" data-filter="fisica">
-                     <i data-lucide="atom" class="w-4 h-4 inline"></i>
-                     <span>Física</span>
-                 </button>
+                <button class="filter-btn" onclick="filterSubject('quimica')" data-filter="quimica">
+                    <i data-lucide="flask-conical" class="w-4 h-4 inline"></i>
+                    <span>Química</span>
+                </button>
              </div>
         </div>
 
@@ -590,9 +602,13 @@
             darkMode: localStorage.getItem('darkMode') !== 'false', // Respetar preferencia del usuario
             currentFilter: 'all',
             leaderboards: {
+                biologia: {},
+                fisica: {},
+                foce: {},
+                geografia: {},
                 historia_mexico: {},
                 historia_universal: {},
-                geografia: {}
+                quimica: {}
             },
             charts: {}
         };
@@ -685,17 +701,23 @@
             }
             
              const subjects = [
-                 { key: 'historia_mexico', name: 'Historia de México', units: 8 },
-                 { key: 'historia_universal', name: 'Historia Universal', units: 8 },
+                 { key: 'biologia', name: 'Biología', units: 5 },
+                 { key: 'fisica', name: 'Física', units: 4 },
+                 { key: 'foce', name: 'FOCE', units: 9 },
                  { key: 'geografia', name: 'Geografía', units: 2 },
-                 { key: 'fisica', name: 'Física', units: 4 }
+                 { key: 'historia_mexico', name: 'Historia de México', units: 5 },
+                 { key: 'historia_universal', name: 'Historia Universal', units: 5 },
+                 { key: 'quimica', name: 'Química', units: 3 }
              ];
 
              const leaderboards = {
+                 biologia: {},
+                 fisica: {},
+                 foce: {},
+                 geografia: {},
                  historia_mexico: {},
                  historia_universal: {},
-                 geografia: {},
-                 fisica: {}
+                 quimica: {}
              };
 
              try {
@@ -773,7 +795,7 @@
          // Get filtered data (convertir estructura a array plano)
          function getFilteredData() {
              const subjects = state.currentFilter === 'all'
-                 ? ['historia_mexico', 'historia_universal', 'geografia', 'fisica']
+                 ? ['biologia', 'fisica', 'foce', 'geografia', 'historia_mexico', 'historia_universal', 'quimica']
                  : [state.currentFilter];
             
             const flatData = [];
@@ -887,10 +909,13 @@
          // Get subject name
          function getSubjectName(key) {
              const names = {
+                 'biologia': 'Biología',
+                 'fisica': 'Física',
+                 'foce': 'FOCE',
+                 'geografia': 'Geografía',
                  'historia_mexico': 'Historia de México',
                  'historia_universal': 'Historia Universal',
-                 'geografia': 'Geografía',
-                 'fisica': 'Física'
+                 'quimica': 'Química'
              };
              return names[key] || key;
          }
@@ -937,13 +962,21 @@
                         data: subjectAvgs.map(s => s.avg),
                         backgroundColor: [
                             'rgba(16, 185, 129, 0.6)',
+                            'rgba(14, 165, 233, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(251, 191, 36, 0.6)',
+                            'rgba(139, 92, 246, 0.6)',
                             'rgba(99, 102, 241, 0.6)',
-                            'rgba(251, 191, 36, 0.6)'
+                            'rgba(217, 70, 239, 0.6)'
                         ],
                         borderColor: [
                             'rgba(16, 185, 129, 1)',
+                            'rgba(14, 165, 233, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(251, 191, 36, 1)',
+                            'rgba(139, 92, 246, 1)',
                             'rgba(99, 102, 241, 1)',
-                            'rgba(251, 191, 36, 1)'
+                            'rgba(217, 70, 239, 1)'
                         ],
                         borderWidth: 2,
                         borderRadius: 8
@@ -1039,21 +1072,27 @@
          // Render rankings
          function renderRankings() {
              const subjects = state.currentFilter === 'all'
-                 ? ['historia_mexico', 'historia_universal', 'geografia', 'fisica']
+                 ? ['biologia', 'fisica', 'foce', 'geografia', 'historia_mexico', 'historia_universal', 'quimica']
                  : [state.currentFilter];
              
              const colors = {
-                 'historia_mexico': 'emerald',
-                 'historia_universal': 'indigo',
+                 'biologia': 'green',
+                 'fisica': 'sky',
+                 'foce': 'blue',
                  'geografia': 'amber',
-                 'fisica': 'red'
+                 'historia_mexico': 'violet',
+                 'historia_universal': 'indigo',
+                 'quimica': 'fuchsia'
              };
-             
+
              const icons = {
+                 'biologia': 'microscope',
+                 'fisica': 'atom',
+                 'foce': 'scale',
+                 'geografia': 'map',
                  'historia_mexico': 'scroll-text',
                  'historia_universal': 'globe-2',
-                 'geografia': 'map',
-                 'fisica': 'atom'
+                 'quimica': 'flask-conical'
             };
             
             const html = subjects.map(subject => {
