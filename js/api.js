@@ -169,7 +169,7 @@ class APIService {
         localStorage.removeItem('userData');
         localStorage.removeItem('userName');
         localStorage.removeItem('userGroup');
-        window.location.href = BASE_PATH + 'landing.html';
+        window.location.href = BASE_PATH + 'auth.html';
     }
 
     // ==========================================

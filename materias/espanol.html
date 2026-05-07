@@ -208,8 +208,9 @@
             if (!text) return "";
             let normalized = text;
             try {
-                // Intentar decodificar UTF-8 si es necesario
-                if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(normalized)) {
+                // Solo re-decodificar si NO hay chars > U+00FF (esos indican que PDF.js ya decodificó bien)
+                const hasHighUnicode = /[Ā-￿]/.test(normalized);
+                if (!hasHighUnicode && /[À-ÿ][-¿]/.test(normalized)) {
                     normalized = new TextDecoder('utf-8').decode(new Uint8Array(Array.from(normalized).map(c => c.charCodeAt(0))));
                 }
             } catch (e) {}
@@ -312,41 +313,94 @@
             return `<span class="px-2 py-1 rounded-md text-[10px] font-semibold border ${styleClass}">${difficulty}</span>`;
         }
 
+                function preprocessCheckmarks(text) {
+            return text
+                .replace(/[✓✔☑✅]/g, '§CK§')
+                .replace(/√/g, '§CK§')
+                .replace(/â[œ]["""„]/g, '§CK§')
+                .replace(/â[-¿][-¿]/g, '§CK§')
+                .replace(/â(?=[-¿"""]?\s*\.)/g, '§CK§')
+                .replace(/\s+X\s+\./g, ' §CK§.')
+                .replace(/[▸►◄▶▼▲●]/g, '§CK§');
+        }
+
         function parseQuizText(text) {
             const questions = [];
-            const preNorm = text.replace(/âœ”|â”|✓|✔|✅|☑/g, ' (correcta) ');
-            let cleanText = normalizeText(preNorm);
+            let cleanText = normalizeText(preprocessCheckmarks(text));
             let blocks = [];
-
+            
+            // Intentar múltiples patrones de numeración en orden de especificidad
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
-            else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
+            else if (/\b\d+\.\s+[A-ZÁÉÍÓÚÑ¿]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
             else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
+            else if (/\b\d+\s+¿/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+¿)/g);
+            else if (/\b\d+\s+[A-ZÁÉÍÓÚÑ]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\s+[A-ZÁÉÍÓÚÑ])/g);
 
             blocks.forEach(block => {
-                if (!block.includes(“A)”) && !block.includes(“a)”)) return;
+                if (!block.includes("A)") && !block.includes("a)")) return;
                 try {
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
-
-                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, “”).trim();
+                    
+                    let q = parts[0].replace(/^\d+[\.\-\)\s]+/, "").trim();
+                    
+                    const unwantedAfterPeriod = q.match(/\.\s+(?:\d+|P[áa]g)/i);
+                    if (unwantedAfterPeriod) {
+                        q = q.substring(0, unwantedAfterPeriod.index + 1).trim();
+                    }
+                    
                     if (!q || q.length < 5) return;
 
-                    const optParts = parts.slice(1).join(“ A) “).split(/\s+[BbCcDd][).\-]+\s+/);
+                    const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
                     if (optParts.length < 4) return;
 
                     let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
-
-                    let hint = “Sin pista disponible.”;
-                    const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
-                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], “”).trim(); }
+                    
+                    let hint = "Sin pista disponible.";
+                    const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)/i);
+                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
                     const nq = opts[3].match(/\s+\d+[).\-]/);
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
+                    let hasCheckmark = false;
+
                     opts = opts.map((o, i) => {
-                        if (o.toLowerCase().includes('(correcta)') || o.includes('✓') || o.includes('✔')) correct = i;
-                        return o.replace(/[✓✔✅☑]/g, '').replace(/\(correcta\)/gi, '').trim();
+                        if (/§CK§/.test(o) || /[✓✔☑✅√]/.test(o) ||
+                            o.toLowerCase().includes('(correcta)') || o.toLowerCase().includes('(correcto)')) {
+                            correct = i;
+                            hasCheckmark = true;
+                        } else {
+                            const sinPunto = o.trimEnd().replace(/\.\s*/, '').trimEnd();
+                            const ultimoChar = sinPunto.slice(-1);
+                            const code = ultimoChar.charCodeAt(0);
+                            if (ultimoChar && (
+                                (code >= 0x2190 && code <= 0x27ff) ||
+                                (code >= 0x25a0 && code <= 0x25ff) ||
+                                (code >= 0xe000 && code <= 0xf8ff) ||
+                                code === 0x00e2 || code === 0x00e3 ||
+                                code === 0x00a7 || code === 0x00b7
+                            )) {
+                                correct = i;
+                                hasCheckmark = true;
+                            }
+                        }
+                        let cleaned = o
+                            .replace(/§CK§/g, '')
+                            .replace(/[✓✔☑✅√▸►◄▶▼▲●]/g, '')
+                            .replace(/\(correcta\)/gi, '')
+                            .replace(/\(correcto\)/gi, '')
+                            .replace(/^\s*[-_]\s*/, '')
+                            .trim();
+                        if (cleaned.endsWith('.')) {
+                            cleaned = cleaned.slice(0, -1).trim();
+                        }
+                        return cleaned;
                     });
+
+                    if (hasCheckmark && q.endsWith('.')) {
+                        q = q.slice(0, -1).trim();
+                    }
 
                     if (opts.some(o => !o)) return;
                     questions.push({ q, a: opts, c: correct, h: hint });
@@ -364,7 +418,7 @@
             const units = {};
             for (let i = 1; i <= 20; i++) {
                 try {
-                    await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/Unidad_${i}/Cuestionario_1.pdf`).promise;
+                    await pdfjsLib.getDocument(`../cuestionarios/${encodeURIComponent(SUBJECT.folderName)}/Unidad_${i}/Cuestionario_1.pdf`).promise;
                     units[`u${i}`] = { folderName: `Unidad_${i}`, label: `Unidad ${i}`, quizzes: {} };
                 } catch { break; }
             }
@@ -385,7 +439,7 @@
             
             for (let i = 1; i <= 20; i++) {
                 try {
-                    const pdf = await pdfjsLib.getDocument(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
+                    const pdf = await pdfjsLib.getDocument(`../cuestionarios/${encodeURIComponent(SUBJECT.folderName)}/${unit.folderName}/Cuestionario_${i}.pdf`).promise;
                     const page = await pdf.getPage(1);
                     const tc = await page.getTextContent();
                     const txt = normalizeText(tc.items.map(s => s.str).join(" "));
@@ -477,7 +531,7 @@
                 const quiz = unit.quizzes[key];
                 
                 try {
-                    const text = await extractTextFromPDF(`../cuestionarios/${SUBJECT.folderName}/${unit.folderName}/${quiz.fileName}`);
+                    const text = await extractTextFromPDF(`../cuestionarios/${encodeURIComponent(SUBJECT.folderName)}/${unit.folderName}/${quiz.fileName}`);
                     const questions = parseQuizText(text);
                     if (questions.length === 0) throw new Error("No se encontraron preguntas");
 

@@ -244,37 +244,38 @@
 
         function parseQuizText(text) {
             const questions = [];
-            let cleanText = normalizeText(text);
+            const preNorm = text.replace(/âœ”|â”|✓|✔|✅|☑/g, ' (correcta) ');
+            let cleanText = normalizeText(preNorm);
             let blocks = [];
-            
+
             if (/\b\d+\.-/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.-\s?)/g);
             else if (/\b\d+\.\s+[A-Z]/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\.\s+)/g);
             else if (/\b\d+\)\s/.test(cleanText)) blocks = cleanText.split(/(?=\b\d+\)\s)/g);
 
             blocks.forEach(block => {
-                if (!block.includes("A)") && !block.includes("a)")) return;
+                if (!block.includes(“A)”) && !block.includes(“a)”)) return;
                 try {
                     const parts = block.split(/\s+[Aa][).\-]+\s+/);
                     if (parts.length < 2) return;
-                    
-                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, "").trim();
+
+                    let q = parts[0].replace(/^\d+[\.\-\)]+\s*/, “”).trim();
                     if (!q || q.length < 5) return;
 
-                    const optParts = parts.slice(1).join(" A) ").split(/\s+[BbCcDd][).\-]+\s+/);
+                    const optParts = parts.slice(1).join(“ A) “).split(/\s+[BbCcDd][).\-]+\s+/);
                     if (optParts.length < 4) return;
 
                     let opts = [optParts[0], optParts[1], optParts[2], optParts[3]].map(o => o.trim());
-                    
-                    let hint = "Sin pista disponible.";
+
+                    let hint = “Sin pista disponible.”;
                     const hm = opts[3].match(/(?:\s+P\)\s*|\s+PISTA\s*[:.-]?\s*)(.*)$/i);
-                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], "").trim(); }
+                    if (hm) { hint = hm[1].trim(); opts[3] = opts[3].replace(hm[0], “”).trim(); }
                     const nq = opts[3].match(/\s+\d+[).\-]/);
                     if (nq) opts[3] = opts[3].substring(0, nq.index).trim();
 
                     let correct = 0;
                     opts = opts.map((o, i) => {
-                        if (o.includes('âœ“') || o.includes('âœ”') || o.toLowerCase().includes('(correcta)')) correct = i;
-                        return o.replace(/[âœ“âœ”]/g, '').replace(/\(correcta\)/gi, '').trim();
+                        if (o.toLowerCase().includes('(correcta)') || o.includes('✓') || o.includes('✔')) correct = i;
+                        return o.replace(/[✓✔✅☑]/g, '').replace(/\(correcta\)/gi, '').trim();
                     });
 
                     if (opts.some(o => !o)) return;
@@ -419,7 +420,9 @@
                     state.loadedQuestions = questions;
                     state.currentQuestion = 0;
                     state.score = 0;
+                    state.answers = {};
                     state.isAnswered = false;
+                    state.selectedOption = null;
                     state.showHint = false;
                     state.isLoading = false;
                     state.view = 'quiz';
@@ -443,19 +446,29 @@
             next: async () => {
                 if (state.currentQuestion + 1 < state.loadedQuestions.length) {
                     state.currentQuestion++;
-                    state.isAnswered = false;
+                    const prev = state.answers[state.currentQuestion];
+                    state.isAnswered = prev !== undefined;
+                    state.selectedOption = prev !== undefined ? prev : null;
                     state.showHint = false;
                     renderView();
                 } else {
                     state.view = 'finished';
                     renderView();
-                    
-                    // Guardar el score en la BD
+
                     const total = state.loadedQuestions.length;
                     const saved = await saveQuizScore(SUBJECT.key, state.unit, state.quiz, state.score, total);
                     showScoreSavedNotification(saved);
                 }
             },
+             jumpToQuestion: (index) => {
+                 if (index === state.currentQuestion) return;
+                 state.currentQuestion = index;
+                 const prev = state.answers[index];
+                 state.isAnswered = prev !== undefined;
+                 state.selectedOption = prev !== undefined ? prev : null;
+                 state.showHint = false;
+                 renderView();
+             },
              hint: () => { state.showHint = !state.showHint; renderView(); },
              showReview: () => {
                  state.view = 'review';
@@ -609,9 +622,9 @@
                                   ${q.a.map((opt, i) => {
                                       let cls = 'glass border-white/5';
                                       let icon = '';
-                                      if (state.isAnswered) {
+                                      if (state.isAnswered && i === state.selectedOption) {
                                           if (i === q.c) { cls = 'bg-rose-500/20 border-rose-500/50'; icon = '<i data-lucide="check" class="w-5 h-5 text-rose-400"></i>'; }
-                                          else if (i === state.selectedOption) { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
+                                          else { cls = 'bg-red-500/20 border-red-500/50'; icon = '<i data-lucide="x" class="w-5 h-5 text-red-400"></i>'; }
                                       }
                                       return `
                                           <button onclick="actions.answer(${i})" ${state.isAnswered ? 'disabled' : ''} class="w-full p-4 rounded-xl ${cls} border flex items-center gap-4 text-left hover:border-rose-500/50 transition-all">
