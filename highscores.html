@@ -601,6 +601,7 @@
         let state = {
             darkMode: localStorage.getItem('darkMode') !== 'false', // Respetar preferencia del usuario
             currentFilter: 'all',
+            totalStudents: 0,
             leaderboards: {
                 biologia: {},
                 fisica: {},
@@ -689,17 +690,27 @@
             }
         }
 
-        // Fetch high scores from Supabase (MISMA LÓGICA QUE INDEX.HTML)
+        // Fetch high scores from Supabase
         async function fetchHighScores() {
             console.log('🔄 Iniciando fetchHighScores...');
-            
-            // Verificar que supabaseClient existe
+
             if (typeof supabaseClient === 'undefined') {
-                console.error('❌ supabaseClient no está definido. Verifica que js/supabase-client.js se haya cargado correctamente.');
-                loadFromCache(); // Intenta cargar del caché
+                console.error('❌ supabaseClient no está definido.');
+                loadFromCache();
                 return;
             }
-            
+
+            // Conteo real de alumnos registrados
+            try {
+                const { count } = await supabaseClient
+                    .from('usuarios')
+                    .select('*', { count: 'exact', head: true });
+                state.totalStudents = count || 0;
+                console.log(`👥 Total alumnos registrados: ${state.totalStudents}`);
+            } catch (e) {
+                console.warn('No se pudo obtener conteo de usuarios:', e);
+            }
+
              const subjects = [
                  { key: 'biologia', name: 'Biología', units: 5 },
                  { key: 'fisica', name: 'Física', units: 4 },
@@ -725,13 +736,14 @@
                      const unitLeaderboards = {};
                      console.log(`Procesando materia: ${subject.name}`);
 
-                    // Fetch scores for each unit (TOP 10 en lugar de 3)
                     for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
                         const unitKey = `u${unitNum}`;
 
+                        // Traer TODOS los intentos (sin limit) para poder calcular intentos por alumno
                         const { data, error } = await supabaseClient
                             .from('high_scores')
                             .select(`
+                                user_id,
                                 score,
                                 total_questions,
                                 percentage,
@@ -744,14 +756,47 @@
                             .eq('subject', subject.key)
                             .eq('unit_key', unitKey)
                             .order('score', { ascending: false })
-                            .order('completed_at', { ascending: true })
-                            .limit(10); // Top 10 para mostrar más en la página
+                            .order('completed_at', { ascending: true });
 
                         if (error) {
                             console.error(`❌ Error en ${subject.key} - ${unitKey}:`, error);
                         } else if (data && data.length > 0) {
-                            unitLeaderboards[unitKey] = data;
-                            console.log(`✅ ${subject.key} - ${unitKey}: ${data.length} registros`);
+                            // Agrupar por alumno: mejor puntaje + conteo de intentos
+                            const userMap = {};
+                            data.forEach(record => {
+                                const uid = record.user_id;
+                                if (!userMap[uid]) {
+                                    userMap[uid] = {
+                                        user_id: uid,
+                                        usuarios: record.usuarios,
+                                        score: record.score,
+                                        total_questions: record.total_questions,
+                                        percentage: record.percentage,
+                                        quiz_key: record.quiz_key,
+                                        completed_at: record.completed_at,
+                                        attempts: 1
+                                    };
+                                } else {
+                                    userMap[uid].attempts++;
+                                    if (record.score > userMap[uid].score) {
+                                        userMap[uid].score = record.score;
+                                        userMap[uid].percentage = record.percentage;
+                                        userMap[uid].quiz_key = record.quiz_key;
+                                        userMap[uid].completed_at = record.completed_at;
+                                    }
+                                }
+                            });
+
+                            // Ordenar: mejor score DESC, en empate menos intentos primero (más inteligente)
+                            const ranked = Object.values(userMap)
+                                .sort((a, b) => {
+                                    if (b.score !== a.score) return b.score - a.score;
+                                    return a.attempts - b.attempts;
+                                })
+                                .slice(0, 10);
+
+                            unitLeaderboards[unitKey] = ranked;
+                            console.log(`✅ ${subject.key} - ${unitKey}: ${ranked.length} alumnos (${data.length} intentos totales)`);
                         } else {
                             console.log(`⚠️ ${subject.key} - ${unitKey}: Sin datos`);
                         }
@@ -765,7 +810,6 @@
                  renderAll();
              } catch (error) {
                  console.error('Error general en fetchHighScores:', error);
-                // Try to load from cache
                 loadFromCache();
             }
         }
@@ -829,10 +873,9 @@
         // Render stats
         function renderStats() {
             const filteredData = getFilteredData();
-            
-            // Unique students
-            const uniqueStudents = new Set(filteredData.map(item => item.usuarios?.nombre)).size;
-            document.getElementById('totalStudents').textContent = uniqueStudents;
+
+            // Conteo real de alumnos registrados (obtenido de la tabla usuarios)
+            document.getElementById('totalStudents').textContent = state.totalStudents;
             
             // Average score
             const avgPercentage = filteredData.length > 0
@@ -850,13 +893,14 @@
         // Render podium
         function renderPodium() {
             const filteredData = getFilteredData();
-            
-            // Group by student and get their best score
+
+            // Agrupar por user_id (ya vienen deduplicados por usuario desde fetchHighScores,
+            // pero al mezclar materias pueden repetirse — tomamos su mejor score global)
             const studentScores = {};
             filteredData.forEach(item => {
-                const name = item.usuarios?.nombre || 'Usuario';
-                if (!studentScores[name] || item.score > studentScores[name].score) {
-                    studentScores[name] = item;
+                const uid = item.user_id || item.usuarios?.nombre || 'unknown';
+                if (!studentScores[uid] || item.score > studentScores[uid].score) {
+                    studentScores[uid] = item;
                 }
             });
             
@@ -1022,20 +1066,20 @@
                 }
             });
             
-            // Top Students Chart
+            // Top Students Chart — agrupar por user_id para evitar duplicados por nombre
             const studentScores = {};
             filteredData.forEach(item => {
-                const name = item.usuarios?.nombre || 'Usuario';
-                if (!studentScores[name]) {
-                    studentScores[name] = [];
+                const uid = item.user_id || item.usuarios?.nombre || 'unknown';
+                if (!studentScores[uid]) {
+                    studentScores[uid] = { name: item.usuarios?.nombre || 'Usuario', scores: [] };
                 }
-                studentScores[name].push(item.percentage);
+                studentScores[uid].scores.push(item.percentage);
             });
-            
-            const topStudents = Object.keys(studentScores)
-                .map(name => ({
-                    name,
-                    avg: studentScores[name].reduce((a, b) => a + b, 0) / studentScores[name].length
+
+            const topStudents = Object.values(studentScores)
+                .map(s => ({
+                    name: s.name,
+                    avg: s.scores.reduce((a, b) => a + b, 0) / s.scores.length
                 }))
                 .sort((a, b) => b.avg - a.avg)
                 .slice(0, 5);
@@ -1167,8 +1211,10 @@
                                                                 <div class="font-bold text-sm ${state.darkMode ? 'text-white' : 'text-slate-900'} truncate">
                                                                     ${score.usuarios?.nombre || 'Usuario'}
                                                                 </div>
-                                                                <div class="text-[11px] ${state.darkMode ? 'text-slate-400' : 'text-slate-500'} mt-0.5 font-medium">
-                                                                    ${score.score}/${score.total_questions} aciertos
+                                                                <div class="text-[11px] ${state.darkMode ? 'text-slate-400' : 'text-slate-500'} mt-0.5 font-medium flex items-center gap-2">
+                                                                    <span>${score.score}/${score.total_questions} aciertos</span>
+                                                                    <span class="opacity-50">·</span>
+                                                                    <span title="${score.attempts === 1 ? 'Lo logró al primer intento' : `${score.attempts} intentos`}">${score.attempts === 1 ? '⚡ 1er intento' : `🔄 ${score.attempts} intentos`}</span>
                                                                 </div>
                                                             </div>
                                                             <div class="text-right flex-shrink-0">
