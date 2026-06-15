@@ -700,12 +700,10 @@
                 return;
             }
 
-            // Conteo real de alumnos registrados
+            // Conteo real de alumnos registrados (vía RPC; el padrón no es legible directamente)
             try {
-                const { count } = await supabaseClient
-                    .from('usuarios')
-                    .select('*', { count: 'exact', head: true });
-                state.totalStudents = count || 0;
+                const { data: total } = await supabaseClient.rpc('contar_alumnos');
+                state.totalStudents = total || 0;
                 console.log(`👥 Total alumnos registrados: ${state.totalStudents}`);
             } catch (e) {
                 console.warn('No se pudo obtener conteo de usuarios:', e);
@@ -739,24 +737,12 @@
                     for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
                         const unitKey = `u${unitNum}`;
 
-                        // Traer TODOS los intentos (sin limit) para poder calcular intentos por alumno
-                        const { data, error } = await supabaseClient
-                            .from('high_scores')
-                            .select(`
-                                user_id,
-                                score,
-                                total_questions,
-                                percentage,
-                                quiz_key,
-                                completed_at,
-                                usuarios (
-                                    nombre
-                                )
-                            `)
-                            .eq('subject', subject.key)
-                            .eq('unit_key', unitKey)
-                            .order('score', { ascending: false })
-                            .order('completed_at', { ascending: true });
+                        // Traer TODOS los intentos vía RPC (el join a 'usuarios' ya no es
+                        // accesible directamente; el RPC devuelve solo el nombre).
+                        let { data, error } = await supabaseClient
+                            .rpc('leaderboard_unidad', { p_subject: subject.key, p_unit: unitKey });
+                        // Normalizar al shape esperado por el resto del código: usuarios.nombre
+                        if (data) data = data.map(r => ({ ...r, usuarios: { nombre: r.nombre } }));
 
                         if (error) {
                             console.error(`❌ Error en ${subject.key} - ${unitKey}:`, error);

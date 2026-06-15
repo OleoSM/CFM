@@ -303,28 +303,22 @@ async function getBestScores(userId = null) {
  */
 async function getLeaderboard(subject, unitKey, quizKey, limit = 10) {
     try {
+        // El padrón 'usuarios' no es legible directamente; se usa el RPC que
+        // solo expone el nombre. Devuelve toda la unidad; filtramos por quiz aquí.
         const { data, error } = await supabaseClient
-            .from('high_scores')
-            .select(`
-        *,
-        usuarios (
-          nombre,
-          email
-        )
-      `)
-            .eq('subject', subject)
-            .eq('unit_key', unitKey)
-            .eq('quiz_key', quizKey)
-            .order('score', { ascending: false })
-            .order('completed_at', { ascending: true })
-            .limit(limit);
+            .rpc('leaderboard_unidad', { p_subject: subject, p_unit: unitKey });
 
         if (error) {
             console.error('Error obteniendo leaderboard:', error);
             return { success: false, error: error.message };
         }
 
-        return { success: true, leaderboard: data };
+        const rows = (data || [])
+            .filter(r => r.quiz_key === quizKey)
+            .slice(0, limit)
+            .map(r => ({ ...r, usuarios: { nombre: r.nombre } }));
+
+        return { success: true, leaderboard: rows };
     } catch (err) {
         console.error('Error inesperado:', err);
         return { success: false, error: 'Error al obtener leaderboard' };
