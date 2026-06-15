@@ -41,18 +41,40 @@
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background:
-                radial-gradient(circle, rgba(99, 102, 241, 0.05) 1px, transparent 1px) 0 0 / 28px 28px,
-                linear-gradient(155deg, #eef1ff 0%, #f3f0ff 35%, #fdf0ff 65%, #fff3fb 100%);
             min-height: 100vh;
             overflow-x: hidden;
-            transition: background 0.3s;
+            background: #08041a;
         }
 
-        body.dark {
+        /* Page content sits above the nebula */
+        #page-content {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            transition: background 0.3s;
+            background:
+                radial-gradient(circle, rgba(99, 102, 241, 0.05) 1px, transparent 1px) 0 0 / 28px 28px,
+                linear-gradient(155deg, rgba(238,241,255,0.72) 0%, rgba(243,240,255,0.72) 35%, rgba(253,240,255,0.72) 65%, rgba(255,243,251,0.72) 100%);
+        }
+
+        body.dark #page-content {
             background:
                 radial-gradient(circle, rgba(99, 102, 241, 0.09) 1px, transparent 1px) 0 0 / 28px 28px,
-                linear-gradient(155deg, #06091b 0%, #0a0619 35%, #0e0618 65%, #08041a 100%);
+                linear-gradient(155deg, rgba(6,9,27,0.38) 0%, rgba(10,6,25,0.38) 35%, rgba(14,6,24,0.38) 65%, rgba(8,4,26,0.38) 100%);
+        }
+
+        /* Nebula shader — fixed, behind everything */
+        #nebula-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #nebula-bg canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
 
         .glass-light {
@@ -374,7 +396,68 @@
             }
         }
 
-        /* Premium Highscores Button */
+        /* Liquid Button */
+        .liquid-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.45rem 1rem;
+            border-radius: 10px;
+            background: #000822;
+            border: 1.5px solid rgba(255,255,255,0.12);
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            overflow: hidden;
+            isolation: isolate;
+            box-shadow: 0 0 18px rgba(99,102,241,0.35);
+            text-decoration: none;
+            cursor: pointer;
+            transition: box-shadow 0.3s, transform 0.2s;
+        }
+        .liquid-btn:hover {
+            box-shadow: 0 0 28px rgba(99,102,241,0.6);
+            transform: scale(1.04);
+            color: white;
+            text-decoration: none;
+        }
+        .liquid-btn-inner {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg,
+                #1E10C5 0%, #4743EF 18%, #9089E2 30%,
+                #FCFCFE 38%, #7D7BF4 48%, #0E2DCB 60%,
+                #0B06FC 75%, #9089E2 88%, #1E10C5 100%);
+            background-size: 300% 100%;
+            animation: liquid-flow 4s ease-in-out infinite;
+            mix-blend-mode: screen;
+            opacity: 0.75;
+        }
+        .liquid-btn-inner2 {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(79,67,239,0.6) 0%, transparent 60%);
+            mix-blend-mode: overlay;
+            animation: liquid-pulse 3s ease-in-out infinite alternate;
+        }
+        .liquid-btn-label {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        @keyframes liquid-flow {
+            0%, 100% { background-position: 0% 50%; }
+            50%       { background-position: 100% 50%; }
+        }
+        @keyframes liquid-pulse {
+            from { opacity: 0.4; }
+            to   { opacity: 0.8; }
+        }
+
+        /* KEPT: trophy-bounce used by legacy pages */
         .premium-highscores-btn {
             background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
             border: 2px solid #fbbf24;
@@ -436,30 +519,37 @@
                 display: none;
             }
         }
+
     </style>
 </head>
 
 <body id="body">
-    <!-- Navigation -->
-    <nav id="nav" class="nav-blur sticky top-0 z-50"></nav>
+    <!-- Nebula shader background (behind everything) -->
+    <div id="nebula-bg"></div>
 
-    <!-- Main Content -->
-    <main id="main" class="container mx-auto px-4 py-6 md:py-12 max-w-7xl">
-        <!-- Hero Section -->
-        <section id="hero" class="text-center space-y-6 mb-10 fade-in"></section>
+    <!-- Page content (above nebula) -->
+    <div id="page-content">
+        <!-- Navigation -->
+        <nav id="nav" class="nav-blur sticky top-0 z-50"></nav>
 
-        <!-- KPI Stats -->
-        <section id="stats" class="max-w-6xl mx-auto mb-10 fade-in"></section>
+        <!-- Main Content -->
+        <main id="main" class="container mx-auto px-4 py-6 md:py-12 max-w-7xl">
+            <!-- Hero Section -->
+            <section id="hero" class="text-center space-y-6 mb-10 fade-in"></section>
 
-        <!-- Subject Cards -->
-        <section id="subjects" class="max-w-6xl mx-auto mb-16"></section>
+            <!-- KPI Stats -->
+            <section id="stats" class="max-w-6xl mx-auto mb-10 fade-in"></section>
 
-        <!-- Coming Soon -->
-        <section id="comingSoon" class="max-w-4xl mx-auto mb-16 fade-in"></section>
-    </main>
+            <!-- Subject Cards -->
+            <section id="subjects" class="max-w-6xl mx-auto mb-16"></section>
 
-    <!-- Footer -->
-    <footer id="footer" class="mt-20"></footer>
+            <!-- Coming Soon -->
+            <section id="comingSoon" class="max-w-4xl mx-auto mb-16 fade-in"></section>
+        </main>
+
+        <!-- Footer -->
+        <footer id="footer" class="mt-20"></footer>
+    </div>
 
     <script>
         // Check authentication on page load
@@ -471,22 +561,19 @@
         // Get user data
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
+        // Exam mode toggle
+        function toggleExamMode() {
+            const isOn = localStorage.getItem('cefimat_exam_mode') === '1';
+            localStorage.setItem('cefimat_exam_mode', isOn ? '0' : '1');
+            render();
+        }
+
         // State
         const state = {
             darkMode: localStorage.getItem('darkMode') !== 'false',
             userName: userData.name || '',
             userGroup: userData.group || '',
             mobileMenuOpen: false,
-            leaderboards: {
-                biologia: {},
-                fisica: {},
-                foce: {},
-                geografia: {},
-                historia_mexico: {},
-                historia_universal: {},
-                quimica: {}
-            },
-            showLeaderboard: false,
             userProgress: {},
             countdownInterval: null
         };
@@ -543,62 +630,6 @@
             }
         }
 
-        // Fetch leaderboards
-        async function fetchLeaderboards() {
-            const subjects = [
-                { key: 'biologia', name: 'Biología', units: 5 },
-                { key: 'fisica', name: 'Física', units: 4 },
-                { key: 'foce', name: 'FOCE', units: 9 },
-                { key: 'geografia', name: 'Geografía', units: 2 },
-                { key: 'historia_mexico', name: 'Hist. México', units: 5 },
-                { key: 'historia_universal', name: 'Hist. Universal', units: 5 },
-                { key: 'quimica', name: 'Química', units: 3 },
-            ];
-
-            for (const subject of subjects) {
-                try {
-                    const unitLeaderboards = {};
-
-                    // Fetch scores for each unit
-                    for (let unitNum = 1; unitNum <= subject.units; unitNum++) {
-                        const unitKey = `u${unitNum}`;
-
-                        const { data, error } = await supabaseClient
-                            .from('high_scores')
-                            .select(`
-                                score,
-                                total_questions,
-                                percentage,
-                                quiz_key,
-                                completed_at,
-                                usuarios (
-                                    nombre
-                                )
-                            `)
-                            .eq('subject', subject.key)
-                            .eq('unit_key', unitKey)
-                            .order('score', { ascending: false })
-                            .order('completed_at', { ascending: true })
-                            .limit(3);
-
-                        if (!error && data && data.length > 0) {
-                            unitLeaderboards[unitKey] = data;
-                        }
-                    }
-
-                    state.leaderboards[subject.key] = unitLeaderboards;
-                } catch (err) {
-                    console.error(`Error fetching leaderboard for ${subject.key}:`, err);
-                }
-            }
-            render();
-        }
-
-        function toggleLeaderboard() {
-            state.showLeaderboard = !state.showLeaderboard;
-            render();
-        }
-
         function isUnlocked() {
             return isLoggedIn && state.userName.trim().length > 0 && state.userGroup.trim().length > 0;
         }
@@ -637,11 +668,6 @@
                 dropdown.classList.remove('active');
             }
 
-            // Close leaderboard if clicking outside
-            if (state.showLeaderboard && !event.target.closest('.relative')) {
-                state.showLeaderboard = false;
-                render();
-            }
         });
 
         // Toggle dark mode
@@ -685,104 +711,25 @@
                             
                             <!-- Desktop menu -->
                             <div class="hidden md:flex items-center gap-3">
-                                <!-- High Scores Button -->
-                                <div class="relative">
-                                    <button onclick="toggleLeaderboard()" class="${glassClass} px-4 py-2 rounded-xl flex items-center gap-2 hover:ring-2 hover:ring-indigo-500/50 transition-all shadow-md">
-                                        <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
-                                        <span class="text-sm font-bold ${textPrimary}">High Scores</span>
-                                    </button>
-                                    
-                                    ${state.showLeaderboard ? `
-                                    <div class="${glassClass} absolute top-full right-0 mt-2 w-[500px] rounded-2xl shadow-2xl overflow-hidden z-50">
-                                        <div class="p-4 border-b ${borderColor} bg-gradient-to-r from-amber-500/10 to-orange-500/10">
-                                            <div class="flex items-center gap-2">
-                                                <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
-                                                <h3 class="text-lg font-black ${textPrimary}">Top 3 por Unidad</h3>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="max-h-[500px] overflow-y-auto p-4 space-y-4">
-                                            ${['biologia', 'fisica', 'foce', 'geografia', 'historia', 'quimica'].map((subject) => {
-                const names = {
-                    'biologia': 'Biología',
-                    'fisica': 'Física',
-                    'foce': 'FOCE',
-                    'geografia': 'Geografía',
-                    'historia': 'Historia',
-                    'quimica': 'Química'
-                };
-                const colors = {
-                    'biologia': 'green',
-                    'fisica': 'rose',
-                    'foce': 'sky',
-                    'geografia': 'amber',
-                    'historia': 'violet',
-                    'quimica': 'fuchsia'
-                };
-                const icons = {
-                    'biologia': 'microscope',
-                    'fisica': 'atom',
-                    'foce': 'scale',
-                    'geografia': 'map',
-                    'historia': 'book-open',
-                    'quimica': 'flask-conical'
-                };
-                const unitLeaderboards = state.leaderboards[subject] || {};
-                const hasAnyScores = Object.keys(unitLeaderboards).length > 0;
-
-                return `
-                                                <div class="${glassClass} rounded-xl p-3">
-                                                    <h4 class="text-sm font-bold text-${colors[subject]}-600 mb-3 flex items-center gap-2">
-                                                        <i data-lucide="${icons[subject]}" class="w-4 h-4"></i>
-                                                        ${names[subject]}
-                                                    </h4>
-                                                    ${hasAnyScores ? `
-                                                        <div class="space-y-3">
-                                                            ${Object.keys(unitLeaderboards).sort((a, b) => {
-                    const numA = parseInt(a.replace('u', ''));
-                    const numB = parseInt(b.replace('u', ''));
-                    return numA - numB;
-                }).map(unitKey => {
-                    const unitNum = unitKey.replace('u', '');
-                    const scores = unitLeaderboards[unitKey] || [];
-
-                    return `
-                                                                    <div class="border-l-2 border-${colors[subject]}-500/30 pl-2">
-                                                                        <p class="text-[10px] font-bold ${textMuted} uppercase tracking-wider mb-1">Unidad ${unitNum}</p>
-                                                                        <div class="space-y-1">
-                                                                            ${scores.slice(0, 3).map((entry, index) => `
-                                                                                <div class="flex items-center justify-between text-xs py-1">
-                                                                                    <div class="flex items-center gap-2">
-                                                                                        <span class="w-5 h-5 rounded-full ${index === 0 ? 'bg-amber-500 text-white' : index === 1 ? 'bg-slate-400 text-white' : 'bg-orange-600 text-white'} flex items-center justify-center text-[10px] font-bold">
-                                                                                            ${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                                                                                        </span>
-                                                                                        <span class="${textPrimary} ${index === 0 ? 'font-bold' : ''}">${entry.usuarios?.nombre || 'Usuario'}</span>
-                                                                                    </div>
-                                                                                    <span class="text-${colors[subject]}-600 font-bold">${entry.score}/${entry.total_questions}</span>
-                                                                                </div>
-                                                                            `).join('')}
-                                                                        </div>
-                                                                    </div>
-                                                                `;
-                }).join('')}
-                                                        </div>
-                                                    ` : `
-                                                        <p class="text-xs ${textMuted} italic">No hay puntuaciones aún</p>
-                                                    `}
-                                                </div>
-                                                `;
-            }).join('')}
-                                        </div>
-                                    </div>
-                                    ` : ''}
-                                </div>
-
-                                <!-- BOTÓN PREMIUM HIGHSCORES -->
-                                <a href="highscores.html" class="premium-highscores-btn px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg text-white font-bold text-sm no-underline">
-                                    <span class="trophy-icon text-lg">🏆</span>
-                                    <span>Ver Hall of Fame</span>
+                                <!-- Hall of Fame liquid button -->
+                                <a href="highscores.html" class="liquid-btn">
+                                    <div class="liquid-btn-inner"></div>
+                                    <div class="liquid-btn-inner2"></div>
+                                    <span class="liquid-btn-label">
+                                        <i data-lucide="trophy" class="w-4 h-4"></i>
+                                        <span class="hidden lg:inline">Hall of Fame</span>
+                                    </span>
                                 </a>
-                                
+
+                                <!-- Examen liquid button -->
+                                <a href="examen.html" class="liquid-btn">
+                                    <div class="liquid-btn-inner"></div>
+                                    <div class="liquid-btn-inner2"></div>
+                                    <span class="liquid-btn-label">
+                                        <i data-lucide="shield" class="w-4 h-4"></i>
+                                        <span class="hidden lg:inline">Examen</span>
+                                    </span>
+                                </a>
                                 <button onclick="toggleDarkMode()" class="theme-toggle w-11 h-11 rounded-xl ${glassClass} flex items-center justify-center ${textSecondary} hover:text-indigo-500 transition-all shadow-md">
                                     <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
                                 </button>
@@ -846,98 +793,30 @@
                     </div>
                     
                     <div class="p-6 space-y-3">
-                        <!-- High Scores Section in Mobile -->
-                        <div class="${glassClass} rounded-xl p-4 max-h-[400px] overflow-y-auto">
-                            <div class="flex items-center gap-2 mb-4">
-                                <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
-                                <h4 class="text-sm font-bold ${textPrimary}">High Scores - Top 3 por Unidad</h4>
-                            </div>
-                            
-                            <div class="space-y-4">
-                                ${['biologia', 'fisica', 'foce', 'geografia', 'historia', 'quimica'].map((subject) => {
-                const names = {
-                    'biologia': 'Biología',
-                    'fisica': 'Física',
-                    'foce': 'FOCE',
-                    'geografia': 'Geografía',
-                    'historia': 'Historia',
-                    'quimica': 'Química'
-                };
-                const colors = {
-                    'biologia': 'green',
-                    'fisica': 'rose',
-                    'foce': 'sky',
-                    'geografia': 'amber',
-                    'historia': 'violet',
-                    'quimica': 'fuchsia'
-                };
-                const icons = {
-                    'biologia': 'microscope',
-                    'fisica': 'atom',
-                    'foce': 'scale',
-                    'geografia': 'map',
-                    'historia': 'book-open',
-                    'quimica': 'flask-conical'
-                };
-                const unitLeaderboards = state.leaderboards[subject] || {};
-                const hasAnyScores = Object.keys(unitLeaderboards).length > 0;
-
-                return `
-                                        <div class="${glassClass} rounded-xl p-3">
-                                            <h5 class="text-xs font-bold text-${colors[subject]}-600 mb-3 flex items-center gap-2">
-                                                <i data-lucide="${icons[subject]}" class="w-4 h-4"></i>
-                                                ${names[subject]}
-                                            </h5>
-                                            ${hasAnyScores ? `
-                                                <div class="space-y-3">
-                                                    ${Object.keys(unitLeaderboards).sort((a, b) => {
-                    const numA = parseInt(a.replace('u', ''));
-                    const numB = parseInt(b.replace('u', ''));
-                    return numA - numB;
-                }).map(unitKey => {
-                    const unitNum = unitKey.replace('u', '');
-                    const scores = unitLeaderboards[unitKey] || [];
-
-                    return `
-                                                            <div class="border-l-2 border-${colors[subject]}-500/30 pl-2">
-                                                                <p class="text-[10px] font-bold ${textMuted} uppercase tracking-wider mb-1">Unidad ${unitNum}</p>
-                                                                <div class="space-y-1">
-                                                                    ${scores.slice(0, 3).map((entry, index) => `
-                                                                        <div class="flex items-center justify-between text-xs py-1">
-                                                                            <div class="flex items-center gap-2">
-                                                                                <span class="w-5 h-5 rounded-full ${index === 0 ? 'bg-amber-500 text-white' : index === 1 ? 'bg-slate-400 text-white' : 'bg-orange-600 text-white'} flex items-center justify-center text-[10px] font-bold">
-                                                                                    ${index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                                                                                </span>
-                                                                                <span class="${textPrimary} ${index === 0 ? 'font-bold' : ''}">${entry.usuarios?.nombre || 'Usuario'}</span>
-                                                                            </div>
-                                                                            <span class="text-${colors[subject]}-600 font-bold">${entry.score}/${entry.total_questions}</span>
-                                                                        </div>
-                                                                    `).join('')}
-                                                                </div>
-                                                            </div>
-                                                        `;
-                }).join('')}
-                                                </div>
-                                            ` : `
-                                                <p class="text-xs ${textMuted} italic">No hay puntuaciones aún</p>
-                                            `}
-                                        </div>
-                                    `;
-            }).join('')}
-                            </div>
-                        </div>
-
-                        <!-- BOTÓN PREMIUM HIGHSCORES (Mobile) -->
-                        <a href="highscores.html" class="premium-highscores-btn px-5 py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg text-white font-bold text-base no-underline mb-3">
-                            <span class="trophy-icon text-xl">🏆</span>
-                            <span>Ver Hall of Fame</span>
+                        <!-- Hall of Fame liquid button (Mobile) -->
+                        <a href="highscores.html" class="liquid-btn w-full justify-center py-3" style="font-size:0.95rem;">
+                            <div class="liquid-btn-inner"></div>
+                            <div class="liquid-btn-inner2"></div>
+                            <span class="liquid-btn-label">
+                                <i data-lucide="trophy" class="w-5 h-5"></i>
+                                <span>Hall of Fame</span>
+                            </span>
                         </a>
-                        
+
+                        <!-- Examen liquid button (Mobile) -->
+                        <a href="examen.html" class="liquid-btn w-full justify-center py-3" style="font-size:0.95rem;">
+                            <div class="liquid-btn-inner"></div>
+                            <div class="liquid-btn-inner2"></div>
+                            <span class="liquid-btn-label">
+                                <i data-lucide="shield" class="w-5 h-5"></i>
+                                <span>Ir al Examen</span>
+                            </span>
+                        </a>
                         <button onclick="toggleDarkMode()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:text-indigo-500 transition-all">
                             <i data-lucide="${isDark ? 'sun' : 'moon'}" class="w-5 h-5"></i>
                             <span class="text-sm font-medium">${isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
                         </button>
-                        
+
                         <button onclick="logout()" class="w-full ${glassClass} px-4 py-3 rounded-xl flex items-center gap-3 ${textSecondary} hover:bg-red-500/10 hover:text-red-500 transition-all">
                             <i data-lucide="log-out" class="w-5 h-5"></i>
                             <span class="text-sm font-medium">Cerrar sesión</span>
@@ -1372,11 +1251,110 @@
 
         // Init
         applyTheme();
-        fetchLeaderboards();
         fetchUserProgress();
         // Renderizar iconos lucide finales
         setTimeout(() => lucide.createIcons(), 100);
     </script>
+
+    <!-- Nebula shader background -->
+    <script>
+        function initNebulaShader() {
+            const container = document.getElementById('nebula-bg');
+            if (!container || !window.THREE) return;
+
+            const THREE = window.THREE;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const scene  = new THREE.Scene();
+            const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+            const clock  = new THREE.Clock();
+
+            const vertexShader = `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `;
+
+            const fragmentShader = `
+                precision mediump float;
+                uniform vec2  iResolution;
+                uniform float iTime;
+                uniform vec2  iMouse;
+                varying vec2  vUv;
+
+                #define t iTime
+                mat2 m(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
+
+                float map(vec3 p){
+                    p.xz *= m(t*0.4);
+                    p.xy *= m(t*0.3);
+                    vec3 q = p*2.0 + t;
+                    return length(p + vec3(sin(t*0.7))) * log(length(p)+1.0)
+                         + sin(q.x + sin(q.z + sin(q.y))) * 0.5 - 1.0;
+                }
+
+                void main(){
+                    vec2 fragCoord = vUv * iResolution;
+                    vec2 uv = fragCoord / min(iResolution.x, iResolution.y) - vec2(0.9, 0.5);
+                    uv.x += 0.4;
+                    vec3 col = vec3(0.0);
+                    float d = 2.5;
+
+                    for(int i = 0; i <= 5; i++){
+                        vec3 p = vec3(0.0, 0.0, 5.0) + normalize(vec3(uv, -1.0)) * d;
+                        float rz = map(p);
+                        float f  = clamp((rz - map(p + 0.1)) * 0.5, -0.1, 1.0);
+                        vec3 base = vec3(0.1, 0.3, 0.4) + vec3(5.0, 2.5, 3.0) * f;
+                        col = col * base + smoothstep(2.5, 0.0, rz) * 0.7 * base;
+                        d += min(rz, 1.0);
+                    }
+
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `;
+
+            const uniforms = {
+                iTime:       { value: 0 },
+                iResolution: { value: new THREE.Vector2() },
+                iMouse:      { value: new THREE.Vector2() },
+            };
+
+            const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+            const mesh     = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+            scene.add(mesh);
+
+            const onResize = () => {
+                const w = window.innerWidth, h = window.innerHeight;
+                renderer.setSize(w, h);
+                uniforms.iResolution.value.set(w, h);
+            };
+            const onMouse = (e) => {
+                uniforms.iMouse.value.set(e.clientX, window.innerHeight - e.clientY);
+            };
+
+            window.addEventListener('resize',    onResize);
+            window.addEventListener('mousemove', onMouse);
+            onResize();
+
+            renderer.setAnimationLoop(() => {
+                uniforms.iTime.value = clock.getElapsedTime();
+                renderer.render(scene, camera);
+            });
+        }
+
+        (function () {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            s.onload = initNebulaShader;
+            document.head.appendChild(s);
+        })();
+    </script>
+
 </body>
 
 </html>
